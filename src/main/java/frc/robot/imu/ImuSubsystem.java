@@ -8,6 +8,7 @@ import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.configs.MountPoseConfigs;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
+import dev.doglog.DogLog;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
@@ -18,7 +19,6 @@ import frc.robot.config.RobotConfig;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
-import org.littletonrobotics.junction.Logger;
 
 public class ImuSubsystem extends LifecycleSubsystem {
   private final Pigeon2 imu;
@@ -48,10 +48,9 @@ public class ImuSubsystem extends LifecycleSubsystem {
   @Override
   public void robotPeriodic() {
     Rotation2d robotHeading = this.getRobotHeading();
-    Logger.recordOutput("Imu/RobotHeading", robotHeading.getDegrees());
-    Logger.recordOutput(
-        "Imu/RobotHeadingModulo", MathUtil.inputModulus(robotHeading.getDegrees(), 0, 360));
-    Logger.recordOutput("Imu/RobotHeadingRadians", robotHeading.getRadians());
+    DogLog.log("Imu/RobotHeading", robotHeading.getDegrees());
+    DogLog.log("Imu/RobotHeadingModulo", MathUtil.inputModulus(robotHeading.getDegrees(), 0, 360));
+    DogLog.log("Imu/RobotHeadingRadians", robotHeading.getRadians());
 
     var yaw = this.imu.getYaw();
 

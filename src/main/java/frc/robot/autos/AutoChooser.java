@@ -5,6 +5,7 @@
 package frc.robot.autos;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -14,7 +15,6 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import org.littletonrobotics.junction.Logger;
 
 public class AutoChooser {
   private final SendableChooser<AutoSelection> chooser = new SendableChooser<>();
@@ -47,10 +47,10 @@ public class AutoChooser {
 
     cachedAutoName = autoName;
 
-    Logger.recordOutput(
+    DogLog.log(
         "Autos/BrokenAutoNames", brokenAutoNames.toArray(new String[brokenAutoNames.size()]));
-    Logger.recordOutput("Autos/SelectedAutoName", selection);
-    Logger.recordOutput("Autos/SelectedAutoFileName", autoName.equals("") ? "(none)" : autoName);
+    DogLog.log("Autos/SelectedAutoName", selection);
+    DogLog.log("Autos/SelectedAutoFileName", autoName.equals("") ? "(none)" : autoName);
 
     if (cachedCommand.isPresent()) {
       return cachedCommand.get();

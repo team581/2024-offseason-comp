@@ -8,6 +8,7 @@ import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.StaticBrake;
 import com.ctre.phoenix6.hardware.TalonFX;
+import dev.doglog.DogLog;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -16,7 +17,6 @@ import frc.robot.config.RobotConfig;
 import frc.robot.util.HomingState;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
-import org.littletonrobotics.junction.Logger;
 
 public class ElevatorSubsystem extends LifecycleSubsystem {
   private final TalonFX motor;
@@ -108,11 +108,11 @@ public class ElevatorSubsystem extends LifecycleSubsystem {
         throw new IllegalStateException("Elevator can't do mid match homing");
     }
 
-    Logger.recordOutput("Elevator/Voltage", motor.getMotorVoltage().getValueAsDouble());
-    Logger.recordOutput("Elevator/StatorCurrent", motor.getStatorCurrent().getValueAsDouble());
-    Logger.recordOutput("Elevator/SupplyCurrent", motor.getSupplyCurrent().getValueAsDouble());
-    Logger.recordOutput("Elevator/Height", getHeight());
-    Logger.recordOutput("Elevator/GoalHeight", goalHeight);
+    DogLog.log("Elevator/Voltage", motor.getMotorVoltage().getValueAsDouble());
+    DogLog.log("Elevator/StatorCurrent", motor.getStatorCurrent().getValueAsDouble());
+    DogLog.log("Elevator/SupplyCurrent", motor.getSupplyCurrent().getValueAsDouble());
+    DogLog.log("Elevator/Height", getHeight());
+    DogLog.log("Elevator/GoalHeight", goalHeight);
   }
 
   public void setPulsing(boolean shouldPulse) {

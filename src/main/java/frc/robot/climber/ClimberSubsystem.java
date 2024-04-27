@@ -6,6 +6,7 @@ package frc.robot.climber;
 
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import dev.doglog.DogLog;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -14,7 +15,6 @@ import frc.robot.config.RobotConfig.ClimberConfig;
 import frc.robot.util.HomingState;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
-import org.littletonrobotics.junction.Logger;
 
 public class ClimberSubsystem extends LifecycleSubsystem {
   private static final ClimberConfig CONFIG = RobotConfig.get().climber();
@@ -70,11 +70,11 @@ public class ClimberSubsystem extends LifecycleSubsystem {
         throw new IllegalStateException("Climber can't do pre match homing");
     }
 
-    Logger.recordOutput("Climber/GoalMode", goalMode);
-    Logger.recordOutput("Climber/GoalDistance", goalDistance);
-    Logger.recordOutput("Climber/HomingState", homingState);
-    Logger.recordOutput("Climber/Left/Distance", getDistance(leftMotor));
-    Logger.recordOutput("Climber/Right/Distance", getDistance(rightMotor));
+    DogLog.log("Climber/GoalMode", goalMode);
+    DogLog.log("Climber/GoalDistance", goalDistance);
+    DogLog.log("Climber/HomingState", homingState);
+    DogLog.log("Climber/Left/Distance", getDistance(leftMotor));
+    DogLog.log("Climber/Right/Distance", getDistance(rightMotor));
   }
 
   public boolean atGoal(ClimberMode goal) {

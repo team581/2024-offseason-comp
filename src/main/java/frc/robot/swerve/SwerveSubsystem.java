@@ -29,7 +29,6 @@ import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
 import java.util.List;
 import java.util.function.Supplier;
-import org.littletonrobotics.junction.Logger;
 
 public class SwerveSubsystem extends LifecycleSubsystem {
   private static final double MAX_SPEED_SHOOTING =
@@ -203,9 +202,9 @@ public class SwerveSubsystem extends LifecycleSubsystem {
             leftY *= -1.0;
           }
 
-          Logger.recordOutput("Swerve/Controller/FinalLeftX", leftX);
-          Logger.recordOutput("Swerve/Controller/FinalRightX", rightX);
-          Logger.recordOutput("Swerve/Controller/FinalLeftY", leftY);
+          DogLog.log("Swerve/Controller/FinalLeftX", leftX);
+          DogLog.log("Swerve/Controller/FinalRightX", rightX);
+          DogLog.log("Swerve/Controller/FinalLeftY", leftY);
 
           ChassisSpeeds teleopSpeeds =
               new ChassisSpeeds(
@@ -213,7 +212,7 @@ public class SwerveSubsystem extends LifecycleSubsystem {
                   leftX * MaxSpeed,
                   rightX * TELEOP_MAX_ANGULAR_RATE.getRadians());
 
-          Logger.recordOutput("Swerve/RawTeleopSpeeds", teleopSpeeds);
+          DogLog.log("Swerve/RawTeleopSpeeds", teleopSpeeds);
 
           // teleopSpeeds = accelerationLimitChassisSpeeds(teleopSpeeds);
 
@@ -221,11 +220,11 @@ public class SwerveSubsystem extends LifecycleSubsystem {
               Math.sqrt(
                   Math.pow(teleopSpeeds.vxMetersPerSecond, 2)
                       + Math.pow(teleopSpeeds.vyMetersPerSecond, 2));
-          Logger.recordOutput("Swerve/CurrentSpeed", currentSpeed);
+          DogLog.log("Swerve/CurrentSpeed", currentSpeed);
           var scaled = teleopSpeeds.div(currentSpeed / MAX_SPEED_SHOOTING);
-          Logger.recordOutput("Swerve/ScaledSpeeds", scaled);
-          Logger.recordOutput("Swerve/IsShooting", isShooting);
-          Logger.recordOutput("Swerve/GoingToFast", currentSpeed > MAX_SPEED_SHOOTING);
+          DogLog.log("Swerve/ScaledSpeeds", scaled);
+          DogLog.log("Swerve/IsShooting", isShooting);
+          DogLog.log("Swerve/GoingToFast", currentSpeed > MAX_SPEED_SHOOTING);
           if (isShooting) {
             if (currentSpeed > MAX_SPEED_SHOOTING) {
               teleopSpeeds =
@@ -236,7 +235,7 @@ public class SwerveSubsystem extends LifecycleSubsystem {
             }
           }
 
-          Logger.recordOutput("Swerve/UsedTeleopSpeeds", teleopSpeeds);
+          DogLog.log("Swerve/UsedTeleopSpeeds", teleopSpeeds);
 
           setFieldRelativeSpeeds(teleopSpeeds, false);
         })
@@ -255,7 +254,7 @@ public class SwerveSubsystem extends LifecycleSubsystem {
     Translation2d limitedVelocityVector = velocity;
 
     double acceleration = velocity.getNorm() - previousVelocity.getNorm();
-    Logger.recordOutput("Swerve/Acceleration", acceleration);
+    DogLog.log("Swerve/Acceleration", acceleration);
 
     if (velocityChange.getNorm() > maxVelocitychange && acceleration > 0) {
       limitedVelocityVectorChange =
@@ -279,42 +278,42 @@ public class SwerveSubsystem extends LifecycleSubsystem {
 
   @Override
   public void robotPeriodic() {
-    Logger.recordOutput("Swerve/SnapToAngle", snapToAngle);
-    Logger.recordOutput("Swerve/SnapToAngleGoal", goalSnapAngle.getDegrees());
-    Logger.recordOutput("Swerve/Pose", drivetrain.getState().Pose);
+    DogLog.log("Swerve/SnapToAngle", snapToAngle);
+    DogLog.log("Swerve/SnapToAngleGoal", goalSnapAngle.getDegrees());
+    DogLog.log("Swerve/Pose", drivetrain.getState().Pose);
     // TODO: Fix logging SwerveModuleState[] struct array
     DogLog.log("Swerve/ModuleStates/0", drivetrain.getState().ModuleStates[0]);
     DogLog.log("Swerve/ModuleStates/1", drivetrain.getState().ModuleStates[1]);
     DogLog.log("Swerve/ModuleStates/2", drivetrain.getState().ModuleStates[2]);
     DogLog.log("Swerve/ModuleStates/3", drivetrain.getState().ModuleStates[3]);
-    Logger.recordOutput("Swerve/ModuleTargets", drivetrain.getState().ModuleTargets);
+    DogLog.log("Swerve/ModuleTargets", drivetrain.getState().ModuleTargets);
 
-    Logger.recordOutput(
+    DogLog.log(
         "Swerve/FrontLeft/DriveMotor/StatorCurrent",
         frontLeft.getDriveMotor().getStatorCurrent().getValue());
-    Logger.recordOutput(
+    DogLog.log(
         "Swerve/FrontRight/DriveMotor/StatorCurrent",
         frontRight.getDriveMotor().getStatorCurrent().getValue());
-    Logger.recordOutput(
+    DogLog.log(
         "Swerve/BackLeft/DriveMotor/StatorCurrent",
         backLeft.getDriveMotor().getStatorCurrent().getValue());
-    Logger.recordOutput(
+    DogLog.log(
         "Swerve/BackRight/DriveMotor/StatorCurrent",
         backRight.getDriveMotor().getStatorCurrent().getValue());
-    Logger.recordOutput(
+    DogLog.log(
         "Swerve/FrontLeft/DriveMotor/Voltage",
         frontLeft.getDriveMotor().getMotorVoltage().getValue());
-    Logger.recordOutput(
+    DogLog.log(
         "Swerve/FrontRight/DriveMotor/Voltage",
         frontRight.getDriveMotor().getMotorVoltage().getValue());
-    Logger.recordOutput(
+    DogLog.log(
         "Swerve/BackLeft/DriveMotor/Voltage",
         backLeft.getDriveMotor().getMotorVoltage().getValue());
-    Logger.recordOutput(
+    DogLog.log(
         "Swerve/BackRight/DriveMotor/Voltage",
         backRight.getDriveMotor().getMotorVoltage().getValue());
 
-    Logger.recordOutput("Swerve/RobotSpeed", getRobotRelativeSpeeds());
+    DogLog.log("Swerve/RobotSpeed", getRobotRelativeSpeeds());
 
     // Send a swerve request at least once every loop
     sendSwerveRequest();

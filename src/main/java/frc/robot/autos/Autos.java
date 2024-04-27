@@ -18,6 +18,7 @@ import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.PPLibTelemetry;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
+import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -29,7 +30,6 @@ import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
 import java.util.Optional;
-import org.littletonrobotics.junction.Logger;
 
 public class Autos extends LifecycleSubsystem {
   private static Command wrapAutoEvent(String commandName, Command command) {
@@ -109,12 +109,12 @@ public class Autos extends LifecycleSubsystem {
 
     PathPlannerLogging.setLogActivePathCallback(
         (activePath) -> {
-          // Logger.recordOutput(
+          // DogLog.log(
           //     "Autos/Trajectory/ActivePath", activePath.toArray(new Pose2d[activePath.size()]));
         });
     PathPlannerLogging.setLogTargetPoseCallback(
         (targetPose) -> {
-          Logger.recordOutput("Autos/Trajectory/TargetPose", targetPose);
+          DogLog.log("Autos/Trajectory/TargetPose", targetPose);
         });
 
     if (!RobotConfig.IS_DEVELOPMENT) {

@@ -4,6 +4,7 @@
 
 package frc.robot.note_tracking;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -20,7 +21,6 @@ import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
 import frc.robot.vision.VisionSubsystem;
 import java.util.Optional;
-import org.littletonrobotics.junction.Logger;
 
 public class NoteTrackingManager extends LifecycleSubsystem {
   private final LocalizationSubsystem localization;
@@ -68,12 +68,12 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     // latency
     var robotPose = getPose();
 
-    Logger.recordOutput("NoteTracking/TY", ty);
-    Logger.recordOutput("NoteTracking/TX", tx);
+    DogLog.log("NoteTracking/TY", ty);
+    DogLog.log("NoteTracking/TX", tx);
 
     double forwardDistanceToNote = tyToDistance.get(ty);
     Rotation2d angleFromNote = Rotation2d.fromDegrees(tx);
-    Logger.recordOutput("NoteTracking/ForwardDistance", forwardDistanceToNote);
+    DogLog.log("NoteTracking/ForwardDistance", forwardDistanceToNote);
 
     var c = forwardDistanceToNote / Math.cos(angleFromNote.getRadians());
     double sidewaysDistanceToNote = Math.sqrt(Math.pow(c, 2) - Math.pow(forwardDistanceToNote, 2));
@@ -83,7 +83,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
       sidewaysDistanceToNote *= -1.0;
     }
 
-    Logger.recordOutput("NoteTracking/SidewaysDistance", sidewaysDistanceToNote);
+    DogLog.log("NoteTracking/SidewaysDistance", sidewaysDistanceToNote);
     var notePoseWithoutRotation =
         new Translation2d(-forwardDistanceToNote, -sidewaysDistanceToNote)
             .rotateBy(Rotation2d.fromDegrees(getPose().getRotation().getDegrees()));
@@ -133,7 +133,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   public void robotPeriodic() {
     Optional<Pose2d> notePose = getNotePose();
     if (notePose.isPresent()) {
-      Logger.recordOutput("NoteTracking/NotePose", notePose.get());
+      DogLog.log("NoteTracking/NotePose", notePose.get());
       lastNotePose = notePose.get();
     }
   }

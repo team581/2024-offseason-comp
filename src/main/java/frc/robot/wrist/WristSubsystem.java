@@ -7,6 +7,7 @@ package frc.robot.wrist;
 import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -14,7 +15,6 @@ import frc.robot.config.RobotConfig;
 import frc.robot.util.HomingState;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
-import org.littletonrobotics.junction.Logger;
 
 public class WristSubsystem extends LifecycleSubsystem {
 
@@ -88,13 +88,13 @@ public class WristSubsystem extends LifecycleSubsystem {
         break;
     }
 
-    Logger.recordOutput(
+    DogLog.log(
         "Wrist/Position", Rotation2d.fromRotations(motor.getPosition().getValue()).getDegrees());
-    Logger.recordOutput("Wrist/StatorCurrent", motor.getStatorCurrent().getValue());
-    Logger.recordOutput("Wrist/SupplyCurrent", motor.getSupplyCurrent().getValue());
-    Logger.recordOutput("Wrist/HomingState", homingState);
-    Logger.recordOutput("Wrist/GoalAngle", goalAngle.getDegrees());
-    Logger.recordOutput("Wrist/LowestSeenAngle", lowestSeenAngle.getDegrees());
+    DogLog.log("Wrist/StatorCurrent", motor.getStatorCurrent().getValue());
+    DogLog.log("Wrist/SupplyCurrent", motor.getSupplyCurrent().getValue());
+    DogLog.log("Wrist/HomingState", homingState);
+    DogLog.log("Wrist/GoalAngle", goalAngle.getDegrees());
+    DogLog.log("Wrist/LowestSeenAngle", lowestSeenAngle.getDegrees());
   }
 
   private Rotation2d getHomeAngleFromLowestSeen() {

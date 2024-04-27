@@ -6,6 +6,7 @@ package frc.robot.lights;
 
 import com.ctre.phoenix.led.CANdle;
 import com.ctre.phoenix.led.CANdleConfiguration;
+import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
@@ -19,7 +20,6 @@ import frc.robot.vision.LimelightHelpers;
 import frc.robot.vision.VisionState;
 import frc.robot.vision.VisionSubsystem;
 import java.util.Optional;
-import org.littletonrobotics.junction.Logger;
 
 public class LightsSubsystem extends LifecycleSubsystem {
   private static final LightsState FLASH_LIGHTS =
@@ -118,8 +118,8 @@ public class LightsSubsystem extends LifecycleSubsystem {
       }
     }
 
-    Logger.recordOutput("Lights/Color", state.color().toString());
-    Logger.recordOutput("Lights/Pattern", state.pattern());
+    DogLog.log("Lights/Color", state.color().toString());
+    DogLog.log("Lights/Pattern", state.pattern());
 
     Color8Bit color8Bit = new Color8Bit(state.color());
 

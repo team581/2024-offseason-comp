@@ -4,6 +4,7 @@
 
 package frc.robot.localization;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -25,7 +26,6 @@ import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
 import frc.robot.vision.LimelightHelpers;
 import frc.robot.vision.VisionSubsystem;
-import org.littletonrobotics.junction.Logger;
 
 public class LocalizationSubsystem extends LifecycleSubsystem {
   private static final double SHOOT_WHILE_MOVE_LOOKAHEAD = 0.2;
@@ -95,13 +95,13 @@ public class LocalizationSubsystem extends LifecycleSubsystem {
       }
     }
 
-    Logger.recordOutput("Localization/OdometryPose", getOdometryPose());
-    // Logger.recordOutput("Localization/SavedExpectedPose", getSavedExpectedPose(false));
-    Logger.recordOutput("Localization/EstimatedPose", getPose());
-    Logger.recordOutput("Localization/ChangedDirection", changedDirection());
-    // Logger.recordOutput(
+    DogLog.log("Localization/OdometryPose", getOdometryPose());
+    // DogLog.log("Localization/SavedExpectedPose", getSavedExpectedPose(false));
+    DogLog.log("Localization/EstimatedPose", getPose());
+    DogLog.log("Localization/ChangedDirection", changedDirection());
+    // DogLog.log(
     //     "Localization/ExpectedPose", getExpectedPose(SHOOT_WHILE_MOVE_LOOKAHEAD, true));
-    Logger.recordOutput(
+    DogLog.log(
         "Localization/LimelightPoseRaw",
         LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("").pose);
 

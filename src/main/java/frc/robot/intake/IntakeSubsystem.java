@@ -5,12 +5,12 @@
 package frc.robot.intake;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+import dev.doglog.DogLog;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.config.RobotConfig;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
-import org.littletonrobotics.junction.Logger;
 
 public class IntakeSubsystem extends LifecycleSubsystem {
   private final TalonFX motor;
@@ -31,13 +31,13 @@ public class IntakeSubsystem extends LifecycleSubsystem {
   @Override
   public void robotPeriodic() {
     debouncedSensor = debouncer.calculate(sensorHasNote());
-    Logger.recordOutput("Intake/State", goalState);
-    Logger.recordOutput("Intake/DebouncedHasNote", debouncedSensor);
-    Logger.recordOutput("Intake/HasNote", hasNote());
-    Logger.recordOutput("Intake/SensorHasNote", sensorHasNote());
-    Logger.recordOutput("Intake/SupplyCurrent", motor.getSupplyCurrent().getValueAsDouble());
-    Logger.recordOutput("Intake/StatorCurrent", motor.getStatorCurrent().getValueAsDouble());
-    Logger.recordOutput("Intake/Voltage", motor.getMotorVoltage().getValueAsDouble());
+    DogLog.log("Intake/State", goalState);
+    DogLog.log("Intake/DebouncedHasNote", debouncedSensor);
+    DogLog.log("Intake/HasNote", hasNote());
+    DogLog.log("Intake/SensorHasNote", sensorHasNote());
+    DogLog.log("Intake/SupplyCurrent", motor.getSupplyCurrent().getValueAsDouble());
+    DogLog.log("Intake/StatorCurrent", motor.getStatorCurrent().getValueAsDouble());
+    DogLog.log("Intake/Voltage", motor.getMotorVoltage().getValueAsDouble());
 
     switch (goalState) {
       case IDLE:

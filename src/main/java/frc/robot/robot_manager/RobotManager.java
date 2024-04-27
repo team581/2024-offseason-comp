@@ -32,7 +32,6 @@ import frc.robot.vision.VisionStrategy;
 import frc.robot.vision.VisionSubsystem;
 import frc.robot.wrist.WristPositions;
 import frc.robot.wrist.WristSubsystem;
-import org.littletonrobotics.junction.Logger;
 
 public class RobotManager extends LifecycleSubsystem {
   public final WristSubsystem wrist;
@@ -76,7 +75,7 @@ public class RobotManager extends LifecycleSubsystem {
 
   @Override
   public void robotPeriodic() {
-    Logger.recordOutput("RobotManager/State", state);
+    DogLog.log("RobotManager/State", state);
     flags.log();
     DistanceAngle speakerDistanceAngle = vision.getDistanceAngleSpeaker();
 
@@ -301,7 +300,7 @@ public class RobotManager extends LifecycleSubsystem {
       }
     }
 
-    Logger.recordOutput("RobotManager/StateAfterFlags", state);
+    DogLog.log("RobotManager/StateAfterFlags", state);
 
     // Automatic state transitions
     switch (state) {
@@ -413,14 +412,14 @@ public class RobotManager extends LifecycleSubsystem {
             limelightWorking = vision.getState() == VisionState.SEES_TAGS;
           }
 
-          Logger.recordOutput("RobotManager/SpeakerShot/LimelightWorking", limelightWorking);
-          Logger.recordOutput("RobotManager/SpeakerShot/WristAtGoal", wristAtGoal);
-          Logger.recordOutput("RobotManager/SpeakerShot/ShooterAtGoal", shooterAtGoal);
-          Logger.recordOutput("RobotManager/SpeakerShot/PoseJitterSafe", poseJitterSafe);
-          Logger.recordOutput("RobotManager/SpeakerShot/SwerveSlowEnough", swerveSlowEnough);
-          Logger.recordOutput(
+          DogLog.log("RobotManager/SpeakerShot/LimelightWorking", limelightWorking);
+          DogLog.log("RobotManager/SpeakerShot/WristAtGoal", wristAtGoal);
+          DogLog.log("RobotManager/SpeakerShot/ShooterAtGoal", shooterAtGoal);
+          DogLog.log("RobotManager/SpeakerShot/PoseJitterSafe", poseJitterSafe);
+          DogLog.log("RobotManager/SpeakerShot/SwerveSlowEnough", swerveSlowEnough);
+          DogLog.log(
               "RobotManager/SpeakerShot/AngularVelocitySlowEnough", angularVelocitySlowEnough);
-          Logger.recordOutput("RobotManager/SpeakerShot/RobotHeadingAtGoal", robotHeadingAtGoal);
+          DogLog.log("RobotManager/SpeakerShot/RobotHeadingAtGoal", robotHeadingAtGoal);
           if ((limelightWorking || DriverStation.isAutonomous())
               && wristAtGoal
               && shooterAtGoal
@@ -505,7 +504,7 @@ public class RobotManager extends LifecycleSubsystem {
         break;
     }
 
-    Logger.recordOutput("RobotManager/StateAfterTransitions", state);
+    DogLog.log("RobotManager/StateAfterTransitions", state);
 
     // State actions
     switch (state) {

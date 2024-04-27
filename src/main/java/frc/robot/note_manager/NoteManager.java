@@ -4,6 +4,7 @@
 
 package frc.robot.note_manager;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.conveyor.ConveyorState;
 import frc.robot.conveyor.ConveyorSubsystem;
@@ -14,7 +15,6 @@ import frc.robot.queuer.QueuerSubsystem;
 import frc.robot.util.FlagManager;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
-import org.littletonrobotics.junction.Logger;
 
 public class NoteManager extends LifecycleSubsystem {
   private final FlagManager<NoteFlag> flags = new FlagManager<>("NoteManager", NoteFlag.class);
@@ -38,7 +38,7 @@ public class NoteManager extends LifecycleSubsystem {
 
   @Override
   public void robotPeriodic() {
-    Logger.recordOutput("NoteManager/State", state);
+    DogLog.log("NoteManager/State", state);
     flags.log();
 
     if (state != NoteState.IDLE_IN_QUEUER_SHUFFLE) {
@@ -130,7 +130,7 @@ public class NoteManager extends LifecycleSubsystem {
       }
     }
 
-    Logger.recordOutput("NoteManager/StateAfterFlags", state);
+    DogLog.log("NoteManager/StateAfterFlags", state);
 
     // Automatic state transitions
     switch (state) {
@@ -198,7 +198,7 @@ public class NoteManager extends LifecycleSubsystem {
         break;
     }
 
-    Logger.recordOutput("NoteManager/StateAfterTransitions", state);
+    DogLog.log("NoteManager/StateAfterTransitions", state);
 
     // State actions
     switch (state) {

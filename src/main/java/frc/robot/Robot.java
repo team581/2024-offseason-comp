@@ -41,7 +41,6 @@ import frc.robot.util.Stopwatch;
 import frc.robot.util.scheduling.LifecycleSubsystemManager;
 import frc.robot.vision.VisionSubsystem;
 import frc.robot.wrist.WristSubsystem;
-import org.littletonrobotics.junction.Logger;
 
 public class Robot extends TimedRobot {
   private Command autonomousCommand;
@@ -106,24 +105,24 @@ public class Robot extends TimedRobot {
         new DogLogOptions().withCaptureNt(false).withNtPublish(RobotConfig.IS_DEVELOPMENT));
 
     // Record metadata
-    Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
-    Logger.recordMetadata("RoborioSerialNumber", RobotConfig.SERIAL_NUMBER);
-    Logger.recordMetadata("RobotName", RobotConfig.get().robotName());
-    Logger.recordMetadata("VisionStrategy", RobotConfig.get().vision().strategy().toString());
-    Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
-    Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
-    Logger.recordMetadata("GitDate", BuildConstants.GIT_DATE);
-    Logger.recordMetadata("GitBranch", BuildConstants.GIT_BRANCH);
+    DogLog.log("Metadata/ProjectName", BuildConstants.MAVEN_NAME);
+    DogLog.log("Metadata/RoborioSerialNumber", RobotConfig.SERIAL_NUMBER);
+    DogLog.log("Metadata/RobotName", RobotConfig.get().robotName());
+    DogLog.log("Metadata/VisionStrategy", RobotConfig.get().vision().strategy().toString());
+    DogLog.log("Metadata/BuildDate", BuildConstants.BUILD_DATE);
+    DogLog.log("Metadata/GitSHA", BuildConstants.GIT_SHA);
+    DogLog.log("Metadata/GitDate", BuildConstants.GIT_DATE);
+    DogLog.log("Metadata/GitBranch", BuildConstants.GIT_BRANCH);
 
     switch (BuildConstants.DIRTY) {
       case 0:
-        Logger.recordMetadata("GitDirty", "All changes committed");
+        DogLog.log("Metadata/GitDirty", "All changes committed");
         break;
       case 1:
-        Logger.recordMetadata("GitDirty", "Uncomitted changes");
+        DogLog.log("Metadata/GitDirty", "Uncomitted changes");
         break;
       default:
-        Logger.recordMetadata("GitDirty", "Unknown");
+        DogLog.log("Metadata/GitDirty", "Unknown");
         break;
     }
 

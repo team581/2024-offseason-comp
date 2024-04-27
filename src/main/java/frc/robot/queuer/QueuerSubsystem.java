@@ -5,13 +5,13 @@
 package frc.robot.queuer;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+import dev.doglog.DogLog;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.config.RobotConfig;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
-import org.littletonrobotics.junction.Logger;
 
 public class QueuerSubsystem extends LifecycleSubsystem {
   private static final double NOTE_SHUFFLE_ON_DURATION = 0.2;
@@ -41,11 +41,11 @@ public class QueuerSubsystem extends LifecycleSubsystem {
     // TODO: We accidentally were calling .calculate() twice for a very long time, and don't have
     // time to validate behavior when we call it just once
     debouncer.calculate(sensorHasNote());
-    Logger.recordOutput("Queuer/Voltage", motor.getMotorVoltage().getValueAsDouble());
-    Logger.recordOutput("Queuer/State", goalState);
-    Logger.recordOutput("Queuer/SupplyCurrent", motor.getSupplyCurrent().getValueAsDouble());
-    Logger.recordOutput("Queuer/StatorCurrent", motor.getStatorCurrent().getValueAsDouble());
-    Logger.recordOutput("Queuer/SensorHasNote", sensorHasNote());
+    DogLog.log("Queuer/Voltage", motor.getMotorVoltage().getValueAsDouble());
+    DogLog.log("Queuer/State", goalState);
+    DogLog.log("Queuer/SupplyCurrent", motor.getSupplyCurrent().getValueAsDouble());
+    DogLog.log("Queuer/StatorCurrent", motor.getStatorCurrent().getValueAsDouble());
+    DogLog.log("Queuer/SensorHasNote", sensorHasNote());
 
     switch (goalState) {
       case IDLE:

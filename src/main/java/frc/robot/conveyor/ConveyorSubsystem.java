@@ -5,13 +5,13 @@
 package frc.robot.conveyor;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+import dev.doglog.DogLog;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.config.RobotConfig;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
-import org.littletonrobotics.junction.Logger;
 
 public class ConveyorSubsystem extends LifecycleSubsystem {
   private final TalonFX motor;
@@ -38,11 +38,11 @@ public class ConveyorSubsystem extends LifecycleSubsystem {
   public void robotPeriodic() {
     scoringDebouncedSensor = scoringDebouncer.calculate(sensorHasNote());
     handoffDebouncedSensor = handoffDebouncer.calculate(sensorHasNote());
-    Logger.recordOutput("Conveyor/State", goalState);
-    Logger.recordOutput("Conveyor/SensorHasNote", sensorHasNote());
-    Logger.recordOutput("Conveyor/SupplyCurrent", motor.getSupplyCurrent().getValueAsDouble());
-    Logger.recordOutput("Conveyor/StatorCurrent", motor.getStatorCurrent().getValueAsDouble());
-    Logger.recordOutput("Conveyor/Voltage", motor.getMotorVoltage().getValueAsDouble());
+    DogLog.log("Conveyor/State", goalState);
+    DogLog.log("Conveyor/SensorHasNote", sensorHasNote());
+    DogLog.log("Conveyor/SupplyCurrent", motor.getSupplyCurrent().getValueAsDouble());
+    DogLog.log("Conveyor/StatorCurrent", motor.getStatorCurrent().getValueAsDouble());
+    DogLog.log("Conveyor/Voltage", motor.getMotorVoltage().getValueAsDouble());
 
     switch (goalState) {
       case IDLE:

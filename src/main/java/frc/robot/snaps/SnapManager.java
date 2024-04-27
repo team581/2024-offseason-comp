@@ -4,6 +4,7 @@
 
 package frc.robot.snaps;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -13,7 +14,6 @@ import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
 import java.util.function.Supplier;
-import org.littletonrobotics.junction.Logger;
 
 public class SnapManager extends LifecycleSubsystem {
   public static Rotation2d getSourceAngle() {
@@ -81,8 +81,8 @@ public class SnapManager extends LifecycleSubsystem {
 
   @Override
   public void robotPeriodic() {
-    Logger.recordOutput("SnapManager/Enabled", enabled);
-    Logger.recordOutput("SnapManager/GoalAngle", angle.getDegrees());
+    DogLog.log("SnapManager/Enabled", enabled);
+    DogLog.log("SnapManager/GoalAngle", angle.getDegrees());
 
     if (enabled) {
       swerve.setSnapToAngle(angle);

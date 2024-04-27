@@ -4,9 +4,10 @@
 
 package frc.robot.util;
 
+import dev.doglog.DogLog;
+import edu.wpi.first.hal.HALUtil;
 import java.util.HashMap;
 import java.util.Map;
-import org.littletonrobotics.junction.Logger;
 
 public class Stopwatch {
   private static Stopwatch instance;
@@ -20,7 +21,7 @@ public class Stopwatch {
   }
 
   private static double getTimestamp() {
-    return Logger.getRealTimestamp() / 1e3;
+    return HALUtil.getFPGATime() / 1e3;
   }
 
   private final Map<String, Double> lastTimestamps = new HashMap<>();
@@ -34,10 +35,10 @@ public class Stopwatch {
   public void stop(String name) {
     double timestamp = getTimestamp();
     double lastTimestamp = lastTimestamps.get(name);
-    Logger.recordOutput(name, timestamp - lastTimestamp);
+    DogLog.log(name, timestamp - lastTimestamp);
   }
 
   public void skip(String name) {
-    Logger.recordOutput(name, -1.0);
+    DogLog.log(name, -1.0);
   }
 }

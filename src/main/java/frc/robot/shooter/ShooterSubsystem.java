@@ -6,12 +6,12 @@ package frc.robot.shooter;
 
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
+import dev.doglog.DogLog;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.config.RobotConfig;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
-import org.littletonrobotics.junction.Logger;
 
 public class ShooterSubsystem extends LifecycleSubsystem {
   private final TalonFX leftMotor;
@@ -85,22 +85,20 @@ public class ShooterSubsystem extends LifecycleSubsystem {
         break;
     }
 
-    Logger.recordOutput("Shooter/Mode", goalMode);
-    Logger.recordOutput("Shooter/GoalRPM", goalRPM);
-    Logger.recordOutput(
+    DogLog.log("Shooter/Mode", goalMode);
+    DogLog.log("Shooter/GoalRPM", goalRPM);
+    DogLog.log(
         "Shooter/GoalRPMForRightMotor", goalRPM * (usingNoteSpin ? ShooterRPMs.SPIN_RATIO : 1.0));
-    Logger.recordOutput("Shooter/LeftMotor/RPM", getRPM(leftMotor));
-    Logger.recordOutput(
-        "Shooter/LeftMotor/SupplyCurrent", leftMotor.getSupplyCurrent().getValueAsDouble());
-    Logger.recordOutput("Shooter/LeftMotor/StatorCurrent", leftMotor.getStatorCurrent().getValue());
-    Logger.recordOutput("Shooter/LeftMotor/Voltage", leftMotor.getMotorVoltage().getValue());
-    Logger.recordOutput(
-        "Shooter/RightMotor/StatorCurrent", rightMotor.getStatorCurrent().getValue());
-    Logger.recordOutput("Shooter/RightMotor/Voltage", rightMotor.getMotorVoltage().getValue());
-    Logger.recordOutput("Shooter/RightMotor/RPM", getRPM(rightMotor));
-    Logger.recordOutput(
+    DogLog.log("Shooter/LeftMotor/RPM", getRPM(leftMotor));
+    DogLog.log("Shooter/LeftMotor/SupplyCurrent", leftMotor.getSupplyCurrent().getValueAsDouble());
+    DogLog.log("Shooter/LeftMotor/StatorCurrent", leftMotor.getStatorCurrent().getValue());
+    DogLog.log("Shooter/LeftMotor/Voltage", leftMotor.getMotorVoltage().getValue());
+    DogLog.log("Shooter/RightMotor/StatorCurrent", rightMotor.getStatorCurrent().getValue());
+    DogLog.log("Shooter/RightMotor/Voltage", rightMotor.getMotorVoltage().getValue());
+    DogLog.log("Shooter/RightMotor/RPM", getRPM(rightMotor));
+    DogLog.log(
         "Shooter/RightMotor/SupplyCurrent", rightMotor.getSupplyCurrent().getValueAsDouble());
-    Logger.recordOutput("Shooter/AtGoal", atGoal(goalMode));
+    DogLog.log("Shooter/AtGoal", atGoal(goalMode));
 
     if (goalMode == ShooterMode.FULLY_STOPPED) {
       leftMotor.disable();

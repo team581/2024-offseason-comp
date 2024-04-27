@@ -22,7 +22,6 @@ import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
 import frc.robot.vision.LimelightHelpers.LimelightTarget_Fiducial;
 import java.util.Optional;
-import org.littletonrobotics.junction.Logger;
 
 public class VisionSubsystem extends LifecycleSubsystem {
   private static final double FLOOR_SPOT_MAX_DISTANCE_FOR_SUBWOOFER = 14.0;
@@ -196,13 +195,13 @@ public class VisionSubsystem extends LifecycleSubsystem {
 
     DistanceAngle distanceToTargetPose = distanceToTargetPose(speakerPose, robotPose);
 
-    Logger.recordOutput("Vision/MegaTag2/SpeakerPose", speakerPose);
-    Logger.recordOutput("Vision/MegaTag2/WantedRobotAngle", distanceToTargetPose.targetAngle());
-    Logger.recordOutput("Vision/MegaTag2/RobotDistance", distanceToTargetPose.distance());
+    DogLog.log("Vision/MegaTag2/SpeakerPose", speakerPose);
+    DogLog.log("Vision/MegaTag2/WantedRobotAngle", distanceToTargetPose.targetAngle());
+    DogLog.log("Vision/MegaTag2/RobotDistance", distanceToTargetPose.distance());
 
     if (maybeTxTyDistanceAngle.isPresent()) {
-      Logger.recordOutput("Vision/TxTy/Distance", maybeTxTyDistanceAngle.get().distance());
-      Logger.recordOutput(
+      DogLog.log("Vision/TxTy/Distance", maybeTxTyDistanceAngle.get().distance());
+      DogLog.log(
           "Vision/TxTy/WantedRobotAngle", maybeTxTyDistanceAngle.get().targetAngle().getDegrees());
 
       if (RobotConfig.get().vision().strategy() == VisionStrategy.TX_TY_AND_MEGATAG) {
@@ -233,7 +232,7 @@ public class VisionSubsystem extends LifecycleSubsystem {
     double absoluteOffsetRadians =
         (angleToSideShotOffset.get(Units.degreesToRadians(Math.abs(angleDegrees))));
     double offsetRadians = Math.copySign(absoluteOffsetRadians, angleDegrees);
-    Logger.recordOutput("Vision/ShootToTheSide/Offset", Units.radiansToDegrees(offsetRadians));
+    DogLog.log("Vision/ShootToTheSide/Offset", Units.radiansToDegrees(offsetRadians));
 
     var adjustedAngle =
         Rotation2d.fromRadians(originalPosition.targetAngle().getRadians() + offsetRadians);
@@ -277,10 +276,10 @@ public class VisionSubsystem extends LifecycleSubsystem {
     }
 
     if (RobotConfig.IS_DEVELOPMENT) {
-      Logger.recordOutput("Vision/FloorShot/SubwooferPose", goalPoseSubwoofer);
-      Logger.recordOutput("Vision/FloorShot/AmpAreaPose", goalPoseAmpArea);
+      DogLog.log("Vision/FloorShot/SubwooferPose", goalPoseSubwoofer);
+      DogLog.log("Vision/FloorShot/AmpAreaPose", goalPoseAmpArea);
     }
-    Logger.recordOutput("Vision/FloorShot/UsedTargetPose", usedGoalPose);
+    DogLog.log("Vision/FloorShot/UsedTargetPose", usedGoalPose);
 
     return result;
   }
@@ -309,13 +308,12 @@ public class VisionSubsystem extends LifecycleSubsystem {
     } else {
       LimelightHelpers.setPriorityTagID("", 7);
     }
-    Logger.recordOutput("Vision/DistanceFromSpeaker", getDistanceAngleSpeaker().distance());
-    Logger.recordOutput(
-        "Vision/AngleFromSpeaker", getDistanceAngleSpeaker().targetAngle().getDegrees());
-    Logger.recordOutput("Vision/DistanceFromFloorSpot", getDistanceAngleFloorShot().distance());
-    Logger.recordOutput("Vision/AngleFromFloorSpot", getDistanceAngleFloorShot().targetAngle());
-    Logger.recordOutput("Vision/State", getState());
-    Logger.recordOutput("Vision/VisionMethod", RobotConfig.get().vision().strategy());
+    DogLog.log("Vision/DistanceFromSpeaker", getDistanceAngleSpeaker().distance());
+    DogLog.log("Vision/AngleFromSpeaker", getDistanceAngleSpeaker().targetAngle().getDegrees());
+    DogLog.log("Vision/DistanceFromFloorSpot", getDistanceAngleFloorShot().distance());
+    DogLog.log("Vision/AngleFromFloorSpot", getDistanceAngleFloorShot().targetAngle());
+    DogLog.log("Vision/State", getState());
+    DogLog.log("Vision/VisionMethod", RobotConfig.get().vision().strategy());
 
     var newHeartbeat = LimelightHelpers.getLimelightNTDouble("", "hb");
 

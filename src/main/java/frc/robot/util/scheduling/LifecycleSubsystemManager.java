@@ -4,13 +4,13 @@
 
 package frc.robot.util.scheduling;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import org.littletonrobotics.junction.Logger;
 
 public class LifecycleSubsystemManager {
   private static LifecycleSubsystemManager instance;
@@ -53,7 +53,7 @@ public class LifecycleSubsystemManager {
   }
 
   public void log() {
-    Logger.recordOutput("Scheduler/Stage", getStage().toString());
+    DogLog.log("Scheduler/Stage", getStage().toString());
   }
 
   void registerSubsystem(LifecycleSubsystem subsystem) {
