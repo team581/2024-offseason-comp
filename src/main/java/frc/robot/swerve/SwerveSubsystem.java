@@ -276,6 +276,12 @@ public class SwerveSubsystem extends LifecycleSubsystem {
     return KINEMATICS.toChassisSpeeds(drivetrain.getState().ModuleStates);
   }
 
+  public ChassisSpeeds getFieldRelativeSpeeds() {
+    return ChassisSpeeds.fromRobotRelativeSpeeds(
+        getRobotRelativeSpeeds(),
+        Rotation2d.fromDegrees(drivetrainPigeon.getYaw().getValueAsDouble()));
+  }
+
   @Override
   public void robotPeriodic() {
     DogLog.log("Swerve/SnapToAngle", snapToAngle);
