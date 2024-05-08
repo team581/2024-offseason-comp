@@ -10,26 +10,33 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.config.RobotConfig;
 import frc.robot.fms.FmsSubsystem;
 import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
+import frc.robot.snaps.SnapManager;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
+import frc.robot.vision.DistanceAngle;
+import frc.robot.vision.LimelightHelpers;
 import frc.robot.vision.VisionSubsystem;
 import java.util.Optional;
 
 public class NoteTrackingManager extends LifecycleSubsystem {
+  private static final double LIMELIGHT_VERTICAL_FOV_DEGREES = 25.0;
   private final LocalizationSubsystem localization;
   private final SwerveSubsystem swerve;
   private final RobotCommands actions;
   private final RobotManager robot;
+  private final SnapManager snaps;
   private static final String LIMELIGHT_NAME = "limelight-note";
   private final InterpolatingDoubleTreeMap tyToDistance = new InterpolatingDoubleTreeMap();
-  private Pose2d lastNotePose = new Pose2d();
+  private Optional<Pose2d> lastNotePose = Optional.empty();
 
   private double midlineXValue = 8.3;
 
@@ -44,6 +51,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     this.swerve = swerve;
     this.actions = actions;
     this.robot = robot;
+    this.snaps = robot.snaps;
     RobotConfig.get().vision().tyToNoteDistance().accept(tyToDistance);
   }
 
@@ -52,9 +60,17 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     // long v =
     // NetworkTableInstance.getDefault().getTable(LIMELIGHT_NAME).getEntry("v").getInteger(0);
     double ty =
-        NetworkTableInstance.getDefault().getTable(LIMELIGHT_NAME).getEntry("ty").getDouble(0);
+        LimelightHelpers.getTY(LIMELIGHT_NAME) - LIMELIGHT_VERTICAL_FOV_DEGREES;
     double tx =
         NetworkTableInstance.getDefault().getTable(LIMELIGHT_NAME).getEntry("tx").getDouble(0);
+
+    double latency =
+        (LimelightHelpers.getLatency_Capture(LIMELIGHT_NAME)
+                + LimelightHelpers.getLatency_Pipeline(LIMELIGHT_NAME))
+            / 1000.0;
+    double timestamp = Timer.getFPGATimestamp() - latency;
+
+    Pose2d robotPoseAtCapture = localization.getPose(timestamp);
 
     if (tx == 0) {
       return Optional.empty();
@@ -64,12 +80,9 @@ public class NoteTrackingManager extends LifecycleSubsystem {
       return Optional.empty();
     }
 
-    // TODO: This should probably be the robot pose at the time the image was taken, since there is
-    // latency
-    var robotPose = getPose();
-
     DogLog.log("NoteTracking/TY", ty);
     DogLog.log("NoteTracking/TX", tx);
+    DogLog.log("NoteTracking/LatencyRobotPose", robotPoseAtCapture);
 
     double forwardDistanceToNote = tyToDistance.get(ty);
     Rotation2d angleFromNote = Rotation2d.fromDegrees(tx);
@@ -86,42 +99,61 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     DogLog.log("NoteTracking/SidewaysDistance", sidewaysDistanceToNote);
     var notePoseWithoutRotation =
         new Translation2d(-forwardDistanceToNote, -sidewaysDistanceToNote)
-            .rotateBy(Rotation2d.fromDegrees(getPose().getRotation().getDegrees()));
+            .rotateBy(Rotation2d.fromDegrees(robotPoseAtCapture.getRotation().getDegrees()));
 
     var notePoseWithRobot =
         new Translation2d(
-            getPose().getX() + notePoseWithoutRotation.getX(),
-            getPose().getY() + notePoseWithoutRotation.getY());
+            robotPoseAtCapture.getX() + notePoseWithoutRotation.getX(),
+            robotPoseAtCapture.getY() + notePoseWithoutRotation.getY());
     // Uses distance angle math to aim, inverses the angle for intake
-    double rotation =
+
+    DistanceAngle noteDistanceAngle =
         VisionSubsystem.distanceToTargetPose(
-                new Pose2d(notePoseWithRobot, new Rotation2d()), robotPose)
-            .targetAngle()
-            .getRadians();
-    return Optional.of(new Pose2d(notePoseWithRobot, new Rotation2d(rotation + Math.PI)));
+            new Pose2d(notePoseWithRobot, new Rotation2d()), robotPoseAtCapture);
+    Rotation2d rotation = new Rotation2d(noteDistanceAngle.targetAngle().getRadians() + Math.PI);
+
+    if (noteDistanceAngle.distance() < 3) {
+      if (lastNotePose.isPresent()) {
+        rotation = lastNotePose.get().getRotation();
+      } else {
+        rotation = getPose().getRotation();
+      }
+    }
+    return Optional.of(
+        new Pose2d(notePoseWithRobot, rotation));
   }
 
   private boolean pastMidline() {
-    Pose2d robotPose = getPose();
     double pastMidlineThresholdMeters = 0.65;
 
     // Red alliance
     if (FmsSubsystem.isRedAlliance()) {
-      if (robotPose.getX() < (midlineXValue - pastMidlineThresholdMeters)) {
+      if (getPose().getX() < (midlineXValue - pastMidlineThresholdMeters)) {
         return true;
       }
       return false;
     }
 
     // Blue alliance
-    return robotPose.getX() > (midlineXValue + pastMidlineThresholdMeters);
+    return getPose().getX() > (midlineXValue + pastMidlineThresholdMeters);
   }
 
   public Command intakeDetectedNote() {
-    return swerve
-        .driveToPoseCommand(() -> lastNotePose, this::getPose)
-        .until(() -> pastMidline())
-        .raceWith(actions.intakeCommand().withTimeout(2))
+    return Commands.runOnce(() -> lastNotePose = getNotePose())
+        .andThen(actions.intakeCommand())
+        .raceWith(
+            swerve.driveToPoseCommand(
+                () -> {
+                  if (lastNotePose.isPresent()) {
+                    snaps.setAngle(lastNotePose.get().getRotation());
+                    snaps.setEnabled(true);
+                  } else {
+                    snaps.setEnabled(false);
+                  }
+
+                  return lastNotePose;
+                },
+                this::getPose))
         .finallyDo(robot::stowRequest);
   }
 
@@ -134,7 +166,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     Optional<Pose2d> notePose = getNotePose();
     if (notePose.isPresent()) {
       DogLog.log("NoteTracking/NotePose", notePose.get());
-      lastNotePose = notePose.get();
+      lastNotePose = notePose;
     }
   }
 }

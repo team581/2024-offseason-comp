@@ -9,8 +9,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import dev.doglog.DogLog;
 import dev.doglog.DogLogOptions;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -30,6 +28,7 @@ import frc.robot.intake.IntakeSubsystem;
 import frc.robot.lights.LightsSubsystem;
 import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.note_manager.NoteManager;
+import frc.robot.note_tracking.NoteTrackingManager;
 import frc.robot.queuer.QueuerSubsystem;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
@@ -52,7 +51,6 @@ public class Robot extends TimedRobot {
   private final RumbleControllerSubsystem operatorRumble =
       new RumbleControllerSubsystem(operatorController, true);
 
-  private final PowerDistribution pdh = new PowerDistribution(1, ModuleType.kRev);
   private final WristSubsystem wrist =
       new WristSubsystem(
           new TalonFX(RobotConfig.get().wrist().motorID(), RobotConfig.get().canivoreName()));
@@ -97,6 +95,8 @@ public class Robot extends TimedRobot {
   private final LightsSubsystem lightsSubsystem =
       new LightsSubsystem(
           new CANdle(RobotConfig.get().lights().deviceID(), "rio"), robotManager, vision, intake);
+  private final NoteTrackingManager noteTrackingManager =
+      new NoteTrackingManager(localization, swerve, actions, robotManager);
 
   public Robot() {
     System.out.println("roboRIO serial number: " + RobotConfig.SERIAL_NUMBER);
@@ -236,6 +236,10 @@ public class Robot extends TimedRobot {
     operatorController
         .y()
         .onTrue(actions.waitSubwooferShotCommand())
+        .onFalse(actions.stowCommand());
+    operatorController
+        .povRight()
+        .whileTrue(noteTrackingManager.intakeDetectedNote())
         .onFalse(actions.stowCommand());
     operatorController
         .rightTrigger()
