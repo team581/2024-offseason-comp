@@ -39,6 +39,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private Optional<Pose2d> lastNotePose = Optional.empty();
 
   private double midlineXValue = 8.3;
+  Timer noteTrackTimer = new Timer();
 
   public NoteTrackingManager(
       LocalizationSubsystem localization,
@@ -59,8 +60,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     // TODO: update limelight so v works
     // long v =
     // NetworkTableInstance.getDefault().getTable(LIMELIGHT_NAME).getEntry("v").getInteger(0);
-    double ty =
-        LimelightHelpers.getTY(LIMELIGHT_NAME) - LIMELIGHT_VERTICAL_FOV_DEGREES;
+    double ty = LimelightHelpers.getTY(LIMELIGHT_NAME) - LIMELIGHT_VERTICAL_FOV_DEGREES;
     double tx =
         NetworkTableInstance.getDefault().getTable(LIMELIGHT_NAME).getEntry("tx").getDouble(0);
 
@@ -112,15 +112,14 @@ public class NoteTrackingManager extends LifecycleSubsystem {
             new Pose2d(notePoseWithRobot, new Rotation2d()), robotPoseAtCapture);
     Rotation2d rotation = new Rotation2d(noteDistanceAngle.targetAngle().getRadians() + Math.PI);
 
-    if (noteDistanceAngle.distance() < 3) {
+    if (noteDistanceAngle.distance() < 1) {
       if (lastNotePose.isPresent()) {
         rotation = lastNotePose.get().getRotation();
       } else {
         rotation = getPose().getRotation();
       }
     }
-    return Optional.of(
-        new Pose2d(notePoseWithRobot, rotation));
+    return Optional.of(new Pose2d(notePoseWithRobot, rotation));
   }
 
   private boolean pastMidline() {
@@ -154,7 +153,11 @@ public class NoteTrackingManager extends LifecycleSubsystem {
                   return lastNotePose;
                 },
                 this::getPose))
-        .finallyDo(robot::stowRequest);
+        .finallyDo(
+            () -> {
+              noteTrackTimer.reset();
+              robot.stopIntakingRequest();
+            });
   }
 
   private Pose2d getPose() {
@@ -163,10 +166,44 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
   @Override
   public void robotPeriodic() {
-    Optional<Pose2d> notePose = getNotePose();
-    if (notePose.isPresent()) {
-      DogLog.log("NoteTracking/NotePose", notePose.get());
-      lastNotePose = notePose;
+    DogLog.log("NoteTracking/Timer", noteTrackTimer.get());
+
+    // Log note pose if we can
+    var maybeNotePose = getNotePose();
+    if (maybeNotePose.isPresent()) {
+      var notePose = maybeNotePose.get();
+      DogLog.log("NoteTracking/NotePose", notePose);
+      DogLog.log(
+          "NoteTracking/NotePoseDistance",
+          getPose().getTranslation().getDistance(maybeNotePose.get().getTranslation()));
+    }
+
+    boolean grabbing = false;
+
+    // Update last note pose depending on distance & timeout
+    if (lastNotePose.isPresent()) {
+      DogLog.log("NoteTracking/LastNotePose", lastNotePose.get());
+
+      grabbing = getPose().getTranslation().getDistance(lastNotePose.get().getTranslation()) < 1;
+    }
+
+    DogLog.log("NoteTracking/Grabbing", grabbing);
+
+    if (grabbing) {
+      noteTrackTimer.start();
+      if (noteTrackTimer.hasElapsed(1)) {
+        // We didn't grab the note in time, reset the position
+        lastNotePose = getNotePose();
+      } else {
+        // Don't update note pose, we are about to grab it
+      }
+    } else {
+      // Not grabbing note, reset timer
+      noteTrackTimer.reset();
+      noteTrackTimer.stop();
+
+      // Update the note pose, we aren't grabbing it
+      lastNotePose = getNotePose();
     }
   }
 }

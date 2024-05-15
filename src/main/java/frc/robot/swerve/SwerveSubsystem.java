@@ -115,9 +115,9 @@ public class SwerveSubsystem extends LifecycleSubsystem {
   private ChassisSpeeds fieldRelativeSpeeds = new ChassisSpeeds();
   private boolean closedLoop = false;
 
-  private final PIDController xPid = new PIDController(2.0, 0, 0);
-  private final PIDController yPid = new PIDController(2.0, 0, 0);
-  private final PIDController omegaPid = new PIDController(2.0, 0, 0);
+  private final PIDController xPid = new PIDController(1.5, 0, 0);
+  private final PIDController yPid = new PIDController(1.5, 0, 0);
+  private final PIDController omegaPid = new PIDController(1.5, 0, 0);
 
   public SwerveSubsystem(CommandXboxController driveController) {
     super(SubsystemPriority.SWERVE);
