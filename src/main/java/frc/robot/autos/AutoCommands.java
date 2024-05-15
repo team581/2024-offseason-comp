@@ -4,6 +4,7 @@
 
 package frc.robot.autos;
 
+import com.choreo.lib.ChoreoTrajectory;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.wpilibj2.command.Command;
