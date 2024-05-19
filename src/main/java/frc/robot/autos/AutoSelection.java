@@ -24,7 +24,5 @@ public enum AutoSelection {
   private AutoSelection(String redAutoName, String blueAutoName) {
     this.redAutoName = redAutoName;
     this.blueAutoName = blueAutoName;
-
-
   }
 }
