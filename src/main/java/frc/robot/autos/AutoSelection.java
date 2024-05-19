@@ -15,7 +15,8 @@ public enum AutoSelection {
   SIX_PIECE_2_5_DYN("Red 6 Piece 2,1,3-5", "Blue 6 Piece 2,1,3-5"),
   SIX_PIECE_2_6_DYN("Red 6 Piece 2,1,3,5,6", "Blue 6 Piece 2,1,3,5,6"),
   BACKUP_SIX_PIECE_2_5("Backup Red 6 Piece", "Backup Blue 6 Piece"),
-  CHOREO_SIX_PIECE("Red Six Piece 2 to 4.1", "");
+  CHOREO_SIX_PIECE("Red Six Piece 2 to 4", ""),
+  CHOREO_SIX_PIECE_2("Red Six Piece 2 to 4.1", "");
 
   public final String redAutoName;
   public final String blueAutoName;
@@ -23,5 +24,7 @@ public enum AutoSelection {
   private AutoSelection(String redAutoName, String blueAutoName) {
     this.redAutoName = redAutoName;
     this.blueAutoName = blueAutoName;
+
+
   }
 }
