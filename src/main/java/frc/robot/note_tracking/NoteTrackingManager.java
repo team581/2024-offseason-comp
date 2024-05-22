@@ -60,7 +60,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     // TODO: update limelight so v works
     // long v =
     // NetworkTableInstance.getDefault().getTable(LIMELIGHT_NAME).getEntry("v").getInteger(0);
-    double ty = LimelightHelpers.getTY(LIMELIGHT_NAME) - LIMELIGHT_VERTICAL_FOV_DEGREES;
+    double ty = LimelightHelpers.getTY(LIMELIGHT_NAME);
     double tx =
         NetworkTableInstance.getDefault().getTable(LIMELIGHT_NAME).getEntry("tx").getDouble(0);
 
