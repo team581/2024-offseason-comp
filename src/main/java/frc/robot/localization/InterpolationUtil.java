@@ -20,11 +20,30 @@ public class InterpolationUtil {
       List.of(SUBWOOFER, STAGE_FRONT, STAGE_RIGHT, STAGE_MIDDLE);
 
   public static Pose2d interpolatePose(Pose2d visionInput) {
+    double distanceSum = 0;
+
     for (var dataPoint : DATA_POINTS) {
-      double distancePoint =
-          dataPoint.visionPose().getTranslation().getDistance(visionInput.getTranslation());
+      var distancePoint =
+          dataPoint.measuredPose().getTranslation().getDistance(visionInput.getTranslation());
+
+      distanceSum += distancePoint;
     }
 
-    return new Pose2d();
+    Pose2d weightedSum = new Pose2d();
+
+    for (var dataPoint : DATA_POINTS) {
+      var distancePoint =
+          dataPoint.measuredPose().getTranslation().getDistance(visionInput.getTranslation());
+
+      var result = dataPoint.visionPose().times(distanceSum - distancePoint);
+
+      weightedSum =
+          new Pose2d(
+              weightedSum.getX() + result.getX(),
+              weightedSum.getY() + result.getY(),
+              weightedSum.getRotation().plus(result.getRotation()));
+    }
+
+    return weightedSum.div(distanceSum);
   }
 }
