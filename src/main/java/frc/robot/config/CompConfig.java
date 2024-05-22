@@ -284,7 +284,7 @@ class CompConfig {
               0.4,
               tyToNoteDistance -> {
                 tyToNoteDistance.put(3.0, Units.inchesToMeters(0 + 20.5));
-                tyToNoteDistance.put(10.5, Units.inchesToMeters(10.5  + 20.5));
+                tyToNoteDistance.put(10.5, Units.inchesToMeters(10.5 + 20.5));
                 tyToNoteDistance.put(20.0, Units.inchesToMeters(18.5 + 20.5));
                 tyToNoteDistance.put(30.0, Units.inchesToMeters(29.5 + 20.5));
                 tyToNoteDistance.put(35.0, Units.inchesToMeters(40.0 + 20.5));
