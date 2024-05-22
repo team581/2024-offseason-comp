@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.config.RobotConfig;
-import frc.robot.fms.FmsSubsystem;
 import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
@@ -25,6 +24,8 @@ import frc.robot.util.scheduling.SubsystemPriority;
 import frc.robot.vision.DistanceAngle;
 import frc.robot.vision.LimelightHelpers;
 import frc.robot.vision.VisionSubsystem;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class NoteTrackingManager extends LifecycleSubsystem {
@@ -37,6 +38,9 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private static final String LIMELIGHT_NAME = "limelight-note";
   private final InterpolatingDoubleTreeMap tyToDistance = new InterpolatingDoubleTreeMap();
   private Optional<Pose2d> lastNotePose = Optional.empty();
+  private ArrayList<NoteMapElement> noteMap = new ArrayList<>();
+
+  private double noteCloseEnoughMeters = 1;
 
   private double midlineXValue = 8.3;
   Timer noteTrackTimer = new Timer();
@@ -56,10 +60,41 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     RobotConfig.get().vision().tyToNoteDistance().accept(tyToDistance);
   }
 
+  public void resetNoteMap(ArrayList<NoteMapElement> startingValues) {
+    noteMap = startingValues;
+  }
+
+  public Optional<Pose2d> getNearestNotePoseRelative(
+      Pose2d searchLocation, double thresholdMeters) {
+
+    var maybeElement =
+        noteMap.stream()
+            .filter(
+                element -> {
+                  return element
+                          .notePose()
+                          .getTranslation()
+                          .getDistance(searchLocation.getTranslation())
+                      < thresholdMeters;
+                })
+            .min(
+                (a, b) ->
+                    Double.compare(
+                        a.notePose()
+                        .getTranslation()
+                        .getDistance(searchLocation.getTranslation()),
+                        b.notePose()
+                            .getTranslation()
+                            .getDistance(searchLocation.getTranslation())));
+
+    if (!maybeElement.isPresent()) {
+      return Optional.empty();
+    }
+
+    return Optional.of(maybeElement.get().notePose());
+  }
+
   private Optional<Pose2d> getNotePose() {
-    // TODO: update limelight so v works
-    // long v =
-    // NetworkTableInstance.getDefault().getTable(LIMELIGHT_NAME).getEntry("v").getInteger(0);
     double ty = LimelightHelpers.getTY(LIMELIGHT_NAME);
     double tx =
         NetworkTableInstance.getDefault().getTable(LIMELIGHT_NAME).getEntry("tx").getDouble(0);
@@ -122,20 +157,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     return Optional.of(new Pose2d(notePoseWithRobot, rotation));
   }
 
-  private boolean pastMidline() {
-    double pastMidlineThresholdMeters = 0.65;
-
-    // Red alliance
-    if (FmsSubsystem.isRedAlliance()) {
-      if (getPose().getX() < (midlineXValue - pastMidlineThresholdMeters)) {
-        return true;
-      }
-      return false;
-    }
-
-    // Blue alliance
-    return getPose().getX() > (midlineXValue + pastMidlineThresholdMeters);
-  }
+  private List<Pose2d> getRawNotePoses() {}
 
   public Command intakeDetectedNote() {
     return Commands.runOnce(() -> lastNotePose = getNotePose())
@@ -166,44 +188,62 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
   @Override
   public void robotPeriodic() {
-    DogLog.log("NoteTracking/Timer", noteTrackTimer.get());
+    noteMap.removeIf(element -> element.expiresAt() < Timer.getFPGATimestamp());
 
-    // Log note pose if we can
-    var maybeNotePose = getNotePose();
-    if (maybeNotePose.isPresent()) {
-      var notePose = maybeNotePose.get();
-      DogLog.log("NoteTracking/NotePose", notePose);
-      DogLog.log(
-          "NoteTracking/NotePoseDistance",
-          getPose().getTranslation().getDistance(maybeNotePose.get().getTranslation()));
+    // TODO: Log lifetimes at some point
+
+    DogLog.log(
+        "NoteTracking/NoteMap",
+        noteMap.stream().map(NoteMapElement::notePose).toArray(Pose2d[]::new));
+
+    noteMap = getNewMap();
+  }
+
+  private ArrayList<NoteMapElement> getNewMap() {
+    // Take tracked notes, add them to note map, or update the note map entries
+    var possibleMap = new ArrayList<>(noteMap);
+    var rawMap = getRawNotePoses();
+    ArrayList<NoteMapElement> updatedMap = new ArrayList<>();
+
+    // 0. Create a result array (a new note map)
+    // 1. Make a copy of note map, call it "possible matches"
+    // 2. Loop through camera notes, find nearest match (within 1m)
+    // 3. If you have a match, remove it from possible matches!!!
+    // 4. Then, add the match to the result note map
+    // 5. If you don't have a match, add to result note map
+    // 6. set note map to equal result one
+
+    for (var currentCameraPose : rawMap) {
+      updatedMap.add(new NoteMapElement(Timer.getFPGATimestamp() + 5, currentCameraPose));
+
+      // Is this adding a new note to the map, or should we remove one that is close to this
+var existingMapElement = possibleMap.stream()
+.filter(close -> {return close.notePose().getTranslation().getDistance(currentCameraPose.getTranslation())<1;})
+.min(
+                (a, b) ->
+                    Double.compare(
+                        a.notePose()
+                        .getTranslation()
+                        .getDistance(currentCameraPose.getTranslation()),
+                        b.notePose()
+                            .getTranslation()
+                            .getDistance(currentCameraPose.getTranslation())));
+
+  if (existingMapElement.isPresent()) {
+    possibleMap.remove(existingMapElement.get());
+  } else {
+    // This is a new note, there are no nearby ones to match it to
+  }
+
+
+      // for (int j = 0; j < possibleMap.size(); j++) {
+      //   var currentPossiblePose = possibleMap.get(j).notePose();
+      //   if (currentPossiblePose.getTranslation().getDistance(currentCameraPose.getTranslation())
+      //       < 1) {
+      //     possibleMap.remove(j);
+      //   }
+      // }
     }
-
-    boolean grabbing = false;
-
-    // Update last note pose depending on distance & timeout
-    if (lastNotePose.isPresent()) {
-      DogLog.log("NoteTracking/LastNotePose", lastNotePose.get());
-
-      grabbing = getPose().getTranslation().getDistance(lastNotePose.get().getTranslation()) < 1;
-    }
-
-    DogLog.log("NoteTracking/Grabbing", grabbing);
-
-    if (grabbing) {
-      noteTrackTimer.start();
-      if (noteTrackTimer.hasElapsed(1)) {
-        // We didn't grab the note in time, reset the position
-        lastNotePose = getNotePose();
-      } else {
-        // Don't update note pose, we are about to grab it
-      }
-    } else {
-      // Not grabbing note, reset timer
-      noteTrackTimer.reset();
-      noteTrackTimer.stop();
-
-      // Update the note pose, we aren't grabbing it
-      lastNotePose = getNotePose();
-    }
+    return updatedMap;
   }
 }
