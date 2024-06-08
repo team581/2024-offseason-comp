@@ -5,6 +5,7 @@
 package frc.robot.localization;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import java.util.List;
 
 public class InterpolationUtil {
@@ -24,25 +25,24 @@ public class InterpolationUtil {
 
     for (var dataPoint : DATA_POINTS) {
       var distancePoint =
-          dataPoint.measuredPose().getTranslation().getDistance(visionInput.getTranslation());
+          dataPoint.visionPose().getTranslation().getDistance(visionInput.getTranslation());
 
       distanceSum += distancePoint;
     }
-
-    Pose2d weightedSum = new Pose2d();
-
+    double weightedX = 0;
+    double weightedY = 0;
+    Rotation2d weightedRotation = new Rotation2d();
     for (var dataPoint : DATA_POINTS) {
       var distancePoint =
-          dataPoint.measuredPose().getTranslation().getDistance(visionInput.getTranslation());
+          dataPoint.visionPose().getTranslation().getDistance(visionInput.getTranslation());
 
-      var result = dataPoint.visionPose().times(distanceSum - distancePoint);
-
-      weightedSum =
-          new Pose2d(
-              weightedSum.getX() + result.getX(),
-              weightedSum.getY() + result.getY(),
-              weightedSum.getRotation().plus(result.getRotation()));
+      var result =
+          dataPoint.visionPose().minus(dataPoint.measuredPose()).times(distanceSum - distancePoint);
+      weightedX += result.getX();
+      weightedY += result.getY();
+      weightedRotation = weightedRotation.plus(result.getRotation());
     }
+    Pose2d weightedSum = new Pose2d(weightedX, weightedY, weightedRotation);
 
     return weightedSum.div(distanceSum);
   }
