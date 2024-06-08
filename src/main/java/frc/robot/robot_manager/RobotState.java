@@ -71,9 +71,9 @@ public enum RobotState {
   SPEAKER_SHOOT(true, false, true, new LightsState(null, BlinkPattern.BLINK_FAST)),
 
   /** Note maybe in queuer, need to move it to conveyor, and then transition to WAITING_AMP_SHOT. */
-  PREPARE_WAITING_AMP_SHOT(true, false, false, new LightsState(null, BlinkPattern.SOLID)),
+  PREPARE_WAITING_AMP_SHOT(true, false, false, new LightsState(Color.kRed, BlinkPattern.SOLID)),
   /** Note in conveyor, waiting for driver to commit to amp score. */
-  WAITING_AMP_SHOT(true, false, false, new LightsState(null, BlinkPattern.SOLID)),
+  WAITING_AMP_SHOT(true, false, false, new LightsState(Color.kGreen, BlinkPattern.SOLID)),
   /** Get ready for amp shot, automatically go to AMP_SHOT when ready. */
   PREPARE_AMP_SHOT(true, false, false, new LightsState(null, BlinkPattern.SOLID)),
   /** Actively scoring in the amp. */
