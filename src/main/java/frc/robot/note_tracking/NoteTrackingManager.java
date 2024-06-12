@@ -228,10 +228,11 @@ public class NoteTrackingManager extends LifecycleSubsystem {
             .getEntry("tcornxy")
             .getDoubleArray(new double[8]);
     DogLog.log("NoteTracking/corners", corners);
-    // Loop through set of 8
-    int note_amount = corners.length / 8;
-    // Loop through 8 points
-    if (corners.length >= 8 && corners[0] != 0.0) {
+    // Loop through 4 points
+
+    // Delete 3 point note data
+    
+    if (corners.length >= 8 && corners[0] != 0.0 && corners.length % 8 == 0) {
 
       for (int i = 0; i < corners.length; i = i + 8) {
         var centerX = (corners[i] + corners[i + 2]) / 2;
