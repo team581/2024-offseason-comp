@@ -27,7 +27,6 @@ import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
 import frc.robot.vision.LimelightHelpers;
 import frc.robot.vision.VisionSubsystem;
-import frc.robot.localization.InterpolationUtil;
 
 public class LocalizationSubsystem extends LifecycleSubsystem {
   private static final double SHOOT_WHILE_MOVE_LOOKAHEAD = 0.2;
@@ -63,7 +62,7 @@ public class LocalizationSubsystem extends LifecycleSubsystem {
             SwerveSubsystem.KINEMATICS,
             imu.getRobotHeading(),
             swerve.getModulePositions().toArray(new SwerveModulePosition[4]),
-            InterpolationUtil.interpolatePose(new Pose2d()));
+            new Pose2d());
     odometry =
         new SwerveDriveOdometry(
             SwerveSubsystem.KINEMATICS,
