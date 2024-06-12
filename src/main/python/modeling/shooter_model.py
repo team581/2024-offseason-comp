@@ -16,17 +16,22 @@ class Position():
 
 
 class Model():
-  def __init__(self, rpos, gpos, vel):
+  def __init__(self, rpos: Position, gpos: Position, rpm: float):
     self.rpos = rpos
     self.gpos = gpos
-    self.vel = vel
+    self.rpm = rpm
 
+  def get_vel(self, rpm):
+    return (math.pi * 0.5 * 0.05 / 30) * rpm
 
   def get_angle(self):
     g = 9.8
     gpos = self.gpos
     rpos = self.rpos
-    vel = self.vel
+    rpm = self.rpm
+
+    vel = self.get_vel(rpm)
+
     b = gpos.x-rpos.x
     a = -(g/2)*(math.pow(b,2)/math.pow(vel,2))
     c = (rpos.y-gpos.y)+a
@@ -36,23 +41,34 @@ class Model():
 
 class ShooterModel:
 
-  def __init__(self, timestep_seconds: int):
-    self.timestep_seconds = timestep_seconds
+  def __init__(self, dt: int):
+    self.dt = dt
 
 
   def graph_note(self, model: Model):
-    vel = model.vel
     rpos = model.rpos
     gpos = model.gpos
     angle = model.get_angle()
+    vel = Position(model.get_vel(model.rpm) * math.cos(angle), model.get_vel(model.rpm) * math.sin(angle))
 
     print(angle * (180/math.pi))
 
-    note_position = []
+    note_position = [(0, rpos),(0, rpos)]
+    note_velocity = [vel, vel]
+
+
     for i in range(100):
-      t = i * self.timestep_seconds
-      position = Position((t*(vel * math.cos(angle)) + rpos.x),
-                              (-(1/2)*9.8*math.pow(t,2)) + (t*(vel * math.sin(angle))) + rpos.y)
+      t = i * self.dt
+
+
+      print(note_position)
+      angle = math.atan2(note_position[-1].x - note_position[-2].x,note_position[-1].y - note_position[-2].y)
+
+      acceleration = Position((-0.0015*(math.pow(note_velocity[-1].x,2) + math.pow(note_velocity[-1].y,2)))*math.cos(angle),(-9.8)+(-0.0015*(math.pow(note_velocity[-1].x,2) + math.pow(note_velocity[-1].y,2))*math.sin(angle)))
+      velocity = Position(acceleration.x * self.dt + note_velocity[-2].x, acceleration.y * self.dt + note_velocity[-2].y)
+      position = Position(note_position[-2].x + velocity.x * self.dt, note_position[-2].y + velocity.y * self.dt)
+
+      note_velocity.append(velocity)
       note_position.append((t, position))
 
       if position.y < 0:
@@ -75,4 +91,4 @@ class ShooterModel:
 
 robot_shooter = ShooterModel(0.02)
 
-robot_shooter.graph_note(Model(Position(0,0),Position(1,5),10))
+robot_shooter.graph_note(Model(Position(1,0),Position(2,2),3500))
