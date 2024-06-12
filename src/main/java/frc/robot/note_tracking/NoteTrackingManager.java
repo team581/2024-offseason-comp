@@ -29,6 +29,9 @@ import java.util.List;
 import java.util.Optional;
 
 public class NoteTrackingManager extends LifecycleSubsystem {
+
+  // how much we keep a note in the map if it was added or updated from camera (seconds)
+  private static final double NOTE_MAP_LIFETIME = 5.0;
   private static final double LIMELIGHT_VERTICAL_FOV_DEGREES = 25.0;
   private final LocalizationSubsystem localization;
   private final SwerveSubsystem swerve;
@@ -40,9 +43,11 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private Optional<Pose2d> lastNotePose = Optional.empty();
   private ArrayList<NoteMapElement> noteMap = new ArrayList<>();
 
-  private double noteCloseEnoughMeters = 1;
+  private double FOV_VERTICAL = 48.953;
+  private double FOV_HORIZONTAL = 62.544;
+  private double horizontalLeftView = 30.015;
+  private double veritalTopView = 23.979;
 
-  private double midlineXValue = 8.3;
   Timer noteTrackTimer = new Timer();
 
   public NoteTrackingManager(
@@ -80,9 +85,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
             .min(
                 (a, b) ->
                     Double.compare(
-                        a.notePose()
-                        .getTranslation()
-                        .getDistance(searchLocation.getTranslation()),
+                        a.notePose().getTranslation().getDistance(searchLocation.getTranslation()),
                         b.notePose()
                             .getTranslation()
                             .getDistance(searchLocation.getTranslation())));
@@ -92,6 +95,66 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     }
 
     return Optional.of(maybeElement.get().notePose());
+  }
+
+  private Optional<Pose2d> getNotePose(double tx, double ty) {
+
+    double latency =
+        (LimelightHelpers.getLatency_Capture(LIMELIGHT_NAME)
+                + LimelightHelpers.getLatency_Pipeline(LIMELIGHT_NAME))
+            / 1000.0;
+    double timestamp = Timer.getFPGATimestamp() - latency;
+
+    Pose2d robotPoseAtCapture = localization.getPose(timestamp);
+
+    if (tx == 0) {
+      return Optional.empty();
+    }
+
+    if (ty < -15.0) {
+      return Optional.empty();
+    }
+
+    DogLog.log("NoteTracking/TY", ty);
+    DogLog.log("NoteTracking/TX", tx);
+    DogLog.log("NoteTracking/LatencyRobotPose", robotPoseAtCapture);
+
+    double forwardDistanceToNote = tyToDistance.get(ty);
+    Rotation2d angleFromNote = Rotation2d.fromDegrees(tx);
+    DogLog.log("NoteTracking/ForwardDistance", forwardDistanceToNote);
+
+    var c = forwardDistanceToNote / Math.cos(angleFromNote.getRadians());
+    double sidewaysDistanceToNote = Math.sqrt(Math.pow(c, 2) - Math.pow(forwardDistanceToNote, 2));
+
+    // Flips side of robot note is on based on if tx is positive or negative
+    if (tx > 0) {
+      sidewaysDistanceToNote *= -1.0;
+    }
+
+    DogLog.log("NoteTracking/SidewaysDistance", sidewaysDistanceToNote);
+    var notePoseWithoutRotation =
+        new Translation2d(-forwardDistanceToNote, -sidewaysDistanceToNote)
+            .rotateBy(Rotation2d.fromDegrees(robotPoseAtCapture.getRotation().getDegrees()));
+
+    var notePoseWithRobot =
+        new Translation2d(
+            robotPoseAtCapture.getX() + notePoseWithoutRotation.getX(),
+            robotPoseAtCapture.getY() + notePoseWithoutRotation.getY());
+    // Uses distance angle math to aim, inverses the angle for intake
+
+    DistanceAngle noteDistanceAngle =
+        VisionSubsystem.distanceToTargetPose(
+            new Pose2d(notePoseWithRobot, new Rotation2d()), robotPoseAtCapture);
+    Rotation2d rotation = new Rotation2d(noteDistanceAngle.targetAngle().getRadians() + Math.PI);
+
+    if (noteDistanceAngle.distance() < 1) {
+      if (lastNotePose.isPresent()) {
+        rotation = lastNotePose.get().getRotation();
+      } else {
+        rotation = getPose().getRotation();
+      }
+    }
+    return Optional.of(new Pose2d(notePoseWithRobot, rotation));
   }
 
   private Optional<Pose2d> getNotePose() {
@@ -157,7 +220,39 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     return Optional.of(new Pose2d(notePoseWithRobot, rotation));
   }
 
-  private List<Pose2d> getRawNotePoses() {}
+  private List<Pose2d> getRawNotePoses() {
+    List<Pose2d> notePoses = new ArrayList<>();
+    double[] corners =
+        NetworkTableInstance.getDefault()
+            .getTable(LIMELIGHT_NAME)
+            .getEntry("tcornxy")
+            .getDoubleArray(new double[8]);
+    DogLog.log("NoteTracking/corners", corners);
+    // Loop through set of 8
+    int note_amount = corners.length / 8;
+    // Loop through 8 points
+    if (corners.length >= 8 && corners[0] != 0.0) {
+
+      for (int i = 0; i < corners.length; i = i + 8) {
+        var centerX = (corners[i] + corners[i + 2]) / 2;
+        var centerY = (corners[i + 1] + corners[i + 5]) / 2;
+
+        var angleX = (((centerX / 640.0) * FOV_HORIZONTAL) - horizontalLeftView);
+        var angleY = -1 * (((centerY / 480.0) * FOV_VERTICAL) - veritalTopView);
+
+        DogLog.log("NoteTracking/angley", angleY);
+        DogLog.log("NoteTracking/anglex", angleX);
+
+        var maybeNotePose = getNotePose(angleX, angleY);
+
+        if (maybeNotePose.isPresent()) {
+          notePoses.add(maybeNotePose.get());
+        }
+      }
+    }
+
+    return notePoses;
+  }
 
   public Command intakeDetectedNote() {
     return Commands.runOnce(() -> lastNotePose = getNotePose())
@@ -188,9 +283,14 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
   @Override
   public void robotPeriodic() {
-    noteMap.removeIf(element -> element.expiresAt() < Timer.getFPGATimestamp());
+    DogLog.log(
+        "NoteTracking/NotesExpired",
+        noteMap.removeIf(
+            element -> {
+              DogLog.log("NoteTracking/ExpiredNote", element.notePose());
 
-    // TODO: Log lifetimes at some point
+              return element.expiresAt() < Timer.getFPGATimestamp();
+            }));
 
     DogLog.log(
         "NoteTracking/NoteMap",
@@ -200,50 +300,46 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   }
 
   private ArrayList<NoteMapElement> getNewMap() {
-    // Take tracked notes, add them to note map, or update the note map entries
-    var possibleMap = new ArrayList<>(noteMap);
-    var rawMap = getRawNotePoses();
-    ArrayList<NoteMapElement> updatedMap = new ArrayList<>();
+    List<Pose2d> visionNotes = getRawNotePoses();
 
-    // 0. Create a result array (a new note map)
-    // 1. Make a copy of note map, call it "possible matches"
-    // 2. Loop through camera notes, find nearest match (within 1m)
-    // 3. If you have a match, remove it from possible matches!!!
-    // 4. Then, add the match to the result note map
-    // 5. If you don't have a match, add to result note map
-    // 6. set note map to equal result one
-
-    for (var currentCameraPose : rawMap) {
-      updatedMap.add(new NoteMapElement(Timer.getFPGATimestamp() + 5, currentCameraPose));
-
-      // Is this adding a new note to the map, or should we remove one that is close to this
-var existingMapElement = possibleMap.stream()
-.filter(close -> {return close.notePose().getTranslation().getDistance(currentCameraPose.getTranslation())<1;})
-.min(
-                (a, b) ->
-                    Double.compare(
-                        a.notePose()
-                        .getTranslation()
-                        .getDistance(currentCameraPose.getTranslation()),
-                        b.notePose()
-                            .getTranslation()
-                            .getDistance(currentCameraPose.getTranslation())));
-
-  if (existingMapElement.isPresent()) {
-    possibleMap.remove(existingMapElement.get());
-  } else {
-    // This is a new note, there are no nearby ones to match it to
-  }
-
-
-      // for (int j = 0; j < possibleMap.size(); j++) {
-      //   var currentPossiblePose = possibleMap.get(j).notePose();
-      //   if (currentPossiblePose.getTranslation().getDistance(currentCameraPose.getTranslation())
-      //       < 1) {
-      //     possibleMap.remove(j);
-      //   }
-      // }
+    if (visionNotes.size() > 20) {
+      return noteMap;
     }
-    return updatedMap;
+
+    ArrayList<NoteMapElement> result = new ArrayList<>();
+
+    result.addAll(
+        visionNotes.stream()
+            .map(pose -> new NoteMapElement(Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME, pose))
+            .toList());
+
+    for (var rememberedPose : noteMap) {
+      Optional<Pose2d> visionNoteMatch =
+          visionNotes.stream()
+              .filter(
+                  visionNote -> {
+                    return visionNote
+                            .getTranslation()
+                            .getDistance(rememberedPose.notePose().getTranslation())
+                        < 1;
+                  })
+              .min(
+                  (a, b) ->
+                      Double.compare(
+                          a.getTranslation()
+                              .getDistance(rememberedPose.notePose().getTranslation()),
+                          b.getTranslation()
+                              .getDistance(rememberedPose.notePose().getTranslation())));
+
+      if (visionNoteMatch.isPresent()) {
+
+        visionNotes.remove(visionNoteMatch.get());
+      } else {
+
+        result.add(rememberedPose);
+      }
+    }
+
+    return result;
   }
 }
