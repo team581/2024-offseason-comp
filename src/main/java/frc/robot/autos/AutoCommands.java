@@ -89,13 +89,13 @@ public class AutoCommands {
     var redCenterWingShotTo6 = PathPlannerPath.fromChoreoTrajectory("Red CWS to 6");
     var red6ToCenterWingShot = PathPlannerPath.fromChoreoTrajectory("Red 6 to CWS");
 
-   // var blue4ToCenterWingShot = PathPlannerPath.fromPathFile("Blue 4 to CWS");
-  //  var blue4To5 = PathPlannerPath.fromPathFile("Blue 4 to 5");
- //   var blueCenterWingShotTo5 = PathPlannerPath.fromPathFile("Blue CWS to 5");
-  //  var blue5ToCenterWingShot = PathPlannerPath.fromPathFile("Blue 5 to CWS");
-  //  var blue5To6 = PathPlannerPath.fromPathFile("Blue 5 to 6");
- //   var blueCenterWingShotTo6 = PathPlannerPath.fromPathFile("Blue CWS to 6");
-  //  var blue6ToCenterWingShot = PathPlannerPath.fromPathFile("Blue 6 to CWS");
+    // var blue4ToCenterWingShot = PathPlannerPath.fromPathFile("Blue 4 to CWS");
+    //  var blue4To5 = PathPlannerPath.fromPathFile("Blue 4 to 5");
+    //   var blueCenterWingShotTo5 = PathPlannerPath.fromPathFile("Blue CWS to 5");
+    //  var blue5ToCenterWingShot = PathPlannerPath.fromPathFile("Blue 5 to CWS");
+    //  var blue5To6 = PathPlannerPath.fromPathFile("Blue 5 to 6");
+    //   var blueCenterWingShotTo6 = PathPlannerPath.fromPathFile("Blue CWS to 6");
+    //  var blue6ToCenterWingShot = PathPlannerPath.fromPathFile("Blue 6 to CWS");
 
     return Commands.sequence(
         Commands.either(
