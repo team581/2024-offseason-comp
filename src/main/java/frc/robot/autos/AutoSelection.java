@@ -15,7 +15,8 @@ public enum AutoSelection {
   /// SIX_PIECE_2_5_DYN("Red 6 Piece 2,1,3-5", "Blue 6 Piece 2,1,3-5"),
   /// SIX_PIECE_2_6_DYN("Red 6 Piece 2,1,3,5,6", "Blue 6 Piece 2,1,3,5,6"),
   /// BACKUP_SIX_PIECE_2_5("Backup Red 6 Piece", "Backup Blue 6 Piece"),
-  CHOREO_SIX_PIECE_("Red Six Piece 2 to 4.1", ""),
+  CHOREO_SIX_PIECE("Red Six Piece 2 to 4.1", ""),
+  CHOREO_AS_5_NT("Red AS to 6 + NT", ""),
   CHOREO_OP("Red OP", "");
 
   public final String redAutoName;
