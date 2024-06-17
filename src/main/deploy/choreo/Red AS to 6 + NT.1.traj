@@ -860,9 +860,22 @@
     {
       "timestamp": 0,
       "command": {
-        "type": "named",
+        "type": "sequential",
         "data": {
-          "name": "intakeFloor"
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "outtakeShooter"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "intakeFloor"
+              }
+            }
+          ]
         }
       }
     },

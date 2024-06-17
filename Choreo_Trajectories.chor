@@ -5550,15 +5550,28 @@
             "circleObstacles": [],
             "eventMarkers": [
                 {
-                    "name": "intake",
+                    "name": "outtake + intake",
                     "target": 0,
                     "trajTargetIndex": 0,
                     "targetTimestamp": 0,
                     "offset": 0,
                     "command": {
-                        "type": "named",
+                        "type": "sequential",
                         "data": {
-                            "name": "intakeFloor"
+                            "commands": [
+                                {
+                                    "type": "named",
+                                    "data": {
+                                        "name": "outtakeShooter"
+                                    }
+                                },
+                                {
+                                    "type": "named",
+                                    "data": {
+                                        "name": "intakeFloor"
+                                    }
+                                }
+                            ]
                         }
                     }
                 },
