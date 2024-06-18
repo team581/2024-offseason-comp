@@ -45,15 +45,18 @@ class Model():
     return calculated_angle
 
 class ProjectileMotion:
-  range = 85
-  def __init__(self, dt: float):
+  g = 9.8
+  def __init__(self, dt: float, range):
     self.dt = dt
-  def getPoints(self, initial_vel, angle, exitpoint: Point):
-    pos = [exitpoint]
-    for i in range(100):
-      if pos[-1].y < 0:
-        break
-
+    self.range = range
+  def getPoints(self, initial_vel, angle, exit: Point):
+    points = []
+    for i in range(self.range):
+      t = i * self.dt
+      x = self.vel*t*math.cos(angle)+exit.x
+      y = (-self.g/2)*math.pow(t,2) + self.vel*t*math.sin(angle) + exit.y
+      points.append(Point(x,y))
+    
 
 
 class ShooterModel:
@@ -74,8 +77,6 @@ class ShooterModel:
     for i in range(100):
       t = i * self.dt
 
-
-      print(note_position)
       angle = math.atan2(note_position[-1].x - note_position[-2].x,note_position[-1].y - note_position[-2].y)
 
       acceleration = Point((-0.0015*(math.pow(note_velocity[-1].x,2) + math.pow(note_velocity[-1].y,2)))*math.cos(angle),(-9.8)+(-0.0015*(math.pow(note_velocity[-1].x,2) + math.pow(note_velocity[-1].y,2))*math.sin(angle)))
