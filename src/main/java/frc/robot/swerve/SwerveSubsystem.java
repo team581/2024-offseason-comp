@@ -214,8 +214,6 @@ public class SwerveSubsystem extends LifecycleSubsystem {
 
           DogLog.log("Swerve/RawTeleopSpeeds", teleopSpeeds);
 
-          // teleopSpeeds = accelerationLimitChassisSpeeds(teleopSpeeds);
-
           double currentSpeed =
               Math.sqrt(
                   Math.pow(teleopSpeeds.vxMetersPerSecond, 2)
@@ -328,19 +326,21 @@ public class SwerveSubsystem extends LifecycleSubsystem {
       driveType = DriveRequestType.OpenLoopVoltage;
     }
 
+    var limitedSpeeds = accelerationLimitChassisSpeeds(fieldRelativeSpeeds);
+
     if (snapToAngle) {
       drivetrain.setControl(
           driveToAngle
-              .withVelocityX(fieldRelativeSpeeds.vxMetersPerSecond)
-              .withVelocityY(fieldRelativeSpeeds.vyMetersPerSecond)
+              .withVelocityX(limitedSpeeds.vxMetersPerSecond)
+              .withVelocityY(limitedSpeeds.vyMetersPerSecond)
               .withTargetDirection(goalSnapAngle)
               .withDriveRequestType(driveType));
     } else {
       drivetrain.setControl(
           drive
-              .withVelocityX(fieldRelativeSpeeds.vxMetersPerSecond)
-              .withVelocityY(fieldRelativeSpeeds.vyMetersPerSecond)
-              .withRotationalRate(fieldRelativeSpeeds.omegaRadiansPerSecond)
+              .withVelocityX(limitedSpeeds.vxMetersPerSecond)
+              .withVelocityY(limitedSpeeds.vyMetersPerSecond)
+              .withRotationalRate(limitedSpeeds.omegaRadiansPerSecond)
               .withDriveRequestType(driveType));
     }
   }

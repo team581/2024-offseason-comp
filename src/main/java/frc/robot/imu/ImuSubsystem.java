@@ -97,7 +97,7 @@ public class ImuSubsystem extends LifecycleSubsystem {
     return Math.abs(getRobotHeading().minus(angle).getDegrees()) < tolerance.getDegrees();
   }
 
-  public boolean belowVelocityForSpeaker(double distance) {
+  public boolean belowVelocityForVision(double distance) {
     return getRobotAngularVelocity().getDegrees() < 10;
   }
 
