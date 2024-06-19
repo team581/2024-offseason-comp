@@ -125,6 +125,8 @@ public class VisionSubsystem extends LifecycleSubsystem {
 
     // if (maybeRawData.isPresent()) {
     //   var rawData = maybeRawData.get();
+    //   DogLog.log("Vision/rawData", rawData.pose());
+    //   DogLog.log("Vision/interpolatedData", VisionUtil.interpolatePose(rawData.pose()));
 
     //   return Optional.of(new VisionResult(VisionUtil.interpolatePose(rawData.pose()), 0.0));
     // }
