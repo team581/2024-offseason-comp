@@ -71,7 +71,10 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     noteMap = startingValues;
   }
 
-  /** Get the pose of the note closest to the provided location, within a threshold. Returns optional.empty if no notes are tracked or notes exceed the threshold. */
+  /**
+   * Get the pose of the note closest to the provided location, within a threshold. Returns
+   * optional.empty if no notes are tracked or notes exceed the threshold.
+   */
   public Optional<NoteMapElement> getNearestNotePoseRelative(
       Pose2d searchLocation, double thresholdMeters) {
 
@@ -190,11 +193,16 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
   private static boolean isOutOfBounds(Pose2d notePose) {
     var fieldBorderThreshold = Units.inchesToMeters(4);
-    boolean yOutOfBounds = notePose.getY() <(0.0 + fieldBorderThreshold) || notePose.getY() > (8.2 - fieldBorderThreshold);
-    boolean xOutofBounds = notePose.getX() <(0.0+fieldBorderThreshold) || notePose.getX()> (16.51-fieldBorderThreshold);
+    boolean yOutOfBounds =
+        notePose.getY() < (0.0 + fieldBorderThreshold)
+            || notePose.getY() > (8.2 - fieldBorderThreshold);
+    boolean xOutofBounds =
+        notePose.getX() < (0.0 + fieldBorderThreshold)
+            || notePose.getX() > (16.51 - fieldBorderThreshold);
 
-    return yOutOfBounds||xOutofBounds;
+    return yOutOfBounds || xOutofBounds;
   }
+
   private List<Pose2d> getFilteredNotePoses() {
     if (!safeToTrack()) {
       return List.of();
@@ -203,12 +211,11 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     List<Pose2d> possibleNotes = getRawNotePoses();
     List<Pose2d> filteredNotes = new ArrayList<>();
 
-
-      for (Pose2d possibleNote : possibleNotes) {
-        if(!isOutOfBounds(possibleNote)){
-          filteredNotes.add(possibleNote);
-        }
+    for (Pose2d possibleNote : possibleNotes) {
+      if (!isOutOfBounds(possibleNote)) {
+        filteredNotes.add(possibleNote);
       }
+    }
 
     return filteredNotes;
   }
@@ -226,28 +233,31 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   }
 
   public Command intakeNearestMapNote() {
-    return actions.intakeCommand()
+    return actions
+        .intakeCommand()
         .raceWith(
-          // TODO: Do we want to prevent this command from finishing automatically based on robot pose
+            // TODO: Do we want to prevent this command from finishing automatically based on robot
+            // pose
             swerve.driveToPoseCommand(
                 () -> {
                   var nearestNote = getNearestNotePoseRelative(getPose(), 5);
 
-                  
                   if (nearestNote.isPresent()) {
                     snaps.setAngle(nearestNote.get().notePose().getRotation());
                     snaps.setEnabled(true);
-                  return Optional.of(nearestNote.get().notePose());
+                    return Optional.of(nearestNote.get().notePose());
 
                   } else {
                     snaps.setEnabled(false);
                     return Optional.empty();
                   }
-
                 },
-                this::getPose)).andThen(Commands.runOnce(() -> {
-                  var intakedNote =  getNearestNotePoseRelative(getPose(), 0.5);
-                  if(intakedNote.isPresent()) {
+                this::getPose))
+        .andThen(
+            Commands.runOnce(
+                () -> {
+                  var intakedNote = getNearestNotePoseRelative(getPose(), 0.5);
+                  if (intakedNote.isPresent()) {
                     removeNote(intakedNote.get());
                   }
                 }))
@@ -280,7 +290,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
     // log closest note to bobot
     var maybeClosest = getNearestNotePoseRelative(getPose(), 99987.0);
-    if(maybeClosest.isPresent()) {
+    if (maybeClosest.isPresent()) {
 
       DogLog.log("NoteTracking/ClosestNote", maybeClosest.get().notePose());
     }
