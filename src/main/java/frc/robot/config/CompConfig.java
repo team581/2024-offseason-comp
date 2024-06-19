@@ -283,14 +283,14 @@ class CompConfig {
               0.4,
               0.4,
               tyToNoteDistance -> {
-                tyToNoteDistance.put(3.0, Units.inchesToMeters(0 + 20.5));
-                tyToNoteDistance.put(10.5, Units.inchesToMeters(10.5 + 20.5));
-                tyToNoteDistance.put(20.0, Units.inchesToMeters(18.5 + 20.5));
-                tyToNoteDistance.put(30.0, Units.inchesToMeters(29.5 + 20.5));
-                tyToNoteDistance.put(35.0, Units.inchesToMeters(40.0 + 20.5));
-                tyToNoteDistance.put(40.0, Units.inchesToMeters(58.5 + 20.5));
-                tyToNoteDistance.put(45.0, Units.inchesToMeters(90 + 20.5));
-                tyToNoteDistance.put(47.0, Units.inchesToMeters(114.0 + 20.5));
+                tyToNoteDistance.put(3.0 - 24.5, Units.inchesToMeters(0 + 20.5));
+                tyToNoteDistance.put(10.5 - 24.5, Units.inchesToMeters(10.5 + 20.5));
+                tyToNoteDistance.put(20.0 - 24.5, Units.inchesToMeters(18.5 + 20.5));
+                tyToNoteDistance.put(30.0 - 24.5, Units.inchesToMeters(29.5 + 20.5));
+                tyToNoteDistance.put(35.0 - 24.5, Units.inchesToMeters(40.0 + 20.5));
+                tyToNoteDistance.put(40.0 - 24.5, Units.inchesToMeters(58.5 + 20.5));
+                tyToNoteDistance.put(45.0 - 24.5, Units.inchesToMeters(90 + 20.5));
+                tyToNoteDistance.put(47.0 - 24.5, Units.inchesToMeters(114.0 + 20.5));
               },
               // x=right, y= forward, z=up
               new Translation3d(-0.025, Units.inchesToMeters(-1), Units.inchesToMeters(23.25)),

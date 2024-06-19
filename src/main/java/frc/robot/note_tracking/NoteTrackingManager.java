@@ -9,12 +9,13 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.config.RobotConfig;
-import frc.robot.fms.FmsSubsystem;
+import frc.robot.imu.ImuSubsystem;
 import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
@@ -25,27 +26,36 @@ import frc.robot.util.scheduling.SubsystemPriority;
 import frc.robot.vision.DistanceAngle;
 import frc.robot.vision.LimelightHelpers;
 import frc.robot.vision.VisionSubsystem;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class NoteTrackingManager extends LifecycleSubsystem {
+
+  // how much we keep a note in the map if it was added or updated from camera (seconds)
+  private static final double NOTE_MAP_LIFETIME = 5.0;
   private static final double LIMELIGHT_VERTICAL_FOV_DEGREES = 25.0;
   private final LocalizationSubsystem localization;
   private final SwerveSubsystem swerve;
   private final RobotCommands actions;
   private final RobotManager robot;
   private final SnapManager snaps;
+  private final ImuSubsystem imu;
   private static final String LIMELIGHT_NAME = "limelight-note";
   private final InterpolatingDoubleTreeMap tyToDistance = new InterpolatingDoubleTreeMap();
-  private Optional<Pose2d> lastNotePose = Optional.empty();
+  private ArrayList<NoteMapElement> noteMap = new ArrayList<>();
 
-  private double midlineXValue = 8.3;
-  Timer noteTrackTimer = new Timer();
+  private static final double FOV_VERTICAL = 48.953;
+  private static final double FOV_HORIZONTAL = 62.544;
+  private static final double horizontalLeftView = 30.015;
+  private static final double veritalTopView = 23.979;
 
   public NoteTrackingManager(
       LocalizationSubsystem localization,
       SwerveSubsystem swerve,
       RobotCommands actions,
-      RobotManager robot) {
+      RobotManager robot,
+      ImuSubsystem imu) {
     super(SubsystemPriority.NOTE_TRACKING);
 
     this.localization = localization;
@@ -53,16 +63,47 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     this.actions = actions;
     this.robot = robot;
     this.snaps = robot.snaps;
+    this.imu = imu;
     RobotConfig.get().vision().tyToNoteDistance().accept(tyToDistance);
   }
 
-  private Optional<Pose2d> getNotePose() {
-    // TODO: update limelight so v works
-    // long v =
-    // NetworkTableInstance.getDefault().getTable(LIMELIGHT_NAME).getEntry("v").getInteger(0);
-    double ty = LimelightHelpers.getTY(LIMELIGHT_NAME);
-    double tx =
-        NetworkTableInstance.getDefault().getTable(LIMELIGHT_NAME).getEntry("tx").getDouble(0);
+  public void resetNoteMap(ArrayList<NoteMapElement> startingValues) {
+    noteMap = startingValues;
+  }
+
+  /**
+   * Get the pose of the note closest to the provided location, within a threshold. Returns
+   * optional.empty if no notes are tracked or notes exceed the threshold.
+   */
+  public Optional<NoteMapElement> getNearestNotePoseRelative(
+      Pose2d searchLocation, double thresholdMeters) {
+
+    var maybeElement =
+        noteMap.stream()
+            .filter(
+                element -> {
+                  return element
+                          .notePose()
+                          .getTranslation()
+                          .getDistance(searchLocation.getTranslation())
+                      < thresholdMeters;
+                })
+            .min(
+                (a, b) ->
+                    Double.compare(
+                        a.notePose().getTranslation().getDistance(searchLocation.getTranslation()),
+                        b.notePose()
+                            .getTranslation()
+                            .getDistance(searchLocation.getTranslation())));
+
+    if (!maybeElement.isPresent()) {
+      return Optional.empty();
+    }
+
+    return Optional.of(maybeElement.get());
+  }
+
+  private Optional<Pose2d> noteTxTyToPose(double tx, double ty) {
 
     double latency =
         (LimelightHelpers.getLatency_Capture(LIMELIGHT_NAME)
@@ -112,50 +153,116 @@ public class NoteTrackingManager extends LifecycleSubsystem {
             new Pose2d(notePoseWithRobot, new Rotation2d()), robotPoseAtCapture);
     Rotation2d rotation = new Rotation2d(noteDistanceAngle.targetAngle().getRadians() + Math.PI);
 
-    if (noteDistanceAngle.distance() < 1) {
-      if (lastNotePose.isPresent()) {
-        rotation = lastNotePose.get().getRotation();
-      } else {
-        rotation = getPose().getRotation();
-      }
-    }
     return Optional.of(new Pose2d(notePoseWithRobot, rotation));
   }
 
-  private boolean pastMidline() {
-    double pastMidlineThresholdMeters = 0.65;
+  private List<Pose2d> getRawNotePoses() {
+    List<Pose2d> notePoses = new ArrayList<>();
+    double[] corners =
+        NetworkTableInstance.getDefault()
+            .getTable(LIMELIGHT_NAME)
+            .getEntry("tcornxy")
+            .getDoubleArray(new double[8]);
+    DogLog.log("NoteTracking/corners", corners);
+    // Loop through 4 points
 
-    // Red alliance
-    if (FmsSubsystem.isRedAlliance()) {
-      if (getPose().getX() < (midlineXValue - pastMidlineThresholdMeters)) {
-        return true;
+    // Delete 3 point note data
+
+    if (corners.length >= 8 && corners[0] != 0.0 && corners.length % 8 == 0) {
+
+      for (int i = 0; i < corners.length; i = i + 8) {
+        var centerX = (corners[i] + corners[i + 2]) / 2;
+        var centerY = (corners[i + 1] + corners[i + 5]) / 2;
+
+        var angleX = (((centerX / 640.0) * FOV_HORIZONTAL) - horizontalLeftView);
+        var angleY = -1 * (((centerY / 480.0) * FOV_VERTICAL) - veritalTopView);
+
+        DogLog.log("NoteTracking/angley", angleY);
+        DogLog.log("NoteTracking/anglex", angleX);
+
+        var maybeNotePose = noteTxTyToPose(angleX, angleY);
+
+        if (maybeNotePose.isPresent()) {
+          notePoses.add(maybeNotePose.get());
+        }
       }
-      return false;
     }
 
-    // Blue alliance
-    return getPose().getX() > (midlineXValue + pastMidlineThresholdMeters);
+    return notePoses;
   }
 
-  public Command intakeDetectedNote() {
-    return Commands.runOnce(() -> lastNotePose = getNotePose())
-        .andThen(actions.intakeCommand())
+  private static boolean isOutOfBounds(Pose2d notePose) {
+    var fieldBorderThreshold = Units.inchesToMeters(4);
+    boolean yOutOfBounds =
+        notePose.getY() < (0.0 + fieldBorderThreshold)
+            || notePose.getY() > (8.2 - fieldBorderThreshold);
+    boolean xOutofBounds =
+        notePose.getX() < (0.0 + fieldBorderThreshold)
+            || notePose.getX() > (16.51 - fieldBorderThreshold);
+
+    return yOutOfBounds || xOutofBounds;
+  }
+
+  private List<Pose2d> getFilteredNotePoses() {
+    if (!safeToTrack()) {
+      return List.of();
+    }
+
+    List<Pose2d> possibleNotes = getRawNotePoses();
+    List<Pose2d> filteredNotes = new ArrayList<>();
+
+    for (Pose2d possibleNote : possibleNotes) {
+      if (!isOutOfBounds(possibleNote)) {
+        filteredNotes.add(possibleNote);
+      }
+    }
+
+    return filteredNotes;
+  }
+
+  private boolean safeToTrack() {
+    var speeds = swerve.getRobotRelativeSpeeds();
+    // TODO: finish refactor for chassis speeds
+    return speeds.vxMetersPerSecond < 2
+        && speeds.vyMetersPerSecond < 2
+        && speeds.omegaRadiansPerSecond < Units.degreesToRadians(5.0);
+  }
+
+  private void removeNote(NoteMapElement note) {
+    noteMap.remove(note);
+  }
+
+  public Command intakeNearestMapNote() {
+    return actions
+        .intakeCommand()
         .raceWith(
+            // TODO: Do we want to prevent this command from finishing automatically based on robot
+            // pose
             swerve.driveToPoseCommand(
                 () -> {
-                  if (lastNotePose.isPresent()) {
-                    snaps.setAngle(lastNotePose.get().getRotation());
+                  var nearestNote = getNearestNotePoseRelative(getPose(), 5);
+
+                  if (nearestNote.isPresent()) {
+                    snaps.setAngle(nearestNote.get().notePose().getRotation());
                     snaps.setEnabled(true);
+                    return Optional.of(nearestNote.get().notePose());
+
                   } else {
                     snaps.setEnabled(false);
+                    return Optional.empty();
                   }
-
-                  return lastNotePose;
                 },
                 this::getPose))
+        .andThen(
+            Commands.runOnce(
+                () -> {
+                  var intakedNote = getNearestNotePoseRelative(getPose(), 0.5);
+                  if (intakedNote.isPresent()) {
+                    removeNote(intakedNote.get());
+                  }
+                }))
         .finallyDo(
             () -> {
-              noteTrackTimer.reset();
               robot.stopIntakingRequest();
             });
   }
@@ -166,44 +273,71 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
   @Override
   public void robotPeriodic() {
-    DogLog.log("NoteTracking/Timer", noteTrackTimer.get());
+    DogLog.log(
+        "NoteTracking/NotesExpired",
+        noteMap.removeIf(
+            element -> {
+              DogLog.log("NoteTracking/ExpiredNote", element.notePose());
 
-    // Log note pose if we can
-    var maybeNotePose = getNotePose();
-    if (maybeNotePose.isPresent()) {
-      var notePose = maybeNotePose.get();
-      DogLog.log("NoteTracking/NotePose", notePose);
-      DogLog.log(
-          "NoteTracking/NotePoseDistance",
-          getPose().getTranslation().getDistance(maybeNotePose.get().getTranslation()));
+              return element.expiresAt() < Timer.getFPGATimestamp();
+            }));
+
+    DogLog.log(
+        "NoteTracking/NoteMap",
+        noteMap.stream().map(NoteMapElement::notePose).toArray(Pose2d[]::new));
+
+    noteMap = getNewMap();
+
+    // log closest note to bobot
+    var maybeClosest = getNearestNotePoseRelative(getPose(), 99987.0);
+    if (maybeClosest.isPresent()) {
+
+      DogLog.log("NoteTracking/ClosestNote", maybeClosest.get().notePose());
+    }
+  }
+
+  private ArrayList<NoteMapElement> getNewMap() {
+    List<Pose2d> visionNotes = getFilteredNotePoses();
+
+    if (visionNotes.size() > 20) {
+      // Something evil happened, don't update state
+      return noteMap;
     }
 
-    boolean grabbing = false;
+    ArrayList<NoteMapElement> result = new ArrayList<>();
 
-    // Update last note pose depending on distance & timeout
-    if (lastNotePose.isPresent()) {
-      DogLog.log("NoteTracking/LastNotePose", lastNotePose.get());
+    result.addAll(
+        visionNotes.stream()
+            .map(pose -> new NoteMapElement(Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME, pose))
+            .toList());
 
-      grabbing = getPose().getTranslation().getDistance(lastNotePose.get().getTranslation()) < 1;
-    }
+    for (var rememberedPose : noteMap) {
+      Optional<Pose2d> visionNoteMatch =
+          visionNotes.stream()
+              .filter(
+                  visionNote -> {
+                    return visionNote
+                            .getTranslation()
+                            .getDistance(rememberedPose.notePose().getTranslation())
+                        < 1;
+                  })
+              .min(
+                  (a, b) ->
+                      Double.compare(
+                          a.getTranslation()
+                              .getDistance(rememberedPose.notePose().getTranslation()),
+                          b.getTranslation()
+                              .getDistance(rememberedPose.notePose().getTranslation())));
 
-    DogLog.log("NoteTracking/Grabbing", grabbing);
+      if (visionNoteMatch.isPresent()) {
 
-    if (grabbing) {
-      noteTrackTimer.start();
-      if (noteTrackTimer.hasElapsed(1)) {
-        // We didn't grab the note in time, reset the position
-        lastNotePose = getNotePose();
+        visionNotes.remove(visionNoteMatch.get());
       } else {
-        // Don't update note pose, we are about to grab it
-      }
-    } else {
-      // Not grabbing note, reset timer
-      noteTrackTimer.reset();
-      noteTrackTimer.stop();
 
-      // Update the note pose, we aren't grabbing it
-      lastNotePose = getNotePose();
+        result.add(rememberedPose);
+      }
     }
+
+    return result;
   }
 }
