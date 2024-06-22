@@ -32,6 +32,7 @@ import frc.robot.util.scheduling.SubsystemPriority;
 import java.util.Optional;
 
 public class Autos extends LifecycleSubsystem {
+
   private static Command wrapAutoEvent(String commandName, Command command) {
     return Commands.sequence(
             Commands.print("[COMMANDS] Starting auto event " + commandName),
@@ -54,6 +55,7 @@ public class Autos extends LifecycleSubsystem {
   private final SwerveSubsystem swerve;
   private final AutoChooser autoChooser;
   private final RobotManager robotManager;
+  private final AutoCommands autoCommands;
 
   public Autos(
       SwerveSubsystem swerve,
@@ -64,7 +66,7 @@ public class Autos extends LifecycleSubsystem {
     this.swerve = swerve;
     this.robotManager = robotManager;
 
-    var autoCommands = new AutoCommands(actions, robotManager);
+    autoCommands = new AutoCommands(actions, robotManager);
 
     // Configure AutoBuilder last
     AutoBuilder.configureHolonomic(
@@ -106,6 +108,7 @@ public class Autos extends LifecycleSubsystem {
     registerCommand("midlineNotesOP4", autoCommands.getMidlineNotesOP4Command());
     registerCommand("midlineNotesFromSource876", autoCommands.getMidlineNotesSource876Command());
     registerCommand("altMidlineNotesFromAmp", autoCommands.getMidlineNotesAltAmpCommand());
+    registerCommand("zeroGyro", autoCommands.doNothingCommand());
 
     PathPlannerLogging.setLogActivePathCallback(
         (activePath) -> {
@@ -130,7 +133,11 @@ public class Autos extends LifecycleSubsystem {
   }
 
   public Command getAutoCommand() {
-    return autoChooser.getAutoCommand();
+    if (autoChooser.getAutoSelection() == AutoSelection.TEST_PATH) {
+      return Commands.sequence(autoCommands.testAuto());
+    } else {
+      return autoChooser.getAutoCommand();
+    }
   }
 
   private Optional<Rotation2d> getRotationTargetOverride() {

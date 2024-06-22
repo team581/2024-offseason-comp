@@ -240,4 +240,15 @@ public class AutoCommands {
                 followPathForAlliance(red6ToLeftWingShot, blue6ToLeftWingShot)
                     .andThen(speakerShotWithTimeout())));
   }
+
+  public Command testAuto() {
+    return Commands.sequence(
+        doNothingCommand()
+            .alongWith(
+                actions
+                    .homeCommand()
+                    .andThen(
+                        AutoBuilder.followPath(Paths.testPath)
+                            .andThen(actions.speakerShotCommand()))));
+  }
 }
