@@ -16,22 +16,24 @@ public class VisionUtil {
           new Pose2d(20.2, 10.5, new Rotation2d(0)),
           new Pose2d(15.2, 5.5, new Rotation2d(0)),
           "Subwoofer");
-  // private static final VisionInterpolationData STAGE_FRONT =
-  //     new VisionInterpolationData(
-  //         new Pose2d(18.0, 10.5,new Rotation2d(0)), new Pose2d(13.0, 5.5, new Rotation2d(0)),
-  // "StageFront");
+  private static final VisionInterpolationData STAGE_FRONT =
+      new VisionInterpolationData(
+          new Pose2d(18.0, 10.1, new Rotation2d(0)),
+          new Pose2d(13.0, 5.1, new Rotation2d(0)),
+          "StageFront");
   private static final VisionInterpolationData AMP_SIDE_STAGE =
       new VisionInterpolationData(
           new Pose2d(5.7, 3.0, new Rotation2d(0)),
           new Pose2d(10.7, 8.0, new Rotation2d(0)),
           "AMP_SIDE_STAGE");
-  // private static final VisionInterpolationData STAGE_MIDDLE =
-  //     new VisionInterpolationData(
-  //         new Pose2d(17.0, 9.7, new Rotation2d(0)), new Pose2d(12.0, 4.7, new Rotation2d(0)),
-  // "StageMiddle");
+  private static final VisionInterpolationData STAGE_MIDDLE =
+      new VisionInterpolationData(
+          new Pose2d(17.0, 9.7, new Rotation2d(0)),
+          new Pose2d(12.0, 5.0, new Rotation2d(0)),
+          "StageMiddle");
 
   private static final List<VisionInterpolationData> DATA_POINTS =
-      List.of(SUBWOOFER, AMP_SIDE_STAGE);
+      List.of(SUBWOOFER, STAGE_FRONT, AMP_SIDE_STAGE, STAGE_MIDDLE);
 
   /**
    * @param visionInput - pose from the limelight
