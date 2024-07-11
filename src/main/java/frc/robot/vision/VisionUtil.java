@@ -7,7 +7,6 @@ package frc.robot.vision;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import java.util.List;
 
 public class VisionUtil {
@@ -42,7 +41,6 @@ public class VisionUtil {
   public static Pose2d interpolatePose(Pose2d visionInput) {
     double distanceSum = 0;
     double distancePoint = 0;
-    Transform2d result = new Transform2d();
     for (var dataPoint : DATA_POINTS) {
       distancePoint =
           dataPoint.visionPose().getTranslation().getDistance(visionInput.getTranslation());
@@ -56,19 +54,21 @@ public class VisionUtil {
       distancePoint =
           dataPoint.visionPose().getTranslation().getDistance(visionInput.getTranslation());
       var weight = 1 - ((distanceSum - distancePoint) / distanceSum);
-      result = dataPoint.visionPose().minus(dataPoint.measuredPose()).times(weight);
+      var result = dataPoint.visionPose().minus(dataPoint.measuredPose()).times(weight);
       weightedX += result.getX();
       weightedY += result.getY();
       weightedRotation = weightedRotation.plus(result.getRotation());
     }
-    Pose2d weightedSum = new Pose2d(weightedX, weightedY, weightedRotation);
+    Pose2d offsetSum = new Pose2d(weightedX, weightedY, weightedRotation);
     DogLog.log("VisionUtil/distanceSum", distanceSum);
     DogLog.log("VisionUtil/distancePoint", distancePoint);
-    DogLog.log("VisionUtil/weightedSum", weightedSum);
-    DogLog.log("VisionUtil/Result", result);
-    Pose2d testPose = new Pose2d(1.384,0.0, new Rotation2d());
-    DogLog.log("VisionUtil/TestPose", testPose);
-
-    return weightedSum;
+    DogLog.log("VisionUtil/weightedSum", offsetSum);
+    // DogLog.log("VisionUtil/Result", result);
+    Pose2d interpolatedSum =
+        new Pose2d(
+            visionInput.getX() + weightedX,
+            visionInput.getY() + weightedY,
+            visionInput.getRotation().plus(weightedRotation));
+    return interpolatedSum;
   }
 }
