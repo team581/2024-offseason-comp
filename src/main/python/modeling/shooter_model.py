@@ -155,8 +155,8 @@ for input_point in range(len(input_points)):
   rpos = Point(distance, 0)
   projectile_motion = ProjectileMotion(0.02)
   modelinfo = Model(rpos,goalpos,rpm)
-  # angle = Vector.fromradians(getangle(modelinfo,projectile_motion))
-  angle = Vector.fromradians(modelinfo.get_angle())
+  angle = Vector.fromradians(getangle(modelinfo,projectile_motion))
+  # angle = Vector.fromradians(modelinfo.get_angle())
   points = projectile_motion.getpoints(Vector(Vector.fromdegrees(angle), modelinfo.get_vel(rpm)), rpos)
   time_of_flight = projectile_motion.get_travel_time(points)
 
