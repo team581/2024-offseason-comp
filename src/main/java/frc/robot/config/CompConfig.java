@@ -86,7 +86,7 @@ class CompConfig {
                   .withClosedLoopRamps(CLOSED_LOOP_RAMP)
                   .withOpenLoopRamps(OPEN_LOOP_RAMP),
               speakerDistanceToRPM -> {
-                speakerDistanceToRPM.put(0.0, 3000.0);
+                speakerDistanceToRPM.put(0.001, 3000.0);
                 speakerDistanceToRPM.put(2.0, 3000.0);
                 speakerDistanceToRPM.put(2.5, 4000.0);
                 speakerDistanceToRPM.put(4.0, 4000.0);
@@ -170,15 +170,15 @@ class CompConfig {
                 distanceToAngleTolerance.put(8.0, 0.5);
               },
               speakerDistanceToAngle -> {
-                speakerDistanceToAngle.put(1.38, 58.1);
-                speakerDistanceToAngle.put(2.16, 47.8);
-                speakerDistanceToAngle.put(2.5, 42.0);
-                speakerDistanceToAngle.put(3.5, 33.9635); // 1.854 - adjusted by quarter
-                speakerDistanceToAngle.put(4.5, 28.20125); // 1.605 - adjusted by quarter
-                speakerDistanceToAngle.put(5.5, 25.84825); // 1.393 - adjusted by quarter
-                speakerDistanceToAngle.put(6.5, 21.30525); // 1.221 - adjusted by quarter
-                speakerDistanceToAngle.put(7.5, 20.27075); // 1.083 - adjusted by quarter
-                speakerDistanceToAngle.put(9.0, 18.7305); // 0.922 - adjusted by quarter
+                // speakerDistanceToAngle.put(1.38, 58.1);
+                speakerDistanceToAngle.put(0.001,  89.99508625230978);
+                speakerDistanceToAngle.put(2.0,  79.94011474683944);
+                speakerDistanceToAngle.put(2.5,  83.26693402123773);
+                speakerDistanceToAngle.put(4.0,  79.05038667991023);
+                speakerDistanceToAngle.put(4.5,  77.5890447990154);
+                speakerDistanceToAngle.put(6.0,  72.94243600017876);
+                speakerDistanceToAngle.put(6.5,  77.72974197361495);
+                speakerDistanceToAngle.put(8.0,  74.61450991899393);
               },
               floorSpotDistanceToAngle -> {
                 floorSpotDistanceToAngle.put(3.4, 18.0);

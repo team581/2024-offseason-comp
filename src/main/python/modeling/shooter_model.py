@@ -4,15 +4,9 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 
-@dataclasses.dataclass
-class Vector():
-  angle: float  # Radians
-  velocity: float  # Meters / Sec
+import pathlib
+import json
 
-  def getY(self):
-    return self.velocity * math.sin(self.angle)
-  def getX(self):
-    return self.velocity * math.cos(self.angle)
 @dataclasses.dataclass
 class Point():
   x: float  # Meters
@@ -21,8 +15,26 @@ class Point():
   def add(self, other):
     return Point(self.x + other.x, self.y + other.y)
 
+  def minus(self, other):
+    return Point(self.x - other.x, self.y - other.y)
+
   def dist(self, other) -> float:
     return math.sqrt(math.pow(self.x-other.x,2)+math.pow(self.y-other.y,2))
+@dataclasses.dataclass
+class Vector():
+  angle: float  # Radians
+  magnitude: float  # Meters / Sec
+
+  def getY(self):
+    return self.magnitude * math.sin(self.angle)
+  def getX(self):
+    return self.magnitude * math.cos(self.angle)
+  def topoint(self) -> Point:
+    return Point(self.getX(),self.getY())
+  def fromradians(rad):
+    return rad * (180/math.pi)
+  def fromdegrees(deg):
+    return deg * (math.pi/180)
 class Model():
   def __init__(self, rpos: Point, gpos: Point, rpm: float):
     self.rpos = rpos
@@ -43,7 +55,7 @@ class Model():
     b = gpos.x-rpos.x
     a = -(g/2)*(math.pow(b,2)/math.pow(vel,2))
     c = (rpos.y-gpos.y)+a
-    calculated_angle = math.atan((-b + math.sqrt(math.pow(b,2) - 4 * a * c))/(2 * a))
+    calculated_angle = abs(math.atan((-b + math.sqrt(math.pow(b,2) - 4 * a * c))/(2 * a)))
     return calculated_angle
 
   def getvector(self) -> Vector:
@@ -61,14 +73,13 @@ class ProjectileMotion:
   def __init__(self, dt: float):
     self.dt = dt
 
-  def getpoints(self, vector: Vector, exit: Point) -> []:
-    t = 0
+  def getpoints(self, vector: Vector, exit: Point):
     note_position = [exit,exit]
-    note_velocity = [Point(vector.getX(),vector.getY()), Point(vector.getX(),vector.getY())]
-
+    note_velocity = [vector.topoint(), vector.topoint()]
+    t = 0
     while note_position[-1].y > 0:
 
-      angle = math.atan2(note_position[-1].x - note_position[-2].x,note_position[-1].y - note_position[-2].y)
+      angle = math.atan2(note_position[-1].y - note_position[-2].y,note_position[-1].x - note_position[-2].x)
       acceleration = Point((-0.0015*(math.pow(note_velocity[-1].x,2) + math.pow(note_velocity[-1].y,2)))*math.cos(angle),(-9.8)+(-0.0015*(math.pow(note_velocity[-1].x,2) + math.pow(note_velocity[-1].y,2))*math.sin(angle)))
       velocity = Point(acceleration.x * self.dt + note_velocity[-2].x, acceleration.y * self.dt + note_velocity[-2].y)
       position = Point(note_position[-2].x + velocity.x * self.dt, note_position[-2].y + velocity.y * self.dt)
@@ -76,22 +87,27 @@ class ProjectileMotion:
 
       note_velocity.append(velocity)
       note_position.append(position)
-      t = t + self.dt
+      t += self.dt
 
     return note_position
+
+  def get_travel_time(self, points):
+    return len(points) / self.dt
 
 def getexit(vector: Vector):
   return Point(vector.getX(), vector.getY())
 
-def getangle(model: Model, pm: ProjectileMotion, rpm: float):
-  vel = model.get_vel(rpm)
+robot_wrist_length = 0.1 #meters
+
+def getangle(model: Model, pm: ProjectileMotion):
+  vel = model.get_vel(model.rpm)
   closestangle = -1
   local_min = 10000
   finalmin = 10000
 
-  for i in range(0,math.ceil(85*(1/pm.dt))):
-    angle = i * (math.pi/180) * pm.dt
-    exitpoint = Point.add(model.rpos, getexit(Vector(angle,0.1)))
+  for i in range(math.ceil(Vector.fromdegrees(85) / pm.dt)):
+    angle = i * pm.dt
+    exitpoint = Point.add(model.rpos, getexit(Vector(angle,robot_wrist_length)))
     points = prunepoints(pm.getpoints(Vector(angle,vel), exitpoint))
     for point in range(len(points)):
       dist = points[point].dist(model.gpos)
@@ -99,8 +115,6 @@ def getangle(model: Model, pm: ProjectileMotion, rpm: float):
     finalmin = min(local_min,finalmin)
     if finalmin <= local_min:
       closestangle = angle
-  print(finalmin)
-  print(closestangle)
   return closestangle
 
 def plot(points: [], start: Point, end: Point, dt: float):
@@ -118,11 +132,52 @@ def plot(points: [], start: Point, end: Point, dt: float):
 
   plt.show()
 
-goal = Point(1,1)
-robotPosition = Point(0,0)
+
+# Set proper goal
+
+input_points = [
+  {"distance": 0.001, "rpm": 3000},
+  {"distance": 2.0, "rpm": 3000},
+  {"distance": 2.5, "rpm": 4000},
+  {"distance": 4.0, "rpm": 4000},
+  {"distance": 4.5, "rpm": 4000},
+  {"distance": 6.0, "rpm": 4000},
+  {"distance": 6.5, "rpm": 4800},
+  {"distance": 8.0, "rpm": 4800},
+]
+
+shooting_config = []
+
+for input_point in range(len(input_points)):
+  rpm = input_points[input_point]["rpm"]
+  distance = input_points[input_point]["distance"]
+  goalpos = Point(0, 0.86)
+  rpos = Point(distance, 0)
+  projectile_motion = ProjectileMotion(0.02)
+  modelinfo = Model(rpos,goalpos,rpm)
+  # angle = Vector.fromradians(getangle(modelinfo,projectile_motion))
+  angle = Vector.fromradians(modelinfo.get_angle())
+  points = projectile_motion.getpoints(Vector(Vector.fromdegrees(angle), modelinfo.get_vel(rpm)), rpos)
+  time_of_flight = projectile_motion.get_travel_time(points)
+
+  shooting_config.append({"rpm": rpm,
+                          "distance": distance,
+                          "angle": angle,
+                          "time_of_flight": time_of_flight})
+
+
+shooting_config_file = pathlib.Path("src/main/java/frc/robot/generated/shooting_config.json")
+shooting_config_file.write_text(json.dumps(shooting_config, indent=2))
+
+
+
+
+goal = Point(0,0.86)
+robotPosition = Point(1,0)
 setrpm = 4000
 info = Model(robotPosition,goal,setrpm)
 robot_shooter = ProjectileMotion(0.02)
-setangle = getangle(info,robot_shooter,setrpm)
+setangle = getangle(info,robot_shooter)
 
-plot(robot_shooter.getpoints(Vector((setangle*(math.pi/180)),info.get_vel(setrpm)),info.rpos), info.rpos,info.gpos,robot_shooter.dt)
+
+# plot(robot_shooter.getpoints(Vector((setangle*(math.pi/180)),info.get_vel(setrpm)),info.rpos), info.rpos,info.gpos,robot_shooter.dt)
