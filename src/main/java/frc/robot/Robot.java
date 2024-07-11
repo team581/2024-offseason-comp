@@ -6,6 +6,9 @@ package frc.robot;
 
 import com.ctre.phoenix.led.CANdle;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkLowLevel.MotorType;
+
 import dev.doglog.DogLog;
 import dev.doglog.DogLogOptions;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -67,7 +70,9 @@ public class Robot extends TimedRobot {
               RobotConfig.get().climber().rightMotorID(), RobotConfig.get().canivoreName()));
   private final IntakeSubsystem intake =
       new IntakeSubsystem(
-          new TalonFX(RobotConfig.get().intake().motorID(), RobotConfig.get().canivoreName()),
+          new TalonFX(RobotConfig.get().intake().mainMotorID(), RobotConfig.get().canivoreName()),
+          new CANSparkMax(RobotConfig.get().intake().leftCenteringMotorID(), MotorType.kBrushed),
+          new CANSparkMax(RobotConfig.get().intake().rightCenteringMotorID(), MotorType.kBrushed),
           new DigitalInput(RobotConfig.get().intake().sensorID()));
   private final SwerveSubsystem swerve = new SwerveSubsystem(driverController);
   private final ImuSubsystem imu = new ImuSubsystem(swerve);

@@ -5,6 +5,8 @@
 package frc.robot.intake;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.revrobotics.CANSparkMax;
+
 import dev.doglog.DogLog;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -14,17 +16,25 @@ import frc.robot.util.scheduling.SubsystemPriority;
 
 public class IntakeSubsystem extends LifecycleSubsystem {
   private final TalonFX motor;
+  private final CANSparkMax intakeCenteringLeft;
+  private final CANSparkMax intakeCenteringRight;
   private final DigitalInput sensor;
   private final Debouncer debouncer = RobotConfig.get().intake().debouncer();
   private boolean debouncedSensor = false;
   private IntakeState goalState = IntakeState.IDLE;
 
-  public IntakeSubsystem(TalonFX motor, DigitalInput sensor) {
+  public IntakeSubsystem(TalonFX motor,CANSparkMax intakeCenteringLeft,CANSparkMax intakeCenteringRight, DigitalInput sensor) {
     super(SubsystemPriority.INTAKE);
 
     motor.getConfigurator().apply(RobotConfig.get().intake().motorConfig());
+    intakeCenteringLeft.setSmartCurrentLimit(20);
+    intakeCenteringLeft.burnFlash();
+    intakeCenteringRight.setSmartCurrentLimit(20);
+    intakeCenteringRight.burnFlash();
 
     this.motor = motor;
+    this.intakeCenteringLeft = intakeCenteringLeft;
+    this.intakeCenteringRight = intakeCenteringRight;
     this.sensor = sensor;
   }
 
@@ -42,41 +52,65 @@ public class IntakeSubsystem extends LifecycleSubsystem {
     switch (goalState) {
       case IDLE:
         motor.disable();
+        intakeCenteringLeft.disable();
+        intakeCenteringRight.disable();
         break;
       case OUTTAKING:
         motor.setVoltage(-6);
+        intakeCenteringLeft.setVoltage(-6);
+        intakeCenteringRight.setVoltage(-6);
         break;
       case FROM_QUEUER:
         motor.setVoltage(-4); // -3
+        intakeCenteringLeft.setVoltage(-4);
+        intakeCenteringRight.setVoltage(-4);
         break;
       case FROM_CONVEYOR:
         motor.setVoltage(-8);
+        intakeCenteringLeft.setVoltage(-8);
+        intakeCenteringRight.setVoltage(-8);
         break;
       case TO_QUEUER:
         if (hasNote()) {
           motor.setVoltage(10);
+          intakeCenteringLeft.setVoltage(10);
+          intakeCenteringRight.setVoltage(10);
         } else {
           motor.setVoltage(12);
+          intakeCenteringLeft.setVoltage(12);
+          intakeCenteringRight.setVoltage(12);
         }
         break;
       case TO_QUEUER_SLOW:
         if (hasNote()) {
           motor.setVoltage(10);
+          intakeCenteringLeft.setVoltage(10);
+          intakeCenteringRight.setVoltage(10);
         } else {
           motor.setVoltage(5);
+          intakeCenteringLeft.setVoltage(5);
+          intakeCenteringRight.setVoltage(5);
         }
         break;
       case SHUFFLE_ASSIST_WHEN_QUEUER_SENSOR_TURNS_OFF:
         motor.setVoltage(3);
+        intakeCenteringLeft.setVoltage(3);
+        intakeCenteringRight.setVoltage(3);
         break;
       case TO_CONVEYOR:
         motor.setVoltage(3); // 2
+        intakeCenteringLeft.setVoltage(3);
+        intakeCenteringRight.setVoltage(3);
         break;
       case TO_QUEUER_SHOOTING:
         motor.setVoltage(8);
+        intakeCenteringLeft.setVoltage(8);
+        intakeCenteringRight.setVoltage(8);
         break;
       case SHUFFLE:
         motor.setVoltage(0.3);
+        intakeCenteringLeft.setVoltage(.3);
+        intakeCenteringRight.setVoltage(.3);
         break;
       default:
         break;

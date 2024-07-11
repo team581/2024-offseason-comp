@@ -213,6 +213,8 @@ class CompConfig {
               0.75),
           new IntakeConfig(
               15,
+              2,
+              3,
               1,
               new Debouncer(0.025, DebounceType.kBoth),
               new TalonFXConfiguration()

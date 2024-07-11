@@ -53,7 +53,7 @@ public record RobotConfig(
       TalonFXConfiguration rightMotorConfig) {}
 
   public record IntakeConfig(
-      int motorID, int sensorID, Debouncer debouncer, TalonFXConfiguration motorConfig) {}
+      int mainMotorID,int leftCenteringMotorID,int rightCenteringMotorID, int sensorID, Debouncer debouncer, TalonFXConfiguration motorConfig) {}
 
   public record ConveyorConfig(
       int motorID,
