@@ -13,18 +13,18 @@ import java.util.List;
 public class VisionUtil {
   private static final VisionInterpolationData SUBWOOFER =
       new VisionInterpolationData(
-          new Pose2d(20.2, 10.5, new Rotation2d(0)),
-          new Pose2d(15.2, 5.5, new Rotation2d(0)),
+          new Pose2d(15.19, 5.54, new Rotation2d(0)),
+          new Pose2d(15.23, 5.45, new Rotation2d(0)),
           "Subwoofer");
   private static final VisionInterpolationData STAGE_FRONT =
       new VisionInterpolationData(
-          new Pose2d(18.0, 10.1, new Rotation2d(0)),
-          new Pose2d(13.0, 5.1, new Rotation2d(0)),
+          new Pose2d(12.85, 4.71, new Rotation2d(0)),
+          new Pose2d(12.83, 4.66, new Rotation2d(0)),
           "StageFront");
   private static final VisionInterpolationData AMP_SIDE_STAGE =
       new VisionInterpolationData(
-          new Pose2d(5.7, 3.0, new Rotation2d(0)),
-          new Pose2d(10.7, 8.0, new Rotation2d(0)),
+          new Pose2d(10.27, 7.79, new Rotation2d(0)),
+          new Pose2d(10.36, 7.74, new Rotation2d(0)),
           "AMP_SIDE_STAGE");
   private static final VisionInterpolationData STAGE_MIDDLE =
       new VisionInterpolationData(
@@ -33,7 +33,7 @@ public class VisionUtil {
           "StageMiddle");
 
   private static final List<VisionInterpolationData> DATA_POINTS =
-      List.of(SUBWOOFER, STAGE_FRONT, AMP_SIDE_STAGE, STAGE_MIDDLE);
+      List.of(SUBWOOFER, STAGE_FRONT, AMP_SIDE_STAGE);
 
   /**
    * @param visionInput - pose from the limelight
@@ -65,7 +65,9 @@ public class VisionUtil {
     DogLog.log("VisionUtil/distanceSum", distanceSum);
     DogLog.log("VisionUtil/distancePoint", distancePoint);
     DogLog.log("VisionUtil/weightedSum", weightedSum);
-    DogLog.log("Result", result);
+    DogLog.log("VisionUtil/Result", result);
+    Pose2d testPose = new Pose2d(1.384,0.0, new Rotation2d());
+    DogLog.log("VisionUtil/TestPose", testPose);
 
     return weightedSum;
   }
