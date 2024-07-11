@@ -3,7 +3,7 @@
     {
       "groupId": "com.choreo.lib",
       "artifactId": "ChoreoLib-java",
-      "version": "2024.2.2"
+      "version": "2024.2.3"
     },
     {
       "groupId": "com.google.code.gson",
@@ -22,7 +22,7 @@
     "libName": "ChoreoLib",
     "artifactId": "ChoreoLib-cpp",
     "skipInvalidPlatforms": true,
-    "version": "2024.2.2",
+    "version": "2024.2.3",
     "headerClassifier": "headers",
     "binaryPlatforms": [
       "windowsx86-64",
@@ -34,6 +34,6 @@
     ],
     "sharedLibrary": false
   }],
-  "version": "2024.2.2",
+  "version": "2024.2.3",
   "uuid": "287cff6e-1b60-4412-8059-f6834fb30e30"
 }

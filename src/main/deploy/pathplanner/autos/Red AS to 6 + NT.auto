@@ -1,0 +1,37 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 15.151942253112791,
+      "y": 6.983804225921631
+    },
+    "rotation": 1.4098535135790427e-28
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "homeClimber"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "preloadNote"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red AS to 6 + NT.1"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Red Choreo Autos",
+  "choreoAuto": true
+}

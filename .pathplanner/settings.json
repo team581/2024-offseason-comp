@@ -14,9 +14,10 @@
   ],
   "autoFolders": [
     "Blue Dynamic Autos in Development",
-    "Red dynamic autos",
+    "Blue dynamic autos",
+    "Red Choreo Autos",
     "Red Dynamic Autos in Development",
-    "Blue dynamic autos"
+    "Red dynamic autos"
   ],
   "defaultMaxVel": 5.2,
   "defaultMaxAccel": 5.0,

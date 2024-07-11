@@ -79,7 +79,7 @@ public class AutoChooser {
     return command;
   }
 
-  private AutoSelection getAutoSelection() {
+  public AutoSelection getAutoSelection() {
     var selected = Optional.ofNullable(chooser.getSelected());
 
     return selected.orElse(AutoSelection.DO_NOTHING);

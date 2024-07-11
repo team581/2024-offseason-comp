@@ -81,37 +81,37 @@ public class AutoCommands {
   }
 
   public Command getMidlineNotesAmp456Command() {
-    var red4ToCenterWingShot = PathPlannerPath.fromPathFile("Red 4 to CWS");
-    var red4To5 = PathPlannerPath.fromPathFile("Red 4 to 5");
-    var redCenterWingShotTo5 = PathPlannerPath.fromPathFile("Red CWS to 5");
-    var red5ToCenterWingShot = PathPlannerPath.fromPathFile("Red 5 to CWS");
-    var red5To6 = PathPlannerPath.fromPathFile("Red 5 to 6");
-    var redCenterWingShotTo6 = PathPlannerPath.fromPathFile("Red CWS to 6");
-    var red6ToCenterWingShot = PathPlannerPath.fromPathFile("Red 6 to CWS");
+    var red4ToCenterWingShot = PathPlannerPath.fromChoreoTrajectory("Red 4 to CWS");
+    var red4To5 = PathPlannerPath.fromChoreoTrajectory("Red 4 to 5");
+    var redCenterWingShotTo5 = PathPlannerPath.fromChoreoTrajectory("Red CWS to 5");
+    var red5ToCenterWingShot = PathPlannerPath.fromChoreoTrajectory("Red 5 to CWS");
+    var red5To6 = PathPlannerPath.fromChoreoTrajectory("Red 5 to 6");
+    var redCenterWingShotTo6 = PathPlannerPath.fromChoreoTrajectory("Red CWS to 6");
+    var red6ToCenterWingShot = PathPlannerPath.fromChoreoTrajectory("Red 6 to CWS");
 
-    var blue4ToCenterWingShot = PathPlannerPath.fromPathFile("Blue 4 to CWS");
-    var blue4To5 = PathPlannerPath.fromPathFile("Blue 4 to 5");
-    var blueCenterWingShotTo5 = PathPlannerPath.fromPathFile("Blue CWS to 5");
-    var blue5ToCenterWingShot = PathPlannerPath.fromPathFile("Blue 5 to CWS");
-    var blue5To6 = PathPlannerPath.fromPathFile("Blue 5 to 6");
-    var blueCenterWingShotTo6 = PathPlannerPath.fromPathFile("Blue CWS to 6");
-    var blue6ToCenterWingShot = PathPlannerPath.fromPathFile("Blue 6 to CWS");
+    // var blue4ToCenterWingShot = PathPlannerPath.fromPathFile("Blue 4 to CWS");
+    //  var blue4To5 = PathPlannerPath.fromPathFile("Blue 4 to 5");
+    //   var blueCenterWingShotTo5 = PathPlannerPath.fromPathFile("Blue CWS to 5");
+    //  var blue5ToCenterWingShot = PathPlannerPath.fromPathFile("Blue 5 to CWS");
+    //  var blue5To6 = PathPlannerPath.fromPathFile("Blue 5 to 6");
+    //   var blueCenterWingShotTo6 = PathPlannerPath.fromPathFile("Blue CWS to 6");
+    //  var blue6ToCenterWingShot = PathPlannerPath.fromPathFile("Blue 6 to CWS");
 
     return Commands.sequence(
         Commands.either(
-            followPathForAlliance(red4ToCenterWingShot, blue4ToCenterWingShot)
+            followPathForAlliance(red4ToCenterWingShot, red4ToCenterWingShot)
                 .andThen(speakerShotWithTimeout())
-                .andThen(followPathForAlliance(redCenterWingShotTo5, blueCenterWingShotTo5)),
-            followPathForAlliance(red4To5, blue4To5),
+                .andThen(followPathForAlliance(redCenterWingShotTo5, redCenterWingShotTo5)),
+            followPathForAlliance(red4To5, red4To5),
             this::hasNote),
         Commands.either(
-                followPathForAlliance(red5ToCenterWingShot, blue5ToCenterWingShot)
+                followPathForAlliance(red5ToCenterWingShot, red5ToCenterWingShot)
                     .andThen(speakerShotWithTimeout())
-                    .andThen(followPathForAlliance(redCenterWingShotTo6, blueCenterWingShotTo6)),
-                followPathForAlliance(red5To6, blue5To6),
+                    .andThen(followPathForAlliance(redCenterWingShotTo6, redCenterWingShotTo6)),
+                followPathForAlliance(red5To6, red5To6),
                 this::hasNote)
             .andThen(
-                followPathForAlliance(red6ToCenterWingShot, blue6ToCenterWingShot)
+                followPathForAlliance(red6ToCenterWingShot, red6ToCenterWingShot)
                     .andThen(speakerShotWithTimeout())));
   }
 
@@ -239,5 +239,16 @@ public class AutoCommands {
             .andThen(
                 followPathForAlliance(red6ToLeftWingShot, blue6ToLeftWingShot)
                     .andThen(speakerShotWithTimeout())));
+  }
+
+  public Command testAuto() {
+    return Commands.sequence(
+        doNothingCommand()
+            .alongWith(
+                actions
+                    .homeCommand()
+                    .andThen(
+                        AutoBuilder.followPath(Paths.testPath)
+                            .andThen(actions.speakerShotCommand()))));
   }
 }

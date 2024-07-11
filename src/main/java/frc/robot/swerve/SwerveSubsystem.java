@@ -115,9 +115,9 @@ public class SwerveSubsystem extends LifecycleSubsystem {
   private ChassisSpeeds fieldRelativeSpeeds = new ChassisSpeeds();
   private boolean closedLoop = false;
 
-  private final PIDController xPid = new PIDController(2.0, 0, 0);
-  private final PIDController yPid = new PIDController(2.0, 0, 0);
-  private final PIDController omegaPid = new PIDController(2.0, 0, 0);
+  private final PIDController xPid = new PIDController(1.5, 0, 0);
+  private final PIDController yPid = new PIDController(1.5, 0, 0);
+  private final PIDController omegaPid = new PIDController(1.5, 0, 0);
 
   public SwerveSubsystem(CommandXboxController driveController) {
     super(SubsystemPriority.SWERVE);
@@ -213,8 +213,6 @@ public class SwerveSubsystem extends LifecycleSubsystem {
                   rightX * TELEOP_MAX_ANGULAR_RATE.getRadians());
 
           DogLog.log("Swerve/RawTeleopSpeeds", teleopSpeeds);
-
-          // teleopSpeeds = accelerationLimitChassisSpeeds(teleopSpeeds);
 
           double currentSpeed =
               Math.sqrt(
@@ -328,19 +326,21 @@ public class SwerveSubsystem extends LifecycleSubsystem {
       driveType = DriveRequestType.OpenLoopVoltage;
     }
 
+    var limitedSpeeds = accelerationLimitChassisSpeeds(fieldRelativeSpeeds);
+
     if (snapToAngle) {
       drivetrain.setControl(
           driveToAngle
-              .withVelocityX(fieldRelativeSpeeds.vxMetersPerSecond)
-              .withVelocityY(fieldRelativeSpeeds.vyMetersPerSecond)
+              .withVelocityX(limitedSpeeds.vxMetersPerSecond)
+              .withVelocityY(limitedSpeeds.vyMetersPerSecond)
               .withTargetDirection(goalSnapAngle)
               .withDriveRequestType(driveType));
     } else {
       drivetrain.setControl(
           drive
-              .withVelocityX(fieldRelativeSpeeds.vxMetersPerSecond)
-              .withVelocityY(fieldRelativeSpeeds.vyMetersPerSecond)
-              .withRotationalRate(fieldRelativeSpeeds.omegaRadiansPerSecond)
+              .withVelocityX(limitedSpeeds.vxMetersPerSecond)
+              .withVelocityY(limitedSpeeds.vyMetersPerSecond)
+              .withRotationalRate(limitedSpeeds.omegaRadiansPerSecond)
               .withDriveRequestType(driveType));
     }
   }
