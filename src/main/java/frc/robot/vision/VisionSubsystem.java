@@ -94,9 +94,9 @@ public class VisionSubsystem extends LifecycleSubsystem {
 
   private final ImuSubsystem imu;
 
-  public Optional<VisionResult> getVisionResult() {
+  private Optional<VisionResult> getRawVisionResult() {
     var estimatePose = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("");
-
+    DogLog.log("Vision/EstimatedPoseMT2", estimatePose.pose);
     if (estimatePose.tagCount == 0) {
       return Optional.empty();
     }
@@ -115,6 +115,25 @@ public class VisionSubsystem extends LifecycleSubsystem {
     }
 
     return Optional.of(new VisionResult(estimatePose.pose, estimatePose.timestampSeconds));
+  }
+
+  /**
+   * @return an interpolated vision pose, ready to be added to the estimator
+   */
+  public Optional<VisionResult> getVisionResult() {
+    var maybeRawData = getRawVisionResult();
+
+    if (maybeRawData.isPresent()) {
+      var rawData = maybeRawData.get();
+      DogLog.log("Vision/rawData", rawData.pose());
+      DogLog.log("Vision/interpolatedData", VisionUtil.interpolatePose(rawData.pose()));
+
+      return Optional.of(
+          new VisionResult(VisionUtil.interpolatePose(rawData.pose()), rawData.timestamp()));
+    }
+
+    // No raw data to operate on
+    return maybeRawData;
   }
 
   public static DistanceAngle distanceToTargetPose(Pose2d target, Pose2d current) {

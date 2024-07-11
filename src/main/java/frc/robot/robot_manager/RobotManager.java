@@ -399,7 +399,7 @@ public class RobotManager extends LifecycleSubsystem {
           boolean shooterAtGoal = shooter.atGoal(ShooterMode.SPEAKER_SHOT);
           boolean poseJitterSafe = localization.atSafeJitter();
           boolean swerveSlowEnough = swerve.movingSlowEnoughForSpeakerShot();
-          boolean angularVelocitySlowEnough = imu.belowVelocityForSpeaker(speakerDistance);
+          boolean angularVelocitySlowEnough = imu.belowVelocityForVision(speakerDistance);
           boolean robotHeadingAtGoal =
               imu.atAngleForSpeaker(speakerDistanceAngle.targetAngle(), speakerDistance);
           boolean limelightWorking = false;

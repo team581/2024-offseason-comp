@@ -28,6 +28,7 @@ import frc.robot.util.ControllerHelpers;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 public class SwerveSubsystem extends LifecycleSubsystem {
@@ -114,10 +115,9 @@ public class SwerveSubsystem extends LifecycleSubsystem {
   private ChassisSpeeds fieldRelativeSpeeds = new ChassisSpeeds();
   private boolean closedLoop = false;
 
-  // TODO: tune
   private final PIDController xPid = new PIDController(1.5, 0, 0);
-  private final PIDController yPid = new PIDController(2.0, 0, 0);
-  private final PIDController omegaPid = new PIDController(0.5, 0, 0);
+  private final PIDController yPid = new PIDController(1.5, 0, 0);
+  private final PIDController omegaPid = new PIDController(1.5, 0, 0);
 
   public SwerveSubsystem(CommandXboxController driveController) {
     super(SubsystemPriority.SWERVE);
@@ -213,8 +213,6 @@ public class SwerveSubsystem extends LifecycleSubsystem {
                   rightX * TELEOP_MAX_ANGULAR_RATE.getRadians());
 
           DogLog.log("Swerve/RawTeleopSpeeds", teleopSpeeds);
-
-          // teleopSpeeds = accelerationLimitChassisSpeeds(teleopSpeeds);
 
           double currentSpeed =
               Math.sqrt(
@@ -334,19 +332,21 @@ public class SwerveSubsystem extends LifecycleSubsystem {
       driveType = DriveRequestType.OpenLoopVoltage;
     }
 
+    var limitedSpeeds = accelerationLimitChassisSpeeds(fieldRelativeSpeeds);
+
     if (snapToAngle) {
       drivetrain.setControl(
           driveToAngle
-              .withVelocityX(fieldRelativeSpeeds.vxMetersPerSecond)
-              .withVelocityY(fieldRelativeSpeeds.vyMetersPerSecond)
+              .withVelocityX(limitedSpeeds.vxMetersPerSecond)
+              .withVelocityY(limitedSpeeds.vyMetersPerSecond)
               .withTargetDirection(goalSnapAngle)
               .withDriveRequestType(driveType));
     } else {
       drivetrain.setControl(
           drive
-              .withVelocityX(fieldRelativeSpeeds.vxMetersPerSecond)
-              .withVelocityY(fieldRelativeSpeeds.vyMetersPerSecond)
-              .withRotationalRate(fieldRelativeSpeeds.omegaRadiansPerSecond)
+              .withVelocityX(limitedSpeeds.vxMetersPerSecond)
+              .withVelocityY(limitedSpeeds.vyMetersPerSecond)
+              .withRotationalRate(limitedSpeeds.omegaRadiansPerSecond)
               .withDriveRequestType(driveType));
     }
   }
@@ -388,26 +388,38 @@ public class SwerveSubsystem extends LifecycleSubsystem {
             <= omegaTolerance;
   }
 
-  public Command driveToPoseCommand(Supplier<Pose2d> targetSupplier, Supplier<Pose2d> currentPose) {
+  public Command driveToPoseCommand(
+      Supplier<Optional<Pose2d>> targetSupplier, Supplier<Pose2d> currentPose) {
     return run(() -> {
-          var target = targetSupplier.get();
+          var maybeTarget = targetSupplier.get();
+
+          if (!maybeTarget.isPresent()) {
+            setFieldRelativeSpeeds(new ChassisSpeeds(), closedLoop);
+            return;
+          }
+
+          var target = maybeTarget.get();
+
           var pose = currentPose.get();
           double vx = xPid.calculate(pose.getX(), target.getX());
           double vy = yPid.calculate(pose.getY(), target.getY());
-          double vomega =
-              omegaPid.calculate(
-                  Rotation2d.fromDegrees(drivetrain.getPigeon2().getYaw().getValueAsDouble())
-                      .getRadians(),
-                  target.getRotation().getRadians());
 
-          var newSpeeds = new ChassisSpeeds(vx, vy, -vomega);
+          var newSpeeds = new ChassisSpeeds(vx, vy, 0);
           setFieldRelativeSpeeds(newSpeeds, true);
         })
         .until(
             () -> {
-              var target = targetSupplier.get();
+              var maybeTarget = targetSupplier.get();
+              if (maybeTarget.isPresent()) {
+                var target = targetSupplier.get();
 
-              return atLocation(target, currentPose.get());
+                return atLocation(target.get(), currentPose.get());
+              }
+              return false;
+            })
+        .finallyDo(
+            () -> {
+              snapToAngle = false;
             });
   }
 }
