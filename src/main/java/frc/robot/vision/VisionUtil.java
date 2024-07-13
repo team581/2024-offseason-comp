@@ -32,7 +32,7 @@ public class VisionUtil {
           "StageMiddle");
 
   private static final List<VisionInterpolationData> DATA_POINTS =
-      List.of(SUBWOOFER, STAGE_FRONT, AMP_SIDE_STAGE);
+      List.of(SUBWOOFER, STAGE_FRONT, AMP_SIDE_STAGE, STAGE_MIDDLE);
 
   /**
    * @param visionInput - pose from the limelight
