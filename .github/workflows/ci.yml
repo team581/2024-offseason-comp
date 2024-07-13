@@ -39,3 +39,20 @@ jobs:
         uses: gradle/actions/wrapper-validation@v3
       - name: Check formatting
         run: ./gradlew spotlessCheck
+  style-python:
+    name: Check Python formatting
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Git repository
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+          cache: "pip"
+      - name: Install Python dependencies
+        run: pip install black
+      - name: Check formatting
+        run: black --check .
