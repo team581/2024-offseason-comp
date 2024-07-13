@@ -58,7 +58,6 @@ public class VisionUtil {
       weightedY += result.getY();
       weightedRotation = weightedRotation.plus(result.getRotation());
     }
-    Pose2d offsetSum = new Pose2d(weightedX, weightedY, weightedRotation);
     Pose2d interpolatedSum =
         new Pose2d(
             visionInput.getX() + weightedX,
