@@ -4,7 +4,10 @@
 
 package frc.robot.generated;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.TorqueCurrentConfigs;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.ClosedLoopOutputType;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModuleConstants;
@@ -69,6 +72,26 @@ public class PracticeBotTunerConstants {
 
   private static final SwerveModuleConstantsFactory ConstantCreator =
       new SwerveModuleConstantsFactory()
+          .withDriveMotorInitialConfigs(
+              new TalonFXConfiguration()
+                  .withCurrentLimits(
+                      new CurrentLimitsConfigs()
+                          .withSupplyCurrentLimit(150)
+                          .withStatorCurrentLimit(70)
+                          .withSupplyCurrentLimitEnable(true)
+                          .withStatorCurrentLimitEnable(true))
+                  .withTorqueCurrent(
+                      new TorqueCurrentConfigs()
+                          .withPeakForwardTorqueCurrent(80)
+                          .withPeakReverseTorqueCurrent(-80)))
+          .withSteerMotorInitialConfigs(
+              new TalonFXConfiguration()
+                  .withCurrentLimits(
+                      new CurrentLimitsConfigs()
+                          .withSupplyCurrentLimit(20)
+                          .withStatorCurrentLimit(70)
+                          .withSupplyCurrentLimitEnable(true)
+                          .withStatorCurrentLimitEnable(true)))
           .withDriveMotorGearRatio(kDriveGearRatio)
           .withSteerMotorGearRatio(kSteerGearRatio)
           .withWheelRadius(kWheelRadiusInches)
