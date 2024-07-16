@@ -239,7 +239,7 @@ public class Robot extends TimedRobot {
         .onFalse(actions.stowCommand());
     operatorController
         .povRight()
-        .whileTrue(noteTrackingManager.intakeNearestMapNote())
+        .onTrue(noteTrackingManager.intakeNearestMapNote())
         .onFalse(actions.stowCommand());
     operatorController
         .rightTrigger()

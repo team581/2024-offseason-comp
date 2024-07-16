@@ -19,6 +19,7 @@ import frc.robot.imu.ImuSubsystem;
 import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
+import frc.robot.robot_manager.RobotState;
 import frc.robot.snaps.SnapManager;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.util.scheduling.LifecycleSubsystem;
@@ -207,7 +208,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     if (!safeToTrack()) {
       return List.of();
     }
-
     List<Pose2d> possibleNotes = getRawNotePoses();
     List<Pose2d> filteredNotes = new ArrayList<>();
 
@@ -225,7 +225,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     // TODO: finish refactor for chassis speeds
     return speeds.vxMetersPerSecond < 2
         && speeds.vyMetersPerSecond < 2
-        && speeds.omegaRadiansPerSecond < Units.degreesToRadians(5.0);
+        && speeds.omegaRadiansPerSecond < Units.degreesToRadians(3.0);
   }
 
   private void removeNote(NoteMapElement note) {
@@ -235,9 +235,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   public Command intakeNearestMapNote() {
     return actions
         .intakeCommand()
-        .raceWith(
-            // TODO: Do we want to prevent this command from finishing automatically based on robot
-            // pose
+        .alongWith(
             swerve.driveToPoseCommand(
                 () -> {
                   var nearestNote = getNearestNotePoseRelative(getPose(), 5);
@@ -252,7 +250,9 @@ public class NoteTrackingManager extends LifecycleSubsystem {
                     return Optional.empty();
                   }
                 },
-                this::getPose))
+                this::getPose,
+                false))
+        .until(() -> robot.getState() == RobotState.IDLE_WITH_GP)
         .andThen(
             Commands.runOnce(
                 () -> {
@@ -261,11 +261,9 @@ public class NoteTrackingManager extends LifecycleSubsystem {
                     removeNote(intakedNote.get());
                   }
                 }))
-        .finallyDo(
-            () -> {
-              robot.stopIntakingRequest();
-            });
+        .withName("IntakeNearestNoteCommand");
   }
+
 
   private Pose2d getPose() {
     return localization.getPose();
@@ -278,7 +276,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
         noteMap.removeIf(
             element -> {
               DogLog.log("NoteTracking/ExpiredNote", element.notePose());
-
               return element.expiresAt() < Timer.getFPGATimestamp();
             }));
 

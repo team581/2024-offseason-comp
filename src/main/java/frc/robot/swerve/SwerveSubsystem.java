@@ -19,6 +19,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.config.RobotConfig;
@@ -96,8 +97,8 @@ public class SwerveSubsystem extends LifecycleSubsystem {
   private ChassisSpeeds fieldRelativeSpeeds = new ChassisSpeeds();
   private boolean closedLoop = false;
 
-  private final PIDController xPid = new PIDController(1.5, 0, 0);
-  private final PIDController yPid = new PIDController(1.5, 0, 0);
+  private final PIDController xPid = new PIDController(2.0, 0, 0);
+  private final PIDController yPid = new PIDController(2.0, 0, 0);
   private final PIDController omegaPid = new PIDController(1.5, 0, 0);
 
   public SwerveSubsystem(CommandXboxController driveController) {
@@ -359,14 +360,17 @@ public class SwerveSubsystem extends LifecycleSubsystem {
   }
 
   public Command driveToPoseCommand(
-      Supplier<Optional<Pose2d>> targetSupplier, Supplier<Pose2d> currentPose) {
+      Supplier<Optional<Pose2d>> targetSupplier, Supplier<Pose2d> currentPose, boolean shouldEnd) {
     return run(() -> {
           var maybeTarget = targetSupplier.get();
 
           if (!maybeTarget.isPresent()) {
             setFieldRelativeSpeeds(new ChassisSpeeds(), closedLoop);
+            DogLog.log("Debug/DriveToPoseNoTarget", Timer.getFPGATimestamp());
             return;
           }
+
+          DogLog.log("Debug/DriveToPoseHasTarget", Timer.getFPGATimestamp());
 
           var target = maybeTarget.get();
 
@@ -379,12 +383,15 @@ public class SwerveSubsystem extends LifecycleSubsystem {
         })
         .until(
             () -> {
-              var maybeTarget = targetSupplier.get();
-              if (maybeTarget.isPresent()) {
-                var target = targetSupplier.get();
+              if (shouldEnd) {
+                var maybeTarget = targetSupplier.get();
+                if (maybeTarget.isPresent()) {
+                  var target = targetSupplier.get();
 
-                return atLocation(target.get(), currentPose.get());
+                  return atLocation(target.get(), currentPose.get());
+                }
               }
+
               return false;
             })
         .finallyDo(
