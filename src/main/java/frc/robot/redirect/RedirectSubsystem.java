@@ -15,7 +15,7 @@ public class RedirectSubsystem extends LifecycleSubsystem {
   public RedirectSubsystem(TalonFX motor){
     super(SubsystemPriority.REDIRECT);
 
-    motor.getConfigurator().apply(RobotConfig.get().redirect().motorConfig())
+    motor.getConfigurator().apply(RobotConfig.get().redirect().motorConfig());
 
   }
 }
