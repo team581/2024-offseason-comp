@@ -2,5 +2,6 @@
   "wpilibsuite.vscode-wpilib",
   "editorconfig.editorconfig",
   "vscjava.vscode-java-pack",
-  "richardwillis.vscode-spotless-gradle"
+  "richardwillis.vscode-spotless-gradle",
+  "ms-python.black-formatter"
 ]}
