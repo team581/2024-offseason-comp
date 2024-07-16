@@ -67,25 +67,6 @@ public class SwerveSubsystem extends LifecycleSubsystem {
   private final double AccelerationLimit = 3.2;
   private Translation2d previousVelocity = new Translation2d();
 
-  /**
-   * Helper for applying current limits to swerve modules, since the CTR swerve builder API doesn't
-   * support it.
-   */
-  private static void applyCurrentLimits(SwerveModule module) {
-    module
-        .getDriveMotor()
-        .getConfigurator()
-        .apply(RobotConfig.get().swerve().driveMotorCurrentLimits());
-    module
-        .getSteerMotor()
-        .getConfigurator()
-        .apply(RobotConfig.get().swerve().steerMotorCurrentLimits());
-    module
-        .getDriveMotor()
-        .getConfigurator()
-        .apply(RobotConfig.get().swerve().driveMotorTorqueCurrentLimits());
-  }
-
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
   private boolean snapToAngle = false;
@@ -130,11 +111,6 @@ public class SwerveSubsystem extends LifecycleSubsystem {
     driveToAngle.HeadingController = RobotConfig.get().swerve().snapController();
     driveToAngle.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
     driveToAngle.HeadingController.setTolerance(0.02);
-
-    applyCurrentLimits(frontLeft);
-    applyCurrentLimits(frontRight);
-    applyCurrentLimits(backLeft);
-    applyCurrentLimits(backRight);
 
     omegaPid.enableContinuousInput(-Math.PI, Math.PI);
   }

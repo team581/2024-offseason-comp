@@ -5,7 +5,7 @@
       "x": 15.198025703430176,
       "y": 5.552863121032715
     },
-    "rotation": 8.407083341517454e-36
+    "rotation": -1.0762704379604923e-27
   },
   "command": {
     "type": "sequential",
@@ -26,7 +26,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Red Six Piece 2 to 4 (1).1"
+            "pathName": "Red Six Piece 2 to 4.1"
           }
         },
         {
@@ -38,13 +38,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Red Six Piece 2 to 4 (1).2"
+            "pathName": "Red Six Piece 2 to 4.2"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Red Six Piece 2 to 4 (1).3"
+            "pathName": "Red Six Piece 2 to 4.3"
           }
         },
         {
@@ -56,13 +56,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Red Six Piece 2 to 4 (1).4"
+            "pathName": "Red Six Piece 2 to 4.4"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Red Six Piece 2 to 4 (1).5"
+            "pathName": "Red Six Piece 2 to 4.5"
           }
         },
         {
@@ -74,25 +74,79 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Red Six Piece 2 to 4 (1).6"
+            "pathName": "Red Six Piece 2 to 4.6"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Red Six Piece 2 to 4 (1).7"
+            "pathName": "Red Six Piece 2 to 4.7"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Red Six Piece 2 to 4 (1).8"
+            "pathName": "Red Six Piece 2 to 4.8"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "midlineNotesFromAmp456"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red 4 to CWS 2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red CWS to 5.1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red 5 to CWS"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red CWS to 6"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red 6 to CWS.1 2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
           }
         }
       ]

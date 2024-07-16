@@ -4,7 +4,6 @@
 
 package frc.robot.vision;
 
-import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import java.util.List;
@@ -32,7 +31,7 @@ public class VisionUtil {
           "StageMiddle");
 
   private static final List<VisionInterpolationData> DATA_POINTS =
-      List.of(SUBWOOFER, STAGE_FRONT, AMP_SIDE_STAGE);
+      List.of(SUBWOOFER, STAGE_FRONT, AMP_SIDE_STAGE, STAGE_MIDDLE);
 
   /**
    * @param visionInput - pose from the limelight
@@ -59,11 +58,6 @@ public class VisionUtil {
       weightedY += result.getY();
       weightedRotation = weightedRotation.plus(result.getRotation());
     }
-    Pose2d offsetSum = new Pose2d(weightedX, weightedY, weightedRotation);
-    DogLog.log("VisionUtil/distanceSum", distanceSum);
-    DogLog.log("VisionUtil/distancePoint", distancePoint);
-    DogLog.log("VisionUtil/weightedSum", offsetSum);
-    // DogLog.log("VisionUtil/Result", result);
     Pose2d interpolatedSum =
         new Pose2d(
             visionInput.getX() + weightedX,

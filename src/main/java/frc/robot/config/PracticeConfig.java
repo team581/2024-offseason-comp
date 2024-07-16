@@ -247,24 +247,7 @@ class PracticeConfig {
                       new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive))
                   .withClosedLoopRamps(CLOSED_LOOP_RAMP)
                   .withOpenLoopRamps(OPEN_LOOP_RAMP)),
-          new SwerveConfig(
-              new CurrentLimitsConfigs()
-                  .withSupplyCurrentLimit(20)
-                  .withStatorCurrentLimit(70)
-                  .withSupplyCurrentLimitEnable(true)
-                  .withStatorCurrentLimitEnable(true),
-              new CurrentLimitsConfigs()
-                  .withSupplyCurrentLimit(150)
-                  .withStatorCurrentLimit(70)
-                  .withSupplyCurrentLimitEnable(true)
-                  .withStatorCurrentLimitEnable(true),
-              new TorqueCurrentConfigs()
-                  .withPeakForwardTorqueCurrent(80)
-                  .withPeakReverseTorqueCurrent(-80),
-              new PhoenixPIDController(10, 0, 1),
-              true,
-              true,
-              true),
+          new SwerveConfig(new PhoenixPIDController(10, 0, 1), true, true, true),
           new IMUConfig(
               1,
               distanceToAngleTolerance -> {
