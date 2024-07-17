@@ -20,7 +20,7 @@ class Point:
         return Point(self.x - other.x, self.y - other.y)
 
     def dist(self, other) -> float:
-        return math.sqrt(math.pow(self.x - other.x, 2) + math.pow(self.y - other.y, 2))
+        return math.dist((self.x,self.y),(other.x,other.y))
 
 
 @dataclasses.dataclass
@@ -49,23 +49,10 @@ class Model:
         self.rpos = rpos
         self.gpos = gpos
         self.rpm = rpm
+        self.efficiency = 0.8
 
     def get_vel(self, rpm):
-        return (math.pi * 0.5 * 0.05 / 30) * rpm
-
-    def get_angle(self):
-        g = 9.8
-        gpos = self.gpos
-        rpos = self.rpos
-        rpm = self.rpm
-
-        vel = self.get_vel(rpm)
-
-        b = gpos.x - rpos.x
-        a = -(g / 2) * (math.pow(b, 2) / math.pow(vel, 2))
-        c = (rpos.y - gpos.y) + a
-        calculated_angle = abs(math.atan((-b + math.sqrt(math.pow(b, 2) - 4 * a * c)) / (2 * a)))
-        return calculated_angle
+        return (math.pi * self.efficiency * 0.05 / 30) * rpm
 
     def getvector(self) -> Vector:
         return Vector(self.get_angle, self.get_vel(self.rpm))
@@ -119,16 +106,13 @@ class ProjectileMotion:
         return len(points) / self.dt
 
 
-def getexit(vector: Vector):
-    return Point(vector.getX(), vector.getY())
-
 
 robot_wrist_length = 0.1  # meters
 
 
 def getangle(model: Model, pm: ProjectileMotion):
     vel = model.get_vel(model.rpm)
-    closestangle = -1
+    closest_angle = -1
     local_min = 10000
     final_min = 10000
 
@@ -138,26 +122,29 @@ def getangle(model: Model, pm: ProjectileMotion):
 
     current_angle = min_angle
     while current_angle <= max_angle:
-        exitpoint = Point.add(model.rpos, getexit(Vector(current_angle, robot_wrist_length)))
-        points = pm.getpoints(Vector(current_angle, vel), exitpoint)
-        points = prunepoints(points)
+        exitpoint = Point.add(model.rpos, Vector(current_angle, robot_wrist_length).topoint())
+        points = prunepoints(pm.getpoints(Vector(current_angle, vel), exitpoint))
         for point in points:
             dist = point.dist(model.gpos)
             local_min = min(local_min, dist)
         if local_min < final_min:
             final_min = local_min
-            closestangle = current_angle
+            closest_angle = current_angle
         current_angle += angle_change
-    return closestangle
+    print(Vector.fromradians(closest_angle))
+    print(exitpoint)
+    return closest_angle
 
 
-def plot(points: [], start: Point, end: Point):
-    for i in range(len(points)):
-        points[i] = (i, points[i])
+def plot(line: [], points: []):
+    for i in range(len(line)):
+        line[i] = (i, line[i])
     figure, axis = plt.subplots()
-    axis.plot(np.array([pos[1].x for pos in points]), np.array([pos[1].y for pos in points]))
-    plt.plot([start.x, end.x], [start.y, end.y], "o")
+    axis.plot(np.array([pos[1].x for pos in line]), np.array([pos[1].y for pos in line]))
+    for i in points:
+        plt.plot(i.x, i.y, "o")
 
+    plt.axis([0,4.5,0,4.5])
     axis.set(xlabel="X Postion", ylabel="Y Position", title="Title")
     axis.grid()
 
@@ -167,31 +154,32 @@ def plot(points: [], start: Point, end: Point):
 # Set proper goal
 
 input_points = [
-    # {"distance": 0.001, "rpm": 3000},
+    # {"distance": 1.38, "rpm": 3000},
     # {"distance": 2.0, "rpm": 3000},
     # {"distance": 2.5, "rpm": 4000},
-    # {"distance": 4.0, "rpm": 4000},
+    {"distance": 4.0, "rpm": 4000},
     # {"distance": 4.5, "rpm": 4000},
     # {"distance": 6.0, "rpm": 4000},
-    {"distance": 6.5, "rpm": 4800},
-    # {"distance": 8.0, "rpm": 4800},
+    # {"distance": 6.5, "rpm": 4800},
+    # {"distance": 8.0, "rpm": 4800}
 ]
 
 shooting_config = []
 
-angle = 0
+
 for input_point in range(len(input_points)):
     rpm = input_points[input_point]["rpm"]
     distance = input_points[input_point]["distance"]
-    goalpos = Point(0, 0.86)
-    rpos = Point(-distance, 0).add(getexit(Vector(angle, 0.1)))
+    goalpos = Point(distance, 0.84)
+    rpos = Point(0, 0)
     projectile_motion = ProjectileMotion(0.02, True)
     modelinfo = Model(rpos, goalpos, rpm)
-    angle = Vector.fromradians(getangle(modelinfo, projectile_motion))
-    points = projectile_motion.getpoints(Vector(Vector.fromdegrees(angle), modelinfo.get_vel(rpm)), rpos)
+    angle = getangle(modelinfo, projectile_motion)
+    modelinfo.rpos = rpos.add(Vector(angle, robot_wrist_length).topoint())
+    points = projectile_motion.getpoints(Vector(angle, modelinfo.get_vel(rpm)), modelinfo.rpos)
     time_of_flight = projectile_motion.get_travel_time(points)
 
-    plot(points, rpos, goalpos)
+    plot(points, [modelinfo.rpos, modelinfo.gpos])
 
     shooting_config.append({"rpm": rpm, "distance": distance, "angle": angle, "time_of_flight": time_of_flight})
 

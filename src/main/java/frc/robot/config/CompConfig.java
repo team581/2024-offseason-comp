@@ -4,6 +4,8 @@
 
 package frc.robot.config;
 
+import org.opencv.objdetect.Dictionary;
+
 import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
@@ -22,6 +24,7 @@ import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.util.Units;
 import frc.robot.config.RobotConfig.ClimberConfig;
 import frc.robot.config.RobotConfig.ConveyorConfig;
@@ -171,14 +174,14 @@ class CompConfig {
               },
               speakerDistanceToAngle -> {
                 // speakerDistanceToAngle.put(1.38, 58.1);
-                speakerDistanceToAngle.put(0.001,  89.93829077828299);
-                speakerDistanceToAngle.put(2.0,  33.32759006321753);
-                speakerDistanceToAngle.put(2.5,  25.716283037988486);
-                speakerDistanceToAngle.put(4.0,  23.083493490723104);
-                speakerDistanceToAngle.put(4.5,  23.23035360296336);
-                speakerDistanceToAngle.put(6.0,  25.214402600059532);
-                speakerDistanceToAngle.put(6.5,  19.80715521465698);
-                speakerDistanceToAngle.put(8.0,  21.52122342119286);
+                speakerDistanceToAngle.put(0.001,  61.40000000000008);
+                speakerDistanceToAngle.put(2.0,  25.80000000000003);
+                speakerDistanceToAngle.put(2.5,  20.600000000000023);
+                speakerDistanceToAngle.put(4.0,  14.600000000000014);
+                speakerDistanceToAngle.put(4.5,  14.200000000000014);
+                speakerDistanceToAngle.put(6.0,  13.200000000000012);
+                speakerDistanceToAngle.put(6.5,  11.6);
+                speakerDistanceToAngle.put(8.0,  55.40000000000007);
               },
               floorSpotDistanceToAngle -> {
                 floorSpotDistanceToAngle.put(3.4, 18.0);

@@ -1,8 +1,8 @@
 [
   {
-    "rpm": 4800,
-    "distance": 6.5,
-    "angle": 24.00000000000003,
-    "time_of_flight": 2700.0
+    "rpm": 4000,
+    "distance": 4.0,
+    "angle": 0.279252680319093,
+    "time_of_flight": 2450.0
   }
 ]
