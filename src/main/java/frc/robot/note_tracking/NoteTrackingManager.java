@@ -30,6 +30,7 @@ import frc.robot.vision.VisionSubsystem;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public class NoteTrackingManager extends LifecycleSubsystem {
 
@@ -76,7 +77,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
    * Get the pose of the note closest to the provided location, within a threshold. Returns
    * optional.empty if no notes are tracked or notes exceed the threshold.
    */
-  public Optional<NoteMapElement> getNearestNotePoseRelative(
+  private Optional<NoteMapElement> getNearestNotePoseRelative(
       Pose2d searchLocation, double thresholdMeters) {
 
     var maybeElement =
@@ -232,13 +233,18 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     noteMap.remove(note);
   }
 
-  public Command intakeNearestMapNote() {
+  public Command intakeNoteAtPose(Pose2d searchPose) {
+    return intakeNoteAtPose(() -> searchPose);
+  }
+
+  public Command intakeNoteAtPose(Supplier<Pose2d> searchPose) {
+    // TODO: If no note found, exit the command (somehow)
     return actions
         .intakeCommand()
         .alongWith(
             swerve.driveToPoseCommand(
                 () -> {
-                  var nearestNote = getNearestNotePoseRelative(getPose(), 5);
+                  var nearestNote = getNearestNotePoseRelative(searchPose.get(), 1.5);
 
                   if (nearestNote.isPresent()) {
                     snaps.setAngle(nearestNote.get().notePose().getRotation());
@@ -252,11 +258,11 @@ public class NoteTrackingManager extends LifecycleSubsystem {
                 },
                 this::getPose,
                 false))
-        .until(() -> robot.getState() == RobotState.IDLE_WITH_GP)
+        .until(() -> robot.getState() == RobotState.IDLE_WITH_GP || getNearestNotePoseRelative(searchPose.get(), 1.5).isEmpty())
         .andThen(
             Commands.runOnce(
                 () -> {
-                  var intakedNote = getNearestNotePoseRelative(getPose(), 0.5);
+                  var intakedNote = getNearestNotePoseRelative(searchPose.get(), 0.5);
                   if (intakedNote.isPresent()) {
                     removeNote(intakedNote.get());
                   }
@@ -264,6 +270,9 @@ public class NoteTrackingManager extends LifecycleSubsystem {
         .withName("IntakeNearestNoteCommand");
   }
 
+  public Command intakeNearestMapNote() {
+    return intakeNoteAtPose(this::getPose);
+  }
 
   private Pose2d getPose() {
     return localization.getPose();
