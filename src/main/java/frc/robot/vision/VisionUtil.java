@@ -24,6 +24,7 @@ public class VisionUtil {
           new Pose2d(10.27, 7.79, new Rotation2d(0)),
           new Pose2d(10.36, 7.74, new Rotation2d(0)),
           "AMP_SIDE_STAGE");
+  // TODO: This is super wrong and makes vision evil
   private static final VisionInterpolationData STAGE_MIDDLE =
       new VisionInterpolationData(
           new Pose2d(17.0, 9.7, new Rotation2d(0)),
@@ -31,7 +32,7 @@ public class VisionUtil {
           "StageMiddle");
 
   private static final List<VisionInterpolationData> DATA_POINTS =
-      List.of(SUBWOOFER, STAGE_FRONT, AMP_SIDE_STAGE, STAGE_MIDDLE);
+      List.of(SUBWOOFER, STAGE_FRONT, AMP_SIDE_STAGE);
 
   /**
    * @param visionInput - pose from the limelight
