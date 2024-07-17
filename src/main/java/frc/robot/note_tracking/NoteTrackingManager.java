@@ -258,7 +258,10 @@ public class NoteTrackingManager extends LifecycleSubsystem {
                 },
                 this::getPose,
                 false))
-        .until(() -> robot.getState() == RobotState.IDLE_WITH_GP || getNearestNotePoseRelative(searchPose.get(), 1.5).isEmpty())
+        .until(
+            () ->
+                robot.getState() == RobotState.IDLE_WITH_GP
+                    || getNearestNotePoseRelative(searchPose.get(), 1.5).isEmpty())
         .andThen(
             Commands.runOnce(
                 () -> {

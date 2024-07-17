@@ -98,7 +98,8 @@ public class Robot extends TimedRobot {
           new CANdle(RobotConfig.get().lights().deviceID(), "rio"), robotManager, vision, intake);
   private final NoteTrackingManager noteTrackingManager =
       new NoteTrackingManager(localization, swerve, actions, robotManager, imu);
-  private final AutoManager autoManager = new AutoManager(actions, noteTrackingManager, robotManager);
+  private final AutoManager autoManager =
+      new AutoManager(actions, noteTrackingManager, robotManager);
 
   public Robot() {
     System.out.println("roboRIO serial number: " + RobotConfig.SERIAL_NUMBER);
@@ -239,10 +240,7 @@ public class Robot extends TimedRobot {
         .y()
         .onTrue(actions.waitSubwooferShotCommand())
         .onFalse(actions.stowCommand());
-    operatorController
-        .povRight()
-        .onTrue(autoManager.testCommand())
-        .onFalse(actions.stowCommand());
+    operatorController.povRight().onTrue(autoManager.testCommand()).onFalse(actions.stowCommand());
     operatorController
         .rightTrigger()
         .onTrue(actions.waitForSpeakerShotCommand())
