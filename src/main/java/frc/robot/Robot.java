@@ -94,7 +94,7 @@ public class Robot extends TimedRobot {
   private final VisionSubsystem vision = new VisionSubsystem(imu);
   private final LocalizationSubsystem localization = new LocalizationSubsystem(swerve, imu, vision);
   private final SnapManager snaps = new SnapManager(swerve, driverController);
-  private final NoteManager noteManager = new NoteManager(queuer, intake, conveyor);
+  private final NoteManager noteManager = new NoteManager(queuer, intake, conveyor, redirect);
   private final RobotManager robotManager =
       new RobotManager(
           wrist, elevator, shooter, localization, vision, climber, swerve, snaps, imu, noteManager);

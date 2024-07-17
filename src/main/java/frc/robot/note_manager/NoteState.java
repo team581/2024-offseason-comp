@@ -5,35 +5,32 @@
 package frc.robot.note_manager;
 
 public enum NoteState {
-  IDLE_NO_GP(false),
+  IDLE_NO_GP,
 
   /** Note is in intake, going to be sent to queuer for idle. */
-  INTAKE_TO_QUEUER(false),
-  INTAKE_TO_QUEUER_FOR_SHOOTING(false),
-  LAZY_INTAKE_TO_QUEUER(false),
-  IDLE_IN_QUEUER_SHUFFLE(false),
-  IDLE_IN_QUEUER(false),
-  GROUND_NOTE_TO_INTAKE(false),
+  INTAKE_TO_QUEUER,
+  INTAKE_TO_QUEUER_FOR_SHOOTING,
+  LAZY_INTAKE_TO_QUEUER,
+  IDLE_IN_QUEUER_SHUFFLE,
+  IDLE_IN_QUEUER,
+  GROUND_NOTE_TO_INTAKE,
 
-  SHOOTING(false),
-  SHOOTER_OUTTAKING(false),
+  SHOOTING,
+  SHOOTER_OUTTAKING,
 
-  QUEUER_TO_INTAKE_FOR_CONVEYOR(false),
-  QUEUER_TO_INTAKE_FOR_CONVEYOR_FINAL(false),
-  INTAKE_TO_CONVEYOR(true),
-  IDLE_IN_CONVEYOR(true),
+  QUEUER_TO_CONVEYOR,
+  IDLE_IN_CONVEYOR,
 
-  AMP_SCORING(true),
-  TRAP_SCORING(true),
+  CONVEYOR_TO_QUEUER,
+  CONVEYOR_TO_QUEUER_FOR_OUTTAKING,
+  CONVEYOR_TO_QUEUER_FOR_SHOOTER_OUTTAKING,
+  CONVEYOR_TO_QUEUER_FOR_SHOOTING,
 
-  UNJAM(true),
+  AMP_SCORING,
+  TRAP_SCORING,
 
-  QUEUER_TO_INTAKE_FOR_OUTTAKING(false),
-  OUTTAKING(false);
+  UNJAM,
 
-  public final boolean inConveyor;
-
-  NoteState(boolean inConveyor) {
-    this.inConveyor = inConveyor;
-  }
+  QUEUER_TO_INTAKE_FOR_OUTTAKING,
+  OUTTAKING;
 }
