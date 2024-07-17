@@ -6,7 +6,6 @@ package frc.robot.intake;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.CANSparkMax;
-
 import dev.doglog.DogLog;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -23,7 +22,11 @@ public class IntakeSubsystem extends LifecycleSubsystem {
   private boolean debouncedSensor = false;
   private IntakeState goalState = IntakeState.IDLE;
 
-  public IntakeSubsystem(TalonFX motor,CANSparkMax intakeCenteringLeft,CANSparkMax intakeCenteringRight, DigitalInput sensor) {
+  public IntakeSubsystem(
+      TalonFX motor,
+      CANSparkMax intakeCenteringLeft,
+      CANSparkMax intakeCenteringRight,
+      DigitalInput sensor) {
     super(SubsystemPriority.INTAKE);
 
     motor.getConfigurator().apply(RobotConfig.get().intake().motorConfig());
