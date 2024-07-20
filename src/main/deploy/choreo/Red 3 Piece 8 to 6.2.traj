@@ -337,15 +337,5 @@
       "timestamp": 1.1046078800407555
     }
   ],
-  "eventMarkers": [
-    {
-      "timestamp": 1.1046078800407555,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "intakeFloor"
-        }
-      }
-    }
-  ]
+  "eventMarkers": []
 }
