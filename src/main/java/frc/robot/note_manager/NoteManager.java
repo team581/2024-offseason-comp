@@ -183,7 +183,6 @@ public class NoteManager extends LifecycleSubsystem {
           state = NoteState.SHOOTING;
         }
         break;
-        // TODO: Add state transitions
       case CONVEYOR_TO_QUEUER_FOR_OUTTAKING:
         if (queuer.hasNote()) {
           state = NoteState.OUTTAKING;
@@ -199,6 +198,16 @@ public class NoteManager extends LifecycleSubsystem {
           state = NoteState.SHOOTING;
         }
         break;
+      case CONVEYOR_TO_QUEUER:
+        if (queuer.hasNote()) {
+          state = NoteState.IDLE_IN_QUEUER;
+        }
+        break;
+      case QUEUER_TO_CONVEYOR:
+        if (conveyor.hasNote()) {
+          state = NoteState.IDLE_IN_CONVEYOR;
+        }
+        break;
       default:
         break;
     }
@@ -212,8 +221,8 @@ public class NoteManager extends LifecycleSubsystem {
         intake.setState(IntakeState.IDLE);
         conveyor.setState(ConveyorState.IDLE);
         queuer.setState(QueuerState.IDLE);
-          redirect.setState(RedirectState.IDLE);
-          break;
+        redirect.setState(RedirectState.IDLE);
+        break;
       case IDLE_IN_QUEUER:
         if (queuer.hasNote()) {
           intake.setState(IntakeState.IDLE);
@@ -224,7 +233,7 @@ public class NoteManager extends LifecycleSubsystem {
         }
         queuer.setState(QueuerState.INTAKING);
         redirect.setState(RedirectState.IDLE);
-          break;
+        break;
       case IDLE_IN_QUEUER_SHUFFLE:
         if (shuffleTimeoutTimer.hasElapsed(NOTE_SHUFFLE_TIMEOUT_DURATION)) {
           if (queuer.hasNote()) {
@@ -311,10 +320,28 @@ public class NoteManager extends LifecycleSubsystem {
         redirect.setState(RedirectState.TO_CONVEYOR);
         break;
       case CONVEYOR_TO_QUEUER:
-      intake.setState(IntakeState.IDLE);
-      queuer.setState(QueuerState.INTAKING);
-      conveyor.setState(ConveyorState.CONVEYOR_TO_INTAKE);
-      redirect.setState(RedirectState.TO_QUEUER);
+        intake.setState(IntakeState.IDLE);
+        queuer.setState(QueuerState.INTAKING);
+        conveyor.setState(ConveyorState.CONVEYOR_TO_REDIRECT);
+        redirect.setState(RedirectState.TO_QUEUER);
+        break;
+      case CONVEYOR_TO_QUEUER_FOR_OUTTAKING:
+        intake.setState(IntakeState.IDLE);
+        queuer.setState(QueuerState.INTAKING);
+        conveyor.setState(ConveyorState.CONVEYOR_TO_REDIRECT);
+        redirect.setState(RedirectState.TO_QUEUER);
+        break;
+      case CONVEYOR_TO_QUEUER_FOR_SHOOTER_OUTTAKING:
+        intake.setState(IntakeState.IDLE);
+        queuer.setState(QueuerState.INTAKING);
+        conveyor.setState(ConveyorState.CONVEYOR_TO_REDIRECT);
+        redirect.setState(RedirectState.TO_QUEUER);
+        break;
+      case CONVEYOR_TO_QUEUER_FOR_SHOOTING:
+        intake.setState(IntakeState.IDLE);
+        queuer.setState(QueuerState.PASS_TO_SHOOTER);
+        conveyor.setState(ConveyorState.CONVEYOR_TO_REDIRECT);
+        redirect.setState(RedirectState.TO_QUEUER);
         break;
       default:
         break;
