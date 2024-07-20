@@ -14,15 +14,13 @@ import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
 
 public class QueuerSubsystem extends LifecycleSubsystem {
-  private static final double NOTE_SHUFFLE_ON_DURATION = 0.2;
-  private static final double NOTE_SHUFFLE_OFF_DURATION = 0.2;
-  private boolean noteShuffleOn = false;
+  
   private final TalonFX motor;
   private final DigitalInput sensor;
   private QueuerState goalState = QueuerState.IDLE;
   private final Debouncer debouncer = RobotConfig.get().queuer().debouncer();
   private boolean debouncedSensor = false;
-  private final Timer shuffleTimer = new Timer();
+  
 
   public QueuerSubsystem(TalonFX motor, DigitalInput sensor) {
     super(SubsystemPriority.QUEUER);
@@ -32,7 +30,6 @@ public class QueuerSubsystem extends LifecycleSubsystem {
     this.sensor = sensor;
     this.motor = motor;
 
-    shuffleTimer.start();
   }
 
   @Override
@@ -58,31 +55,8 @@ public class QueuerSubsystem extends LifecycleSubsystem {
           motor.setVoltage(1);
         }
         break;
-      case SHUFFLE:
-        if (sensorHasNote()) {
-          if (noteShuffleOn) {
-            // Push note towards intake
-            motor.setVoltage(-1.5);
-
-            if (shuffleTimer.hasElapsed(NOTE_SHUFFLE_ON_DURATION)) {
-              shuffleTimer.reset();
-              noteShuffleOn = false;
-            }
-          } else {
-            // Allow note to expand
-            motor.disable();
-
-            if (shuffleTimer.hasElapsed(NOTE_SHUFFLE_OFF_DURATION)) {
-              shuffleTimer.reset();
-              noteShuffleOn = true;
-            }
-          }
-        }
-        // if no note seen, try intaking it
-        else {
-          motor.setVoltage(1);
-        }
-        break;
+      
+        
       case PASS_TO_INTAKE:
         motor.setVoltage(-1);
         break;

@@ -95,11 +95,7 @@ public class IntakeSubsystem extends LifecycleSubsystem {
           intakeCenteringRight.setVoltage(5);
         }
         break;
-      case SHUFFLE_ASSIST_WHEN_QUEUER_SENSOR_TURNS_OFF:
-        motor.setVoltage(3);
-        intakeCenteringLeft.setVoltage(3);
-        intakeCenteringRight.setVoltage(3);
-        break;
+      
       case TO_CONVEYOR:
         motor.setVoltage(3); // 2
         intakeCenteringLeft.setVoltage(3);
@@ -110,11 +106,7 @@ public class IntakeSubsystem extends LifecycleSubsystem {
         intakeCenteringLeft.setVoltage(8);
         intakeCenteringRight.setVoltage(8);
         break;
-      case SHUFFLE:
-        motor.setVoltage(0.3);
-        intakeCenteringLeft.setVoltage(.3);
-        intakeCenteringRight.setVoltage(.3);
-        break;
+      
       default:
         break;
     }

@@ -20,8 +20,7 @@ import frc.robot.util.scheduling.SubsystemPriority;
 
 public class NoteManager extends LifecycleSubsystem {
   private final FlagManager<NoteFlag> flags = new FlagManager<>("NoteManager", NoteFlag.class);
-  private final Timer shuffleTimeoutTimer = new Timer();
-  private static final double NOTE_SHUFFLE_TIMEOUT_DURATION = 2;
+  
 
   public final QueuerSubsystem queuer;
   public final IntakeSubsystem intake;
@@ -41,7 +40,7 @@ public class NoteManager extends LifecycleSubsystem {
     this.conveyor = conveyor;
     this.redirect = redirect;
 
-    shuffleTimeoutTimer.start();
+    
   }
 
   @Override
@@ -49,9 +48,7 @@ public class NoteManager extends LifecycleSubsystem {
     DogLog.log("NoteManager/State", state);
     flags.log();
 
-    if (state != NoteState.IDLE_IN_QUEUER_SHUFFLE) {
-      shuffleTimeoutTimer.reset();
-    }
+    
     // State transitions from requests
     for (NoteFlag flag : flags.getChecked()) {
       switch (flag) {
@@ -80,13 +77,7 @@ public class NoteManager extends LifecycleSubsystem {
             state = NoteState.IDLE_IN_QUEUER;
           }
           break;
-        case IDLE_IN_QUEUER_SHUFFLE:
-          if (state == NoteState.IDLE_IN_CONVEYOR) {
-            state = NoteState.CONVEYOR_TO_QUEUER;
-          } else {
-            state = NoteState.IDLE_IN_QUEUER_SHUFFLE;
-          }
-          break;
+        
         case IDLE_NO_GP:
           state = NoteState.IDLE_NO_GP;
           break;
@@ -141,7 +132,7 @@ public class NoteManager extends LifecycleSubsystem {
       case OUTTAKING:
       case IDLE_NO_GP:
       case IDLE_IN_CONVEYOR:
-      case IDLE_IN_QUEUER_SHUFFLE:
+      
       case IDLE_IN_QUEUER:
       case TRAP_SCORING:
       case UNJAM:
@@ -161,14 +152,14 @@ public class NoteManager extends LifecycleSubsystem {
       case INTAKE_TO_QUEUER:
       case LAZY_INTAKE_TO_QUEUER:
         if (queuer.hasNote()) {
-          state = NoteState.IDLE_IN_QUEUER_SHUFFLE;
+          state = NoteState.IDLE_IN_QUEUER;
         }
         break;
       case GROUND_NOTE_TO_INTAKE:
         if (queuer.hasNote()) {
           // Trying to restart the intake sequence, even though a note is already fully inside the
           // robot
-          state = NoteState.IDLE_IN_QUEUER_SHUFFLE;
+          state = NoteState.IDLE_IN_QUEUER;
         } else if (intake.hasNote()) {
           state = NoteState.INTAKE_TO_QUEUER;
         }
@@ -227,36 +218,11 @@ public class NoteManager extends LifecycleSubsystem {
         if (queuer.hasNote()) {
           intake.setState(IntakeState.IDLE);
           conveyor.setState(ConveyorState.IDLE);
-        } else {
-          intake.setState(IntakeState.SHUFFLE_ASSIST_WHEN_QUEUER_SENSOR_TURNS_OFF);
-          conveyor.setState(ConveyorState.SHUFFLE_ASSIST_WHEN_QUEUER_SENSOR_TURNS_OFF);
-        }
+       
         queuer.setState(QueuerState.INTAKING);
-        redirect.setState(RedirectState.IDLE);
+        redirect.setState(RedirectState.IDLE);}
         break;
-      case IDLE_IN_QUEUER_SHUFFLE:
-        if (shuffleTimeoutTimer.hasElapsed(NOTE_SHUFFLE_TIMEOUT_DURATION)) {
-          if (queuer.hasNote()) {
-            intake.setState(IntakeState.IDLE);
-            conveyor.setState(ConveyorState.IDLE);
-          } else {
-            intake.setState(IntakeState.SHUFFLE_ASSIST_WHEN_QUEUER_SENSOR_TURNS_OFF);
-            conveyor.setState(ConveyorState.SHUFFLE_ASSIST_WHEN_QUEUER_SENSOR_TURNS_OFF);
-          }
-          queuer.setState(QueuerState.INTAKING);
-          redirect.setState(RedirectState.IDLE);
-        } else {
-          if (queuer.hasNote()) {
-            intake.setState(IntakeState.SHUFFLE);
-            conveyor.setState(ConveyorState.SHUFFLE);
-          } else {
-            intake.setState(IntakeState.SHUFFLE_ASSIST_WHEN_QUEUER_SENSOR_TURNS_OFF);
-            conveyor.setState(ConveyorState.SHUFFLE_ASSIST_WHEN_QUEUER_SENSOR_TURNS_OFF);
-          }
-          queuer.setState(QueuerState.SHUFFLE);
-          redirect.setState(RedirectState.IDLE);
-        }
-        break;
+      
       case LAZY_INTAKE_TO_QUEUER:
         intake.setState(IntakeState.TO_QUEUER_SLOW);
         conveyor.setState(ConveyorState.INTAKE_TO_QUEUER);
@@ -363,10 +329,7 @@ public class NoteManager extends LifecycleSubsystem {
     flags.check(NoteFlag.SHOOTER_OUTTAKE);
   }
 
-  public void idleInQueuerShuffleRequest() {
-    flags.check(NoteFlag.IDLE_IN_QUEUER_SHUFFLE);
-  }
-
+  
   public void idleInQueuerRequest() {
     flags.check(NoteFlag.IDLE_IN_QUEUER);
   }
