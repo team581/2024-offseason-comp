@@ -24,7 +24,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.config.RobotConfig;
 import frc.robot.fms.FmsSubsystem;
-import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.util.ControllerHelpers;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
@@ -33,8 +32,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public class SwerveSubsystem extends LifecycleSubsystem {
-  private static final double MAX_SPEED_SHOOTING =
-      Units.feetToMeters(LocalizationSubsystem.USE_SHOOT_WHILE_MOVE ? 3 : 3);
+  private static final double MAX_SPEED_SHOOTING = Units.feetToMeters(3);
   private static final double MAX_FLOOR_SPEED_SHOOTING = Units.feetToMeters(18);
   public static final double MaxSpeed = 4.75;
   private static final double MaxAngularRate = Units.rotationsToRadians(4);

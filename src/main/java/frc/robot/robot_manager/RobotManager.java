@@ -342,16 +342,11 @@ public class RobotManager extends LifecycleSubsystem {
           var wristAtGoal = wrist.atAngleForFloorSpot(floorSpotVisionTargets.distance());
           var shooterAtGoal = shooter.atGoal(ShooterMode.FLOOR_SHOT);
           var headingAtGoal = imu.atAngleForFloorSpot(floorSpotVisionTargets.targetAngle());
-          // If using TX TY, then don't care about pose jitter
-          var jitterAtGoal =
-              localization.atSafeJitter()
-                  || RobotConfig.get().vision().strategy() == VisionStrategy.TX_TY_AND_MEGATAG;
           var swerveAtGoal = swerve.movingSlowEnoughForFloorShot();
           var angularVelocityAtGoal = Math.abs(imu.getRobotAngularVelocity().getDegrees()) < 360.0;
           DogLog.log("RobotManager/FloorShot/WristAtGoal", wristAtGoal);
           DogLog.log("RobotManager/FloorShot/ShooterAtGoal", shooterAtGoal);
           DogLog.log("RobotManager/FloorShot/HeadingAtGoal", headingAtGoal);
-          DogLog.log("RobotManager/FloorShot/JitterAtGoal", jitterAtGoal);
           DogLog.log("RobotManager/FloorShot/SwerveAtGoal", swerveAtGoal);
           DogLog.log("RobotManager/FloorShot/AngularVelocityAtGoal", angularVelocityAtGoal);
 
@@ -397,7 +392,6 @@ public class RobotManager extends LifecycleSubsystem {
         {
           boolean wristAtGoal = wrist.atAngleForSpeaker(speakerDistance);
           boolean shooterAtGoal = shooter.atGoal(ShooterMode.SPEAKER_SHOT);
-          boolean poseJitterSafe = localization.atSafeJitter();
           boolean swerveSlowEnough = swerve.movingSlowEnoughForSpeakerShot();
           boolean angularVelocitySlowEnough = imu.belowVelocityForVision(speakerDistance);
           boolean robotHeadingAtGoal =
@@ -415,7 +409,6 @@ public class RobotManager extends LifecycleSubsystem {
           DogLog.log("RobotManager/SpeakerShot/LimelightWorking", limelightWorking);
           DogLog.log("RobotManager/SpeakerShot/WristAtGoal", wristAtGoal);
           DogLog.log("RobotManager/SpeakerShot/ShooterAtGoal", shooterAtGoal);
-          DogLog.log("RobotManager/SpeakerShot/PoseJitterSafe", poseJitterSafe);
           DogLog.log("RobotManager/SpeakerShot/SwerveSlowEnough", swerveSlowEnough);
           DogLog.log(
               "RobotManager/SpeakerShot/AngularVelocitySlowEnough", angularVelocitySlowEnough);
@@ -423,10 +416,6 @@ public class RobotManager extends LifecycleSubsystem {
           if ((limelightWorking || DriverStation.isAutonomous())
               && wristAtGoal
               && shooterAtGoal
-              // If using TX TY, then don't care about pose jitter
-              && (poseJitterSafe
-                  || DriverStation.isAutonomous()
-                  || RobotConfig.get().vision().strategy() == VisionStrategy.TX_TY_AND_MEGATAG)
               && swerveSlowEnough
               && angularVelocitySlowEnough
               && robotHeadingAtGoal) {

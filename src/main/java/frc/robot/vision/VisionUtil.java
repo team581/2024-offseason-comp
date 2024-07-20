@@ -40,9 +40,8 @@ public class VisionUtil {
    */
   public static Pose2d interpolatePose(Pose2d visionInput) {
     double distanceSum = 0;
-    double distancePoint = 0;
     for (var dataPoint : DATA_POINTS) {
-      distancePoint =
+      double distancePoint =
           dataPoint.visionPose().getTranslation().getDistance(visionInput.getTranslation());
 
       distanceSum += distancePoint;
@@ -50,8 +49,9 @@ public class VisionUtil {
     double weightedX = 0;
     double weightedY = 0;
     Rotation2d weightedRotation = new Rotation2d();
+
     for (var dataPoint : DATA_POINTS) {
-      distancePoint =
+      double distancePoint =
           dataPoint.visionPose().getTranslation().getDistance(visionInput.getTranslation());
       var weight = 1 - ((distanceSum - distancePoint) / distanceSum);
       var result = dataPoint.visionPose().minus(dataPoint.measuredPose()).times(weight);
