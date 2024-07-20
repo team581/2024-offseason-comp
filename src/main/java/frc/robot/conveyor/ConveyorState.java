@@ -11,8 +11,7 @@ public enum ConveyorState {
   CONVEYOR_TO_REDIRECT,
   QUEUER_TO_INTAKE,
   WAITING_AMP_SHOT,
-  SHUFFLE,
-  SHUFFLE_ASSIST_WHEN_QUEUER_SENSOR_TURNS_OFF,
+
   AMP_SHOT,
   /** Turns on at 12V and then off every n seconds. */
   TRAP_SHOT_PULSE;

@@ -332,8 +332,7 @@ public class RobotManager extends LifecycleSubsystem {
         break;
       case FINISH_INTAKING:
       case LAZY_INTAKING:
-        if (noteManager.getState() == NoteState.IDLE_IN_QUEUER
-            || noteManager.getState() == NoteState.IDLE_IN_QUEUER_SHUFFLE) {
+        if (noteManager.getState() == NoteState.IDLE_IN_QUEUER) {
           state = RobotState.IDLE_WITH_GP;
         }
         break;
@@ -441,14 +440,12 @@ public class RobotManager extends LifecycleSubsystem {
         }
         break;
       case WAITING_MULTI_SPEAKER_SHOT:
-        if (noteManager.getState() == NoteState.IDLE_IN_QUEUER
-            || noteManager.getState() == NoteState.IDLE_IN_QUEUER_SHUFFLE) {
+        if (noteManager.getState() == NoteState.IDLE_IN_QUEUER) {
           state = RobotState.PREPARE_SPEAKER_SHOT;
         }
         break;
       case WAITING_MULTI_FLOOR_SHOT:
-        if (noteManager.getState() == NoteState.IDLE_IN_QUEUER
-            || noteManager.getState() == NoteState.IDLE_IN_QUEUER_SHUFFLE) {
+        if (noteManager.getState() == NoteState.IDLE_IN_QUEUER) {
           state = RobotState.PREPARE_FLOOR_SHOT;
         }
         break;
@@ -524,7 +521,7 @@ public class RobotManager extends LifecycleSubsystem {
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.IDLE);
         climber.setGoalMode(ClimberMode.STOWED);
-        noteManager.idleInQueuerShuffleRequest();
+        noteManager.idleInQueuerRequest();
         break;
       case LAZY_INTAKING:
         wrist.setAngle(wristAngleForSpeaker);
