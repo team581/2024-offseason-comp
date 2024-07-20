@@ -22,6 +22,7 @@ import frc.robot.robot_manager.RobotManager;
 import frc.robot.robot_manager.RobotState;
 import frc.robot.snaps.SnapManager;
 import frc.robot.swerve.SwerveSubsystem;
+import frc.robot.util.Stopwatch;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
 import frc.robot.vision.DistanceAngle;
@@ -33,9 +34,8 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public class NoteTrackingManager extends LifecycleSubsystem {
-
   // how much we keep a note in the map if it was added or updated from camera (seconds)
-  private static final double NOTE_MAP_LIFETIME = 5.0;
+  private static final double NOTE_MAP_LIFETIME = 10.0;
   private static final double LIMELIGHT_VERTICAL_FOV_DEGREES = 25.0;
   private final LocalizationSubsystem localization;
   private final SwerveSubsystem swerve;
@@ -295,7 +295,9 @@ public class NoteTrackingManager extends LifecycleSubsystem {
         "NoteTracking/NoteMap",
         noteMap.stream().map(NoteMapElement::notePose).toArray(Pose2d[]::new));
 
+    Stopwatch.getInstance().start("Debug/NoteMapTime");
     noteMap = getNewMap();
+    Stopwatch.getInstance().stop("Debug/NoteMapTime");
 
     // log closest note to bobot
     var maybeClosest = getNearestNotePoseRelative(getPose(), 99987.0);
