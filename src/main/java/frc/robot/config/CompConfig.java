@@ -89,7 +89,7 @@ class CompConfig {
                   .withClosedLoopRamps(CLOSED_LOOP_RAMP)
                   .withOpenLoopRamps(OPEN_LOOP_RAMP),
               speakerDistanceToRPM -> {
-                speakerDistanceToRPM.put(0.001, 3000.0);
+                speakerDistanceToRPM.put(0.0, 3000.0);
                 speakerDistanceToRPM.put(2.0, 3000.0);
                 speakerDistanceToRPM.put(2.5, 4000.0);
                 speakerDistanceToRPM.put(4.0, 4000.0);
@@ -174,14 +174,15 @@ class CompConfig {
               },
               speakerDistanceToAngle -> {
                 // speakerDistanceToAngle.put(1.38, 58.1);
-                speakerDistanceToAngle.put(0.001,  61.40000000000008);
-                speakerDistanceToAngle.put(2.0,  25.80000000000003);
-                speakerDistanceToAngle.put(2.5,  20.600000000000023);
-                speakerDistanceToAngle.put(4.0,  14.600000000000014);
-                speakerDistanceToAngle.put(4.5,  14.200000000000014);
-                speakerDistanceToAngle.put(6.0,  13.200000000000012);
-                speakerDistanceToAngle.put(6.5,  11.6);
-                speakerDistanceToAngle.put(8.0,  55.40000000000007);
+                speakerDistanceToAngle.put(1.38, 58.1);
+                speakerDistanceToAngle.put(2.16, 47.8);
+                speakerDistanceToAngle.put(2.5, 42.0);
+                speakerDistanceToAngle.put(3.5, 33.9635); // 1.854 - adjusted by quarter
+                speakerDistanceToAngle.put(4.5, 28.20125); // 1.605 - adjusted by quarter
+                speakerDistanceToAngle.put(5.5, 25.84825); // 1.393 - adjusted by quarter
+                speakerDistanceToAngle.put(6.5, 21.30525); // 1.221 - adjusted by quarter
+                speakerDistanceToAngle.put(7.5, 20.27075); // 1.083 - adjusted by quarter
+                speakerDistanceToAngle.put(9.0, 18.7305); // 0.922 - adjusted by quarter
               },
               floorSpotDistanceToAngle -> {
                 floorSpotDistanceToAngle.put(3.4, 18.0);
