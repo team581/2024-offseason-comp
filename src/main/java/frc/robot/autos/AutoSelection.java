@@ -19,6 +19,8 @@ public enum AutoSelection {
   CHOREO_AS_5_NT("Red AS to 6 + NT", ""),
   CHOREO_OP("Red OP", ""),
   CHOREO_SEVEN_PIECE("Red 7 Piece 2 to 6", ""),
+  CHOREO_THREE_PIECE("Red 3 Piece 8 to 6", ""),
+  CHOREO_FOUR_PIECEI("Red 4 Piece 2 to 3", ""),
   TEST_PATH("testPath", "");
 
   public final String redAutoName;
