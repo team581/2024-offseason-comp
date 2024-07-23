@@ -17,6 +17,7 @@ import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.note_tracking.NoteTrackingManager;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
+import frc.robot.snaps.SnapManager;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
 import java.util.List;
@@ -27,6 +28,7 @@ public class AutoManager extends LifecycleSubsystem {
   private final NoteTrackingManager noteTrackingManager;
   private final RobotManager robotManager;
   private final LocalizationSubsystem localization;
+  private final SnapManager snaps;
   private static final PathConstraints DEFAULT_CONSTRAINTS =
       new PathConstraints(5.20, 5.0, 2 * Math.PI, 4 * Math.PI);
 
@@ -69,13 +71,15 @@ public class AutoManager extends LifecycleSubsystem {
       RobotCommands actions,
       NoteTrackingManager noteTrackingManager,
       RobotManager robotManager,
-      LocalizationSubsystem localization) {
+      LocalizationSubsystem localization,
+      SnapManager snaps) {
 
     super(SubsystemPriority.AUTOS);
     this.actions = actions;
     this.noteTrackingManager = noteTrackingManager;
     this.robotManager = robotManager;
     this.localization = localization;
+    this.snaps = snaps;
   }
 
   private List<Pose2d> getScoringDestinations() {
@@ -103,29 +107,46 @@ public class AutoManager extends LifecycleSubsystem {
   }
 
   public Command doManyAutoSteps(List<AutoNoteStep> steps) {
+    DogLog.log("Debug/PathFindShoot", true);
+
     return Commands.sequence(steps.stream().map(this::doAutoStep).toArray(Command[]::new));
   }
 
   private Command doAutoStep(AutoNoteStep step) {
+
     var command =
-        noteTrackingManager
-            .intakeNoteAtPose(() -> step.noteSearchPose().get())
-            .andThen(
-                Commands.defer(
-                    () -> {
-                      return AutoBuilder.pathfindToPose(
-                          getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
-                    },
-                    Set.of()));
+        noteTrackingManager.intakeNoteAtPose(
+            () -> {
+              DogLog.log("Debug/IntakeNoteAtPoseRequest", true);
+              return step.noteSearchPose().get();
+            });
 
     if (step.action() == AutoNoteAction.OUTTAKE) {
       command =
-          command.andThen(
-              actions.shooterOuttakeCommand().unless(() -> !robotManager.getState().hasNote));
+          command
+              .andThen(
+                  Commands.defer(
+                          () -> {
+                            DogLog.log("Debug/PathFindOuttake", true);
+                            return AutoBuilder.pathfindToPose(
+                                getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
+                          },
+                          Set.of())
+                      .unless(() -> !robotManager.getState().hasNote))
+              .andThen(
+                  actions.shooterOuttakeCommand().unless(() -> !robotManager.getState().hasNote));
     } else if (step.action() == AutoNoteAction.SCORE) {
       command =
           command.andThen(
-              actions.speakerShotCommand().unless(() -> !robotManager.getState().hasNote));
+              Commands.defer(
+                      () -> {
+                        DogLog.log("Debug/PathFindShoot", true);
+                        return AutoBuilder.pathfindToPose(
+                            getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
+                      },
+                      Set.of())
+                  .andThen(actions.speakerShotCommand())
+                  .unless(() -> !robotManager.getState().hasNote));
     }
 
     return command;
@@ -139,10 +160,13 @@ public class AutoManager extends LifecycleSubsystem {
   }
 
   public Command testCommand() {
+    DogLog.log("Debug/TestCommand", true);
 
     return Commands.sequence(
         Commands.runOnce(
             () -> {
+              DogLog.log("Debug/TestP1", true);
+
               var now = Timer.getFPGATimestamp();
               // noteTrackingManager.resetNoteMap(
               //     new ArrayList<>(

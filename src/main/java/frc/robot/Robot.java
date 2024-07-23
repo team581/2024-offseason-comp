@@ -99,7 +99,7 @@ public class Robot extends TimedRobot {
   private final NoteTrackingManager noteTrackingManager =
       new NoteTrackingManager(localization, swerve, actions, robotManager, imu);
   private final AutoManager autoManager =
-      new AutoManager(actions, noteTrackingManager, robotManager, localization);
+      new AutoManager(actions, noteTrackingManager, robotManager, localization, snaps);
 
   public Robot() {
     System.out.println("roboRIO serial number: " + RobotConfig.SERIAL_NUMBER);
