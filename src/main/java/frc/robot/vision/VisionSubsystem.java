@@ -172,8 +172,6 @@ public class VisionSubsystem extends LifecycleSubsystem {
     }
   }
 
-  
-
   public DistanceAngle getDistanceAngleSpeaker() {
     Pose2d speakerPose = getSpeaker();
     DistanceAngle distanceAngleToSpeaker = distanceAngleToTarget(speakerPose, robotPose);
@@ -199,7 +197,6 @@ public class VisionSubsystem extends LifecycleSubsystem {
     //   angleDegrees += 180.0;
     // }
 
-    
     double absoluteOffsetRadians =
         (angleToSideShotOffset.get(Units.degreesToRadians(Math.abs(angleDegrees))));
     double offsetRadians = Math.copySign(absoluteOffsetRadians, angleDegrees);
@@ -258,8 +255,6 @@ public class VisionSubsystem extends LifecycleSubsystem {
   public double getStandardDeviation(double distance) {
     return distanceToDev.get(distance);
   }
-
-  
 
   public void setRobotPose(Pose2d pose) {
     robotPose = pose;
