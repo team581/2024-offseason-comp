@@ -151,7 +151,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     // Uses distance angle math to aim, inverses the angle for intake
 
     DistanceAngle noteDistanceAngle =
-        VisionSubsystem.distanceToTargetPose(
+        VisionSubsystem.distanceAngleToTarget(
             new Pose2d(notePoseWithRobot, new Rotation2d()), robotPoseAtCapture);
     Rotation2d rotation = new Rotation2d(noteDistanceAngle.targetAngle().getRadians() + Math.PI);
 

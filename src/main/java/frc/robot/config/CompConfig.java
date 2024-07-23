@@ -34,7 +34,6 @@ import frc.robot.config.RobotConfig.ShooterConfig;
 import frc.robot.config.RobotConfig.SwerveConfig;
 import frc.robot.config.RobotConfig.VisionConfig;
 import frc.robot.config.RobotConfig.WristConfig;
-import frc.robot.vision.VisionStrategy;
 
 class CompConfig {
   private static final ClosedLoopRampsConfigs CLOSED_LOOP_RAMP =
@@ -262,7 +261,6 @@ class CompConfig {
               }),
           new LightsConfig(3),
           new VisionConfig(
-              VisionStrategy.MEGATAG,
               4,
               0.4,
               0.4,

@@ -96,10 +96,10 @@ public class VisionSubsystem extends LifecycleSubsystem {
 
   private Optional<VisionResult> getRawVisionResult() {
     var estimatePose = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("");
-    DogLog.log("Vision/EstimatedPoseMT2", estimatePose.pose);
     if (estimatePose.tagCount == 0) {
       return Optional.empty();
     }
+    DogLog.log("Vision/EstimatedPoseMT2", estimatePose.pose);
 
     for (int i = 0; i < estimatePose.rawFiducials.length; i++) {
       var fiducial = estimatePose.rawFiducials[i];
@@ -134,7 +134,7 @@ public class VisionSubsystem extends LifecycleSubsystem {
     return maybeRawData;
   }
 
-  public static DistanceAngle distanceToTargetPose(Pose2d target, Pose2d current) {
+  public static DistanceAngle distanceAngleToTarget(Pose2d target, Pose2d current) {
     double distance = target.getTranslation().getDistance(current.getTranslation());
     Rotation2d angle =
         Rotation2d.fromRadians(
@@ -172,61 +172,15 @@ public class VisionSubsystem extends LifecycleSubsystem {
     }
   }
 
-  public Optional<DistanceAngle> getDistanceAngleTxTy() {
-    if (LimelightHelpers.getTA("") == 0.0) {
-      return Optional.empty();
-    }
-
-    Rotation2d tx = Rotation2d.fromDegrees(LimelightHelpers.getTX(""));
-    Rotation2d ty = Rotation2d.fromDegrees(LimelightHelpers.getTY(""));
-
-    if (LIMELIGHT_UPSIDE_DOWN) {
-      tx = tx.unaryMinus();
-      ty = ty.unaryMinus();
-    }
-
-    double heightCamToTag = getAllianceDoubleTagCenterPose().getZ() - CAMERA_ON_BOT.getZ();
-
-    double distanceTagToRobotCenter2d =
-        (heightCamToTag / (Math.tan(ty.getRadians() + CAMERA_ON_BOT.getRotation().getY())))
-            + CAMERA_ON_BOT.getY();
-    double now = Timer.getFPGATimestamp();
-    double latency =
-        (LimelightHelpers.getLatency_Capture("") + LimelightHelpers.getLatency_Pipeline(""))
-            / 1000.0;
-
-    double timestampAtCapture = now - latency;
-
-    var robotHeadingLatency = imu.getRobotHeading(timestampAtCapture);
-
-    Rotation2d goalAimingAngle =
-        Rotation2d.fromDegrees(robotHeadingLatency.getDegrees() - tx.getDegrees());
-
-    return Optional.of(new DistanceAngle(distanceTagToRobotCenter2d, goalAimingAngle, true));
-  }
+  
 
   public DistanceAngle getDistanceAngleSpeaker() {
-    var maybeTxTyDistanceAngle = getDistanceAngleTxTy();
-
     Pose2d speakerPose = getSpeaker();
-
-    DistanceAngle distanceToTargetPose = distanceToTargetPose(speakerPose, robotPose);
-
+    DistanceAngle distanceAngleToSpeaker = distanceAngleToTarget(speakerPose, robotPose);
     DogLog.log("Vision/MegaTag2/SpeakerPose", speakerPose);
-    DogLog.log("Vision/MegaTag2/WantedRobotAngle", distanceToTargetPose.targetAngle());
-    DogLog.log("Vision/MegaTag2/RobotDistance", distanceToTargetPose.distance());
-
-    if (maybeTxTyDistanceAngle.isPresent()) {
-      DogLog.log("Vision/TxTy/Distance", maybeTxTyDistanceAngle.get().distance());
-      DogLog.log(
-          "Vision/TxTy/WantedRobotAngle", maybeTxTyDistanceAngle.get().targetAngle().getDegrees());
-
-      if (RobotConfig.get().vision().strategy() == VisionStrategy.TX_TY_AND_MEGATAG) {
-        return adjustForSideShot(maybeTxTyDistanceAngle.get());
-      }
-    }
-
-    return adjustForSideShot(distanceToTargetPose);
+    DogLog.log("Vision/MegaTag2/WantedRobotAngle", distanceAngleToSpeaker.targetAngle());
+    DogLog.log("Vision/MegaTag2/RobotDistance", distanceAngleToSpeaker.distance());
+    return adjustForSideShot(distanceAngleToSpeaker);
   }
 
   private DistanceAngle adjustForSideShot(DistanceAngle originalPosition) {
@@ -245,7 +199,7 @@ public class VisionSubsystem extends LifecycleSubsystem {
     //   angleDegrees += 180.0;
     // }
 
-    DogLog.log("Vision/ShootToTheSide/InputAngleRelativeToSpeaker", angleDegrees);
+    
     double absoluteOffsetRadians =
         (angleToSideShotOffset.get(Units.degreesToRadians(Math.abs(angleDegrees))));
     double offsetRadians = Math.copySign(absoluteOffsetRadians, angleDegrees);
@@ -282,12 +236,12 @@ public class VisionSubsystem extends LifecycleSubsystem {
     fallbackPose = new Pose2d(fallbackPose.getTranslation(), robotPose.getRotation());
     var usedRobotPose = getState() == VisionState.OFFLINE ? fallbackPose : robotPose;
 
-    var subwooferSpotDistance = distanceToTargetPose(goalPoseSubwoofer, usedRobotPose);
+    var subwooferSpotDistance = distanceAngleToTarget(goalPoseSubwoofer, usedRobotPose);
     var usedGoalPose = goalPoseSubwoofer;
     var result = subwooferSpotDistance;
 
     if (subwooferSpotDistance.distance() > FLOOR_SPOT_MAX_DISTANCE_FOR_SUBWOOFER) {
-      result = distanceToTargetPose(goalPoseAmpArea, usedRobotPose);
+      result = distanceAngleToTarget(goalPoseAmpArea, usedRobotPose);
       usedGoalPose = goalPoseAmpArea;
       result = new DistanceAngle(581.0, result.targetAngle(), false);
     }
@@ -302,17 +256,10 @@ public class VisionSubsystem extends LifecycleSubsystem {
   }
 
   public double getStandardDeviation(double distance) {
-
     return distanceToDev.get(distance);
   }
 
-  public static Pose3d getAllianceDoubleTagCenterPose() {
-    if (FmsSubsystem.isRedAlliance()) {
-      return RED_SPEAKER_DOUBLE_TAG_CENTER;
-    } else {
-      return BLUE_SPEAKER_DOUBLE_TAG_CENTER;
-    }
-  }
+  
 
   public void setRobotPose(Pose2d pose) {
     robotPose = pose;
@@ -330,7 +277,6 @@ public class VisionSubsystem extends LifecycleSubsystem {
     DogLog.log("Vision/DistanceFromFloorSpot", getDistanceAngleFloorShot().distance());
     DogLog.log("Vision/AngleFromFloorSpot", getDistanceAngleFloorShot().targetAngle());
     DogLog.log("Vision/State", getState());
-    DogLog.log("Vision/VisionMethod", RobotConfig.get().vision().strategy());
 
     var newHeartbeat = LimelightHelpers.getLimelightNTDouble("", "hb");
 
@@ -363,16 +309,10 @@ public class VisionSubsystem extends LifecycleSubsystem {
       return VisionState.OFFLINE;
     }
 
-    if (RobotConfig.get().vision().strategy() == VisionStrategy.TX_TY_AND_MEGATAG) {
-      return getDistanceAngleTxTy().isPresent()
-          ? VisionState.SEES_TAGS
-          : VisionState.ONLINE_NO_TAGS;
-    }
-
+    // getVisionResult() returns empty if there's no seen tags
     if (getVisionResult().isPresent()) {
       return VisionState.SEES_TAGS;
     }
-
     return VisionState.ONLINE_NO_TAGS;
   }
 }

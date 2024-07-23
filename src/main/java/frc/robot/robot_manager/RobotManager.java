@@ -28,7 +28,6 @@ import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
 import frc.robot.vision.DistanceAngle;
 import frc.robot.vision.VisionState;
-import frc.robot.vision.VisionStrategy;
 import frc.robot.vision.VisionSubsystem;
 import frc.robot.wrist.WristPositions;
 import frc.robot.wrist.WristSubsystem;
@@ -400,8 +399,6 @@ public class RobotManager extends LifecycleSubsystem {
 
           if (DriverStation.isAutonomous() && vision.getState() == VisionState.OFFLINE) {
             limelightWorking = true;
-          } else if (RobotConfig.get().vision().strategy() == VisionStrategy.TX_TY_AND_MEGATAG) {
-            limelightWorking = speakerDistanceAngle.seesSpeakerTag();
           } else {
             limelightWorking = vision.getState() == VisionState.SEES_TAGS;
           }

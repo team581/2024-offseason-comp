@@ -111,7 +111,6 @@ public class Robot extends TimedRobot {
     DogLog.log("Metadata/ProjectName", BuildConstants.MAVEN_NAME);
     DogLog.log("Metadata/RoborioSerialNumber", RobotConfig.SERIAL_NUMBER);
     DogLog.log("Metadata/RobotName", RobotConfig.get().robotName());
-    DogLog.log("Metadata/VisionStrategy", RobotConfig.get().vision().strategy().toString());
     DogLog.log("Metadata/BuildDate", BuildConstants.BUILD_DATE);
     DogLog.log("Metadata/GitSHA", BuildConstants.GIT_SHA);
     DogLog.log("Metadata/GitDate", BuildConstants.GIT_DATE);
