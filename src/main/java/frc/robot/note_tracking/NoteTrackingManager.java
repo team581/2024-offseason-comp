@@ -123,13 +123,8 @@ public class NoteTrackingManager extends LifecycleSubsystem {
       return Optional.empty();
     }
 
-    DogLog.log("NoteTracking/TY", ty);
-    DogLog.log("NoteTracking/TX", tx);
-    DogLog.log("NoteTracking/LatencyRobotPose", robotPoseAtCapture);
-
     double forwardDistanceToNote = tyToDistance.get(ty);
     Rotation2d angleFromNote = Rotation2d.fromDegrees(tx);
-    DogLog.log("NoteTracking/ForwardDistance", forwardDistanceToNote);
 
     var c = forwardDistanceToNote / Math.cos(angleFromNote.getRadians());
     double sidewaysDistanceToNote = Math.sqrt(Math.pow(c, 2) - Math.pow(forwardDistanceToNote, 2));
@@ -139,7 +134,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
       sidewaysDistanceToNote *= -1.0;
     }
 
-    DogLog.log("NoteTracking/SidewaysDistance", sidewaysDistanceToNote);
     var notePoseWithoutRotation =
         new Translation2d(-forwardDistanceToNote, -sidewaysDistanceToNote)
             .rotateBy(Rotation2d.fromDegrees(robotPoseAtCapture.getRotation().getDegrees()));
@@ -165,7 +159,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
             .getTable(LIMELIGHT_NAME)
             .getEntry("tcornxy")
             .getDoubleArray(new double[8]);
-    DogLog.log("NoteTracking/corners", corners);
     // Loop through 4 points
 
     // Delete 3 point note data

@@ -175,9 +175,6 @@ public class VisionSubsystem extends LifecycleSubsystem {
   public DistanceAngle getDistanceAngleSpeaker() {
     Pose2d speakerPose = getSpeaker();
     DistanceAngle distanceAngleToSpeaker = distanceAngleToTarget(speakerPose, robotPose);
-    DogLog.log("Vision/MegaTag2/SpeakerPose", speakerPose);
-    DogLog.log("Vision/MegaTag2/WantedRobotAngle", distanceAngleToSpeaker.targetAngle());
-    DogLog.log("Vision/MegaTag2/RobotDistance", distanceAngleToSpeaker.distance());
     return adjustForSideShot(distanceAngleToSpeaker);
   }
 

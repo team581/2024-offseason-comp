@@ -410,7 +410,7 @@ public class RobotManager extends LifecycleSubsystem {
           DogLog.log(
               "RobotManager/SpeakerShot/AngularVelocitySlowEnough", angularVelocitySlowEnough);
           DogLog.log("RobotManager/SpeakerShot/RobotHeadingAtGoal", robotHeadingAtGoal);
-          if ((limelightWorking || DriverStation.isAutonomous())
+          if (limelightWorking
               && wristAtGoal
               && shooterAtGoal
               && swerveSlowEnough

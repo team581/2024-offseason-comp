@@ -254,11 +254,7 @@ public class SwerveSubsystem extends LifecycleSubsystem {
     DogLog.log("Swerve/SnapToAngle", snapToAngle);
     DogLog.log("Swerve/SnapToAngleGoal", goalSnapAngle.getDegrees());
     DogLog.log("Swerve/Pose", drivetrain.getState().Pose);
-    // TODO: Fix logging SwerveModuleState[] struct array
-    DogLog.log("Swerve/ModuleStates/0", drivetrain.getState().ModuleStates[0]);
-    DogLog.log("Swerve/ModuleStates/1", drivetrain.getState().ModuleStates[1]);
-    DogLog.log("Swerve/ModuleStates/2", drivetrain.getState().ModuleStates[2]);
-    DogLog.log("Swerve/ModuleStates/3", drivetrain.getState().ModuleStates[3]);
+    DogLog.log("Swerve/ModuleStates", drivetrain.getState().ModuleStates);
     DogLog.log("Swerve/ModuleTargets", drivetrain.getState().ModuleTargets);
 
     DogLog.log(
