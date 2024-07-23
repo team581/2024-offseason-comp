@@ -73,13 +73,15 @@ public class AutoManager extends LifecycleSubsystem {
       RobotManager robotManager,
       LocalizationSubsystem localization,
       SnapManager snaps) {
-
     super(SubsystemPriority.AUTOS);
     this.actions = actions;
     this.noteTrackingManager = noteTrackingManager;
     this.robotManager = robotManager;
     this.localization = localization;
     this.snaps = snaps;
+
+    DogLog.log("AutoManager/RedDestinations", RED_DESTINATIONS.toArray(Pose2d[]::new));
+    DogLog.log("AutoManager/BlueDestinations", BLUE_DESTINATIONS.toArray(Pose2d[]::new));
   }
 
   private List<Pose2d> getScoringDestinations() {
@@ -103,6 +105,9 @@ public class AutoManager extends LifecycleSubsystem {
         currentDistance = distance;
       }
     }
+
+    DogLog.log("AutoManager/ClosestDestination", closest);
+
     return closest;
   }
 
@@ -150,13 +155,6 @@ public class AutoManager extends LifecycleSubsystem {
     }
 
     return command;
-  }
-
-  @Override
-  public void robotPeriodic() {
-    DogLog.log("AutoManager/RedDestinations", RED_DESTINATIONS.toArray(Pose2d[]::new));
-    DogLog.log("AutoManager/BlueDestinations", BLUE_DESTINATIONS.toArray(Pose2d[]::new));
-    DogLog.log("AutoManager/ClosestDestination", getClosestScoringDestination());
   }
 
   public Command testCommand() {
