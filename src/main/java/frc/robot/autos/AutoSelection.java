@@ -17,6 +17,7 @@ public enum AutoSelection {
   /// BACKUP_SIX_PIECE_2_5("Backup Red 6 Piece", "Backup Blue 6 Piece"),
   CHOREO_SIX_PIECE("Red Six Piece 2 to 4.1", ""),
   CHOREO_AS_5_NT("Red AS to 6 + NT", ""),
+  CHOREO_SNAKE_NT("Red Snake NT", ""),
   CHOREO_OP("Red OP", ""),
   CHOREO_SEVEN_PIECE("Red 7 Piece 2 to 6", ""),
   CHOREO_THREE_PIECE("Red 3 Piece 8 to 6", ""),
