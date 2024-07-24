@@ -35,12 +35,11 @@ public class AutoManager extends LifecycleSubsystem {
   private static final PathConstraints DEFAULT_CONSTRAINTS =
       new PathConstraints(2.0, 2.0, 2 * Math.PI, 4 * Math.PI);
 
-      public static final Pose2d ORIGINAL_RED_SPEAKER =
+  public static final Pose2d ORIGINAL_RED_SPEAKER =
       new Pose2d(
           Units.inchesToMeters(652.73), Units.inchesToMeters(218.42), Rotation2d.fromDegrees(180));
   public static final Pose2d ORIGINAL_BLUE_SPEAKER =
       new Pose2d(Units.inchesToMeters(0), Units.inchesToMeters(218.42), Rotation2d.fromDegrees(0));
-
 
   public static final List<Pose2d> RED_DESTINATIONS =
       List.of(
@@ -132,18 +131,18 @@ public class AutoManager extends LifecycleSubsystem {
     var command = noteTrackingManager.intakeNearestMapNote();
 
     return command.andThen(
-              Commands.defer(
-                      () -> {
-                        DogLog.log("Debug/PathFindShoot", true);
-                        return AutoBuilder.pathfindToPose(
-                            getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
-                      },
-                      Set.of())
-                  .andThen(actions.speakerShotCommand())
-                  .unless(() -> !robotManager.getState().hasNote));
+        Commands.defer(
+                () -> {
+                  DogLog.log("Debug/PathFindShoot", true);
+                  return AutoBuilder.pathfindToPose(
+                      getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
+                },
+                Set.of())
+            .andThen(actions.speakerShotCommand())
+            .unless(() -> !robotManager.getState().hasNote));
   }
 
- private static Pose2d getSpeaker() {
+  private static Pose2d getSpeaker() {
     if (FmsSubsystem.isRedAlliance()) {
       return ORIGINAL_RED_SPEAKER;
     } else {
@@ -155,15 +154,20 @@ public class AutoManager extends LifecycleSubsystem {
     var robotPose = localization.getPose();
 
     // if we're close to speaker
-    if(robotPose.getTranslation().getDistance(getSpeaker().getTranslation())<3.0){
+    if (robotPose.getTranslation().getDistance(getSpeaker().getTranslation()) < 3.0) {
 
-      Pose2d goalSpeakerPose2d = new Pose2d(getSpeaker().getX()+2, getSpeaker().getY(), new Rotation2d(0.0));
+      Pose2d goalSpeakerPose2d =
+          new Pose2d(getSpeaker().getX() + 2, getSpeaker().getY(), new Rotation2d(0.0));
 
-      if(FmsSubsystem.isRedAlliance()) {
-        goalSpeakerPose2d = new Pose2d(getSpeaker().getX()-2, getSpeaker().getY(), new Rotation2d(0.0));
+      if (FmsSubsystem.isRedAlliance()) {
+        goalSpeakerPose2d =
+            new Pose2d(getSpeaker().getX() - 2, getSpeaker().getY(), new Rotation2d(0.0));
       }
-        
-      return AutoBuilder.pathfindToPose(goalSpeakerPose2d, DEFAULT_CONSTRAINTS).until(noteTrackingManager::mapContainsNote).andThen(noteTrackingManager.intakeNearestMapNote()).andThen(
+
+      return AutoBuilder.pathfindToPose(goalSpeakerPose2d, DEFAULT_CONSTRAINTS)
+          .until(noteTrackingManager::mapContainsNote)
+          .andThen(noteTrackingManager.intakeNearestMapNote())
+          .andThen(
               Commands.defer(
                       () -> {
                         DogLog.log("Debug/PathFindShoot", true);
@@ -173,24 +177,21 @@ public class AutoManager extends LifecycleSubsystem {
                       Set.of())
                   .andThen(actions.speakerShotCommand())
                   .unless(() -> !robotManager.getState().hasNote));
-
-
-
-
-
     }
     var midlineGoalPose2d = new Pose2d(8.271, 4.106, new Rotation2d(0));
-    return AutoBuilder.pathfindToPose(midlineGoalPose2d, DEFAULT_CONSTRAINTS).until(noteTrackingManager::mapContainsNote).andThen(noteTrackingManager.intakeNearestMapNote()).andThen(
-              Commands.defer(
-                      () -> {
-                        DogLog.log("Debug/PathFindShoot", true);
-                        return AutoBuilder.pathfindToPose(
-                            getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
-                      },
-                      Set.of())
-                  .andThen(actions.speakerShotCommand())
-                  .unless(() -> !robotManager.getState().hasNote));
-    
+    return AutoBuilder.pathfindToPose(midlineGoalPose2d, DEFAULT_CONSTRAINTS)
+        .until(noteTrackingManager::mapContainsNote)
+        .andThen(noteTrackingManager.intakeNearestMapNote())
+        .andThen(
+            Commands.defer(
+                    () -> {
+                      DogLog.log("Debug/PathFindShoot", true);
+                      return AutoBuilder.pathfindToPose(
+                          getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
+                    },
+                    Set.of())
+                .andThen(actions.speakerShotCommand())
+                .unless(() -> !robotManager.getState().hasNote));
   }
 
   private Command doAutoStep(AutoNoteStep step) {

@@ -276,80 +276,79 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private Pose2d getPose() {
     return localization.getPose();
   }
-  
+
   @Override
   public void robotPeriodic() {
     DogLog.log(
-      "NoteTracking/NotesExpired",
-      noteMap.removeIf(
-        element -> {
-          DogLog.log("NoteTracking/ExpiredNote", element.notePose());
-          return element.expiresAt() < Timer.getFPGATimestamp();
-        }));
-        
-        DogLog.log(
-          "NoteTracking/NoteMap",
-          noteMap.stream().map(NoteMapElement::notePose).toArray(Pose2d[]::new));
-          
-          Stopwatch.getInstance().start("Debug/NoteMapTime");
-          noteMap = getNewMap();
-          Stopwatch.getInstance().stop("Debug/NoteMapTime");
-          
-          // log closest note to bobot
-          var maybeClosest = getNearestNotePoseRelative(getPose(), 99987.0);
-          if (maybeClosest.isPresent()) {
-            
-            DogLog.log("NoteTracking/ClosestNote", maybeClosest.get().notePose());
-          }
-        }
-        
-        public boolean mapContainsNote() {
-          return noteMap.size()>0.0;
-        }
-        
-        private ArrayList<NoteMapElement> getNewMap() {
-          List<Pose2d> visionNotes = getFilteredNotePoses();
-          
-          if (visionNotes.size() > 20) {
-            // Something evil happened, don't update state
-            return noteMap;
-          }
-          
-          ArrayList<NoteMapElement> result = new ArrayList<>();
-          
-          result.addAll(
-            visionNotes.stream()
+        "NoteTracking/NotesExpired",
+        noteMap.removeIf(
+            element -> {
+              DogLog.log("NoteTracking/ExpiredNote", element.notePose());
+              return element.expiresAt() < Timer.getFPGATimestamp();
+            }));
+
+    DogLog.log(
+        "NoteTracking/NoteMap",
+        noteMap.stream().map(NoteMapElement::notePose).toArray(Pose2d[]::new));
+
+    Stopwatch.getInstance().start("Debug/NoteMapTime");
+    noteMap = getNewMap();
+    Stopwatch.getInstance().stop("Debug/NoteMapTime");
+
+    // log closest note to bobot
+    var maybeClosest = getNearestNotePoseRelative(getPose(), 99987.0);
+    if (maybeClosest.isPresent()) {
+
+      DogLog.log("NoteTracking/ClosestNote", maybeClosest.get().notePose());
+    }
+  }
+
+  public boolean mapContainsNote() {
+    return noteMap.size() > 0.0;
+  }
+
+  private ArrayList<NoteMapElement> getNewMap() {
+    List<Pose2d> visionNotes = getFilteredNotePoses();
+
+    if (visionNotes.size() > 20) {
+      // Something evil happened, don't update state
+      return noteMap;
+    }
+
+    ArrayList<NoteMapElement> result = new ArrayList<>();
+
+    result.addAll(
+        visionNotes.stream()
             .map(pose -> new NoteMapElement(Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME, pose))
             .toList());
-            
-            for (var rememberedPose : noteMap) {
-              Optional<Pose2d> visionNoteMatch =
-              visionNotes.stream()
+
+    for (var rememberedPose : noteMap) {
+      Optional<Pose2d> visionNoteMatch =
+          visionNotes.stream()
               .filter(
-                visionNote -> {
-                  return visionNote
-                  .getTranslation()
-                  .getDistance(rememberedPose.notePose().getTranslation())
-                  < 1;
-                })
-                .min(
+                  visionNote -> {
+                    return visionNote
+                            .getTranslation()
+                            .getDistance(rememberedPose.notePose().getTranslation())
+                        < 1;
+                  })
+              .min(
                   (a, b) ->
-                  Double.compare(
-                    a.getTranslation()
-                    .getDistance(rememberedPose.notePose().getTranslation()),
-                    b.getTranslation()
-                    .getDistance(rememberedPose.notePose().getTranslation())));
-                    
-                    if (visionNoteMatch.isPresent()) {
-                      
-                      visionNotes.remove(visionNoteMatch.get());
-                    } else {
-                      
-                      result.add(rememberedPose);
-                    }
-                  }
-                  
-                  return result;
-                }
-              }
-              
+                      Double.compare(
+                          a.getTranslation()
+                              .getDistance(rememberedPose.notePose().getTranslation()),
+                          b.getTranslation()
+                              .getDistance(rememberedPose.notePose().getTranslation())));
+
+      if (visionNoteMatch.isPresent()) {
+
+        visionNotes.remove(visionNoteMatch.get());
+      } else {
+
+        result.add(rememberedPose);
+      }
+    }
+
+    return result;
+  }
+}
