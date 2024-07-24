@@ -10,8 +10,8 @@ import json
 
 @dataclasses.dataclass
 class Point:
-    x: float  # Meters
-    y: float  # Meters
+    x: float # Meters
+    y: float # Meters
 
     def add(self, other):
         return Point(self.x + other.x, self.y + other.y)
@@ -38,8 +38,6 @@ class Point:
     def to_in(self):
         inches = Point(self.x / 2.54, self.y / 2.54)
         return inches
-
-
 @dataclasses.dataclass
 class Vector:
     angle: float  # Radians
@@ -66,13 +64,10 @@ class Model:
         self.rpos = rpos
         self.gpos = gpos
         self.rpm = rpm
-        self.efficiency_percent = 59
+        self.efficiency_percent = 15
 
     def get_vel(self, rpm):
-        return (math.pi  * 0.05 * rpm/ 30) * (self.efficiency_percent/100)
-
-    def getvector(self) -> Vector:
-        return Vector(self.get_angle, self.get_vel(self.rpm))
+        return (math.pi  * 0.1016 * rpm/ 60) * (self.efficiency_percent/100)
 
 
 def prunepoints(points: []) -> []:
@@ -82,7 +77,6 @@ def prunepoints(points: []) -> []:
             s = i
             break
     return points[:s]
-
 
 class ProjectileMotion:
     g = 9.8
@@ -111,7 +105,7 @@ class ProjectileMotion:
                 acceleration.x * self.dt + note_velocity[-1].x, acceleration.y * self.dt + note_velocity[-1].y
             )
             position = Point(note_position[-1].x + velocity.x * self.dt, note_position[-1].y + velocity.y * self.dt)
-            angle = math.atan2(note_position[-1].y - note_position[-2].y, note_position[-1].x - note_position[-2].x)
+            angle = math.atan(note_position[-1].y - note_position[-2].y/note_position[-1].x - note_position[-2].x)
 
             note_velocity.append(velocity)
             note_position.append(position)
@@ -135,11 +129,11 @@ def getangle(model: Model, pm: ProjectileMotion):
 
     min_angle = 0
     max_angle = Vector.fromdegrees(61.5)
-    angle_change = Vector.fromdegrees(0.2)
+    angle_change = Vector.fromdegrees(0.1)
     current_angle = min_angle
     while current_angle <= max_angle:
         exitpoint = Point.add(model.rpos, Vector(current_angle, robot_wrist_length).topoint())
-        points = prunepoints(pm.getpoints(Vector(current_angle, vel), exitpoint))
+        points = pm.getpoints(Vector(current_angle, vel), exitpoint)
         for point in points:
             dist = point.dist(model.gpos)
             local_min = min(local_min, dist)
@@ -151,19 +145,45 @@ def getangle(model: Model, pm: ProjectileMotion):
 
 
 def plot(line: [], points: []):
-    for i in range(len(line)):
-        line[i] = (i, line[i])
+    max_axis = Point(5,5)
+    min_axis = Point(0,0)
+    special_line = line
+
+    for i in range(len(special_line)):
+        special_line[i] = (i, special_line[i])
     figure, axis = plt.subplots()
-    axis.plot(np.array([pos[1].x for pos in line]), np.array([pos[1].y for pos in line]))
+    axis.plot(np.array([pos[1].x for pos in special_line]), np.array([pos[1].y for pos in special_line]))
     for i in points:
         plt.plot(i.x, i.y, "o")
 
-    plt.axis([0,8,0,8])
+    if len(points) > 0:
+        for i in range(len(points)):
+            points[i] = (i,points[i])
+        newpoints = split_point_list(points)
+        newline = split_point_list(line)
+        max_axis = Point(max(add_lists([newpoints[0], newline[0]])) + 0.1,max(add_lists([newpoints[1], newline[1]])) + 0.1)
+        min_axis =Point(min(add_lists([newpoints[0], newline[0]])) - 0.02,min(add_lists([newpoints[1], newline[1]])) - 0.02)
+
+    plt.axis([min_axis.x,max_axis.x,min_axis.y,max_axis.y])
     axis.set(xlabel="X Postion", ylabel="Y Position", title="Title")
     axis.grid()
 
     plt.show()
 
+def split_point_list(points_list: []):
+    newlist_x = []
+    newlist_y = []
+    for i in points_list:
+        newlist_x.append(i[1].x)
+        newlist_y.append(i[1].y)
+    return [newlist_x, newlist_y]
+
+def add_lists(list: []):
+    newlist = []
+    for s in list:
+        for i in s:
+            newlist.append(i)
+    return newlist
 
 # Set proper goal
 
@@ -197,7 +217,7 @@ for input_point in range(len(input_points)):
     points = projectile_motion.getpoints(Vector(angle, modelinfo.get_vel(rpm)), modelinfo.rpos)
     time_of_flight = projectile_motion.get_travel_time(points)
 
-    if i == 7:
+    if i == 0:
         plot(points, [modelinfo.rpos, modelinfo.gpos])
 
     shooting_config.append({"rpm": rpm, "distance": distance, "angle": Vector.fromradians(angle), "time_of_flight": time_of_flight})
@@ -207,13 +227,20 @@ for input_point in range(len(input_points)):
 shooting_config_file = pathlib.Path("src/main/java/frc/robot/generated/shooting_config.json")
 shooting_config_file.write_text(json.dumps(shooting_config, indent=2))
 
+test_angle = 58.1
+test_dist = 1.38
+test_rpm = 3000
 
-# goal = Point(0,0.86)
-# robotPosition = Point(1,0)
-# setrpm = 4000
-# info = Model(robotPosition,goal,setrpm)
-# robot_shooter = ProjectileMotion(0.02, true)
-# setangle = getangle(info,robot_shooter)
+goalpos = Point(test_dist, 0.86)
+test_model = Model(rpos, goalpos, test_rpm)
+test_pm = ProjectileMotion(0.02, True)
+test_vector = Vector(Vector.fromdegrees(test_angle), test_model.get_vel(test_rpm))
+wrist_vector = Vector(Vector.fromdegrees(test_angle), robot_wrist_length)
+note_exit = wrist_vector.topoint()
 
+points_list = test_pm.getpoints(test_vector, note_exit)
 
-# plot(robot_shooter.getpoints(Vector((setangle*(math.pi/180)),info.get_vel(setrpm)),info.rpos), info.rpos,info.gpos,robot_shooter.dt)
+print(test_model.get_vel(3000), 'm/s')
+print(test_pm.get_travel_time(points_list))
+
+plot(points_list,[rpos, goalpos, note_exit])
