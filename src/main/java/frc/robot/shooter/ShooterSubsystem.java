@@ -65,6 +65,9 @@ public class ShooterSubsystem extends LifecycleSubsystem {
       case FLOOR_SHOT:
         goalRPM = floorSpotDistanceToRPM.get(floorSpotDistance);
         break;
+      case DROPPING:
+        goalRPM = ShooterRPMs.DROPPING;
+        break;
       case OUTTAKE:
         goalRPM = ShooterRPMs.OUTTAKE;
         break;

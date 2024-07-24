@@ -14,12 +14,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.fms.FmsSubsystem;
 import frc.robot.localization.LocalizationSubsystem;
+import frc.robot.note_tracking.NoteMapElement;
 import frc.robot.note_tracking.NoteTrackingManager;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
 import frc.robot.snaps.SnapManager;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -30,7 +32,7 @@ public class AutoManager extends LifecycleSubsystem {
   private final LocalizationSubsystem localization;
   private final SnapManager snaps;
   private static final PathConstraints DEFAULT_CONSTRAINTS =
-      new PathConstraints(5.20, 5.0, 2 * Math.PI, 4 * Math.PI);
+      new PathConstraints(2.0, 2.0, 2 * Math.PI, 4 * Math.PI);
 
   public static final List<Pose2d> RED_DESTINATIONS =
       List.of(
@@ -139,7 +141,7 @@ public class AutoManager extends LifecycleSubsystem {
                           Set.of())
                       .unless(() -> !robotManager.getState().hasNote))
               .andThen(
-                  actions.shooterOuttakeCommand().unless(() -> !robotManager.getState().hasNote));
+                  actions.dropCommand().unless(() -> !robotManager.getState().hasNote));
     } else if (step.action() == AutoNoteAction.SCORE) {
       command =
           command.andThen(
@@ -166,19 +168,17 @@ public class AutoManager extends LifecycleSubsystem {
               DogLog.log("Debug/TestP1", true);
 
               var now = Timer.getFPGATimestamp();
-              // noteTrackingManager.resetNoteMap(
-              //     new ArrayList<>(
-              //         List.of(
-              //             //   new NoteMapElement(now + 5, new Pose2d(8.271, 7.458, new
-              //             // Rotation2d(0))),
-              //             new NoteMapElement(now + 5, AutoNoteStep.noteIdToPose(4)),
-              //             new NoteMapElement(now + 5, AutoNoteStep.noteIdToPose(5)),
-              //             new NoteMapElement(now + 5, AutoNoteStep.noteIdToPose(6)))));
+              noteTrackingManager.resetNoteMap(
+                  new ArrayList<>(
+                      List.of(
+                          new NoteMapElement(now + 5, AutoNoteStep.noteIdToPose(4)),
+                          new NoteMapElement(now + 5, AutoNoteStep.noteIdToPose(5)),
+                          new NoteMapElement(now + 5, AutoNoteStep.noteIdToPose(3)))));
             }),
         doManyAutoSteps(
             List.of(
+                new AutoNoteStep(3, AutoNoteAction.OUTTAKE),
                 new AutoNoteStep(4, AutoNoteAction.SCORE),
-                new AutoNoteStep(5, AutoNoteAction.SCORE),
-                new AutoNoteStep(6, AutoNoteAction.SCORE))));
+                new AutoNoteStep(5, AutoNoteAction.SCORE))));
   }
 }

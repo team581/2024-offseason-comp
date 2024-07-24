@@ -17,6 +17,7 @@ public enum NoteState {
 
   SHOOTING(false),
   SHOOTER_OUTTAKING(false),
+  DROPPING(false),
 
   QUEUER_TO_INTAKE_FOR_CONVEYOR(false),
   QUEUER_TO_INTAKE_FOR_CONVEYOR_FINAL(false),

@@ -180,7 +180,7 @@ public class RobotManager extends LifecycleSubsystem {
           break;
         case OUTTAKE_SHOOTER:
           if (!state.climbing) {
-            state = RobotState.PREPARE_OUTTAKING_SHOOTER;
+            state = RobotState.PREPARE_PASS_LOW;
           }
           break;
         case WAIT_SHOOTER_AMP:
@@ -211,6 +211,11 @@ public class RobotManager extends LifecycleSubsystem {
         case AMP_SHOT:
           if (!state.climbing) {
             state = RobotState.AMP_SHOT;
+          }
+          break;
+        case DROP:
+          if (!state.climbing) {
+            state = RobotState.DROPPING;
           }
           break;
         case SUBWOOFER_SHOT:
@@ -420,10 +425,10 @@ public class RobotManager extends LifecycleSubsystem {
           }
         }
         break;
-      case PREPARE_OUTTAKING_SHOOTER:
+      case PREPARE_PASS_LOW:
         if (noteManager.getState() == NoteState.IDLE_IN_QUEUER
             && shooter.atGoal(ShooterMode.OUTTAKE)) {
-          state = RobotState.OUTTAKING_SHOOTER;
+          state = RobotState.PASS_LOW;
         }
         break;
       case WAITING_MULTI_SPEAKER_SHOT:
@@ -438,7 +443,7 @@ public class RobotManager extends LifecycleSubsystem {
           state = RobotState.PREPARE_FLOOR_SHOT;
         }
         break;
-      case OUTTAKING_SHOOTER:
+      case PASS_LOW:
       case SHOOTER_AMP:
       case SUBWOOFER_SHOOT:
       case PODIUM_SHOOT:
@@ -446,6 +451,7 @@ public class RobotManager extends LifecycleSubsystem {
       case PRESET_3:
       case PRESET_MIDDLE:
       case PRESET_AMP:
+      case DROPPING:
       case PRESET_LEFT:
         if (noteManager.getState() == NoteState.IDLE_NO_GP) {
           state = RobotState.IDLE_NO_GP;
@@ -534,19 +540,26 @@ public class RobotManager extends LifecycleSubsystem {
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.outtakeRequest();
         break;
-      case PREPARE_OUTTAKING_SHOOTER:
+      case PREPARE_PASS_LOW:
         wrist.setAngle(WristPositions.OUTTAKING_SHOOTER);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.OUTTAKE);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.idleInQueuerRequest();
         break;
-      case OUTTAKING_SHOOTER:
+      case PASS_LOW:
         wrist.setAngle(WristPositions.OUTTAKING_SHOOTER);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.OUTTAKE);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.shooterOuttakeRequest();
+        break;
+      case DROPPING:
+        wrist.setAngle(WristPositions.OUTTAKING_SHOOTER);
+        elevator.setGoalHeight(ElevatorPositions.STOWED);
+        shooter.setGoalMode(ShooterMode.DROPPING);
+        climber.setGoalMode(ClimberMode.STOWED);
+        noteManager.dropRequest();
         break;
       case PREPARE_SHOOTER_AMP:
       case WAIT_SHOOTER_AMP:
@@ -880,6 +893,10 @@ public class RobotManager extends LifecycleSubsystem {
 
   public void shooterAmpRequest() {
     flags.check(RobotFlag.SHOOTER_AMP);
+  }
+
+  public void dropRequest() {
+    flags.check(RobotFlag.DROP);
   }
 
   public void waitShooterAmpRequest() {

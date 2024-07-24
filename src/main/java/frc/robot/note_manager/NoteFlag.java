@@ -17,5 +17,6 @@ public enum NoteFlag {
   TRAP_WAIT,
   TRAP_SCORE,
   UNJAM,
+  DROP,
   OUTTAKE;
 }

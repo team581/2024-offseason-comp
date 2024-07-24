@@ -124,6 +124,9 @@ public class NoteManager extends LifecycleSubsystem {
             state = NoteState.SHOOTING;
           }
           break;
+        case DROP:
+          state = NoteState.DROPPING;
+          break;
         case UNJAM:
           state = NoteState.UNJAM;
           break;
@@ -149,6 +152,7 @@ public class NoteManager extends LifecycleSubsystem {
         }
         break;
       case SHOOTING:
+      case DROPPING:
       case SHOOTER_OUTTAKING:
         if (!queuer.hasNote() && !intake.hasNote()) {
           state = NoteState.IDLE_NO_GP;
@@ -278,6 +282,7 @@ public class NoteManager extends LifecycleSubsystem {
         queuer.setState(QueuerState.IDLE);
 
         break;
+      case DROPPING:
       case SHOOTER_OUTTAKING:
         intake.setState(IntakeState.TO_QUEUER);
         conveyor.setState(ConveyorState.INTAKE_TO_QUEUER);
@@ -352,6 +357,10 @@ public class NoteManager extends LifecycleSubsystem {
 
   public void lazyIntakeRequest() {
     flags.check(NoteFlag.LAZY_INTAKE);
+  }
+
+  public void dropRequest() {
+    flags.check(NoteFlag.DROP);
   }
 
   public NoteState getState() {

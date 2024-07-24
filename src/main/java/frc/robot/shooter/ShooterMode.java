@@ -16,5 +16,6 @@ public enum ShooterMode {
   PODIUM_SHOT,
   SHOOTER_AMP,
   SPEAKER_SHOT,
+  DROPPING,
   FLOOR_SHOT;
 }
