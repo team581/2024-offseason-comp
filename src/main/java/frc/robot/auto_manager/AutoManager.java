@@ -140,8 +140,7 @@ public class AutoManager extends LifecycleSubsystem {
                           },
                           Set.of())
                       .unless(() -> !robotManager.getState().hasNote))
-              .andThen(
-                  actions.dropCommand().unless(() -> !robotManager.getState().hasNote));
+              .andThen(actions.dropCommand().unless(() -> !robotManager.getState().hasNote));
     } else if (step.action() == AutoNoteAction.SCORE) {
       command =
           command.andThen(
