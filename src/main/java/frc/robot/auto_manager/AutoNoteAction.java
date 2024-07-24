@@ -6,5 +6,6 @@ package frc.robot.auto_manager;
 
 public enum AutoNoteAction {
   SCORE,
-  OUTTAKE;
+  OUTTAKE,
+  CLEANUP;
 }

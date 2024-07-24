@@ -10,6 +10,8 @@ import frc.robot.fms.FmsSubsystem;
 import java.util.function.Supplier;
 
 public record AutoNoteStep(Supplier<Pose2d> noteSearchPose, AutoNoteAction action) {
+  public static final AutoNoteStep CLEANUP = new AutoNoteStep(()->null, AutoNoteAction.CLEANUP);
+
   public static Pose2d noteIdToPose(int noteId) {
     switch (noteId) {
       case 1:
