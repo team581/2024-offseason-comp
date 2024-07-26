@@ -286,7 +286,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
               () ->
                   !mapContainsNote()
                       || getPose().getTranslation().getDistance(searchpose.getTranslation()) < 1.0)
-                      .andThen(intakeNoteAtPose(noteAtSearchPose.get().notePose(), 1.0));
+          .andThen(intakeNoteAtPose(noteAtSearchPose.get().notePose(), 1.0));
     }
     return Commands.none();
   }
