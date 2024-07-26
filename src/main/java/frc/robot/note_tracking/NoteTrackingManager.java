@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.config.RobotConfig;
-import frc.robot.imu.ImuSubsystem;
 import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
@@ -36,28 +35,25 @@ import java.util.function.Supplier;
 public class NoteTrackingManager extends LifecycleSubsystem {
   // how much we keep a note in the map if it was added or updated from camera (seconds)
   private static final double NOTE_MAP_LIFETIME = 10.0;
-  private static final double LIMELIGHT_VERTICAL_FOV_DEGREES = 25.0;
   private final LocalizationSubsystem localization;
   private final SwerveSubsystem swerve;
   private final RobotCommands actions;
   private final RobotManager robot;
   private final SnapManager snaps;
-  private final ImuSubsystem imu;
   private static final String LIMELIGHT_NAME = "limelight-note";
   private final InterpolatingDoubleTreeMap tyToDistance = new InterpolatingDoubleTreeMap();
   private ArrayList<NoteMapElement> noteMap = new ArrayList<>();
 
   private static final double FOV_VERTICAL = 48.953;
   private static final double FOV_HORIZONTAL = 62.544;
-  private static final double horizontalLeftView = 30.015;
-  private static final double veritalTopView = 23.979;
+  private static final double HORIZONTAL_LEFT_VIEW = 30.015;
+  private static final double VERTICAL_TOP_VIEW = 23.979;
 
   public NoteTrackingManager(
       LocalizationSubsystem localization,
       SwerveSubsystem swerve,
       RobotCommands actions,
-      RobotManager robot,
-      ImuSubsystem imu) {
+      RobotManager robot) {
     super(SubsystemPriority.NOTE_TRACKING);
 
     this.localization = localization;
@@ -65,7 +61,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     this.actions = actions;
     this.robot = robot;
     this.snaps = robot.snaps;
-    this.imu = imu;
     RobotConfig.get().vision().tyToNoteDistance().accept(tyToDistance);
   }
 
@@ -169,8 +164,8 @@ public class NoteTrackingManager extends LifecycleSubsystem {
         var centerX = (corners[i] + corners[i + 2]) / 2;
         var centerY = (corners[i + 1] + corners[i + 5]) / 2;
 
-        var angleX = (((centerX / 640.0) * FOV_HORIZONTAL) - horizontalLeftView);
-        var angleY = -1 * (((centerY / 480.0) * FOV_VERTICAL) - veritalTopView);
+        var angleX = (((centerX / 640.0) * FOV_HORIZONTAL) - HORIZONTAL_LEFT_VIEW);
+        var angleY = -1 * (((centerY / 480.0) * FOV_VERTICAL) - VERTICAL_TOP_VIEW);
 
         DogLog.log("NoteTracking/angley", angleY);
         DogLog.log("NoteTracking/anglex", angleX);
@@ -231,7 +226,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   }
 
   public Command intakeNoteAtPose(Supplier<Pose2d> searchPose, double thresholdMeters) {
-    // TODO: If no note found, exit the command (somehow)
     return actions
         .intakeCommand()
         .alongWith(
