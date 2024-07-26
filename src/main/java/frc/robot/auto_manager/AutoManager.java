@@ -167,14 +167,14 @@ public class AutoManager extends LifecycleSubsystem {
       DogLog.log("Debug/SpeakerCleanup", true);
 
       return AutoBuilder.pathfindToPose(speakerCleanupPose, DEFAULT_CONSTRAINTS)
-          .until(noteMap::mapContainsNote)
+          .until(() -> noteMap.mapContainsNote(robotPose, 3.0))
           .andThen(cleanupNote().repeatedly().onlyWhile(noteMap::mapContainsNote));
     }
 
     // if we're close to midline
     DogLog.log("Debug/MidlineCleanup", true);
     return AutoBuilder.pathfindToPose(MIDLINE_CLEANUP_POSE, DEFAULT_CONSTRAINTS)
-        .until(noteMap::mapContainsNote)
+        .until(() -> noteMap.mapContainsNote(robotPose, 2.0))
         .andThen(cleanupNote().repeatedly().onlyWhile(noteMap::mapContainsNote));
   }
 

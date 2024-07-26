@@ -349,6 +349,10 @@ public class NoteMap extends LifecycleSubsystem {
     return noteMap.size() > 0.0;
   }
 
+  public boolean mapContainsNote(Pose2d searchLocation, double threshold) {
+    return getNearestNotePoseRelative(searchLocation, threshold).isPresent();
+  }
+
   private ArrayList<NoteMapElement> getNewMap() {
     List<Pose2d> visionNotes = getFilteredNotePoses();
 
