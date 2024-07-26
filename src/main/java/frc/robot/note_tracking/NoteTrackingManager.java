@@ -226,18 +226,18 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     noteMap.remove(note);
   }
 
-  public Command intakeNoteAtPose(Pose2d searchPose) {
-    return intakeNoteAtPose(() -> searchPose);
+  public Command intakeNoteAtPose(Pose2d searchPose, double thresholdMeters) {
+    return intakeNoteAtPose(() -> searchPose, thresholdMeters);
   }
 
-  public Command intakeNoteAtPose(Supplier<Pose2d> searchPose) {
+  public Command intakeNoteAtPose(Supplier<Pose2d> searchPose, double thresholdMeters) {
     // TODO: If no note found, exit the command (somehow)
     return actions
         .intakeCommand()
         .alongWith(
             swerve.driveToPoseCommand(
                 () -> {
-                  var nearestNote = getNearestNotePoseRelative(searchPose.get(), 1.5);
+                  var nearestNote = getNearestNotePoseRelative(searchPose.get(), thresholdMeters);
 
                   if (nearestNote.isPresent()) {
                     snaps.setAngle(nearestNote.get().notePose().getRotation());
@@ -269,8 +269,8 @@ public class NoteTrackingManager extends LifecycleSubsystem {
         .withName("IntakeNearestNoteCommand");
   }
 
-  public Command intakeNearestMapNote() {
-    return intakeNoteAtPose(this::getPose);
+  public Command intakeNearestMapNote(double thresholdMeters) {
+    return intakeNoteAtPose(this::getPose, thresholdMeters);
   }
 
   private Pose2d getPose() {
