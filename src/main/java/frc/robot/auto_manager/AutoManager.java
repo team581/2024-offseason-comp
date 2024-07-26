@@ -42,6 +42,24 @@ public class AutoManager extends LifecycleSubsystem {
       new Pose2d(
           Units.inchesToMeters(0) + 2.0, Units.inchesToMeters(218.42), Rotation2d.fromDegrees(0));
   public static final Pose2d MIDLINE_CLEANUP_POSE = new Pose2d(8.271, 4.106, new Rotation2d(0));
+  public static final List<Pose2d> OBSTACLE_LIST =
+      List.of(
+
+          // Red stage podiums
+          new Pose2d(10.96, 2.8, new Rotation2d(0.0)),
+          new Pose2d(10.95, 5.35, new Rotation2d(0.0)),
+          new Pose2d(13.2, 4.06, new Rotation2d(0.0)),
+
+          // Red speaker
+          new Pose2d(16.11, 5.52, new Rotation2d(0.0)),
+
+          // Blue stage podiums
+          new Pose2d(3.35, 4.05, new Rotation2d(0.0)),
+          new Pose2d(5.59, 2.78, new Rotation2d(0.0)),
+          new Pose2d(5.59, 5.37, new Rotation2d(0.0)),
+
+          // Blue speaker
+          new Pose2d(0.44, 5.52, new Rotation2d(0.0)));
   public static final List<Pose2d> RED_DESTINATIONS =
       List.of(
           new Pose2d(12.32, 5.16, Rotation2d.fromDegrees(5.62)),
@@ -146,6 +164,31 @@ public class AutoManager extends LifecycleSubsystem {
                 .unless(() -> !robotManager.getState().hasNote));
   }
 
+  Boolean isGoingToCollide(Pose2d destination) {
+    var robot = localization.getPose();
+    for (Pose2d obstacle : OBSTACLE_LIST) {
+      var a = destination.getY() - robot.getY();
+      var b = robot.getX() - destination.getX();
+      var c =
+          robot.getY() * (destination.getX() - robot.getX())
+              - (destination.getY() - robot.getY()) * robot.getX();
+      var line = new StandardLine(a, b, c);
+
+      double distance =
+          Math.abs(line.a() * obstacle.getX() + line.b() * obstacle.getY() + line.c())
+              / Math.sqrt(line.a() * line.a() + line.b() * line.b());
+
+      if (distance < 0.8
+          && localization.getPose().getTranslation().getDistance(obstacle.getTranslation())
+              < localization.getPose().getTranslation().getDistance(destination.getTranslation())) {
+        DogLog.log("AutoManager/ObstacleInWay", obstacle);
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   private Command cleanupCommand() {
     var robotPose = localization.getPose();
     var speakerCleanupPose = getSpeakerCleanupPose();
@@ -160,7 +203,6 @@ public class AutoManager extends LifecycleSubsystem {
 
     // if we're close to midline
     DogLog.log("Debug/MidlineCleanup", true);
-
     return AutoBuilder.pathfindToPose(MIDLINE_CLEANUP_POSE, DEFAULT_CONSTRAINTS)
         .until(noteTrackingManager::mapContainsNote)
         .andThen(cleanupNote().repeatedly().onlyWhile(noteTrackingManager::mapContainsNote));
