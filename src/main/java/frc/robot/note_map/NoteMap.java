@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.note_tracking;
+package frc.robot.note_map;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
@@ -36,7 +36,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
-public class NoteTrackingManager extends LifecycleSubsystem {
+public class NoteMap extends LifecycleSubsystem {
   // how much we keep a note in the map if it was added or updated from camera (seconds)
   private static final double NOTE_MAP_LIFETIME = 10.0;
   private final LocalizationSubsystem localization;
@@ -73,7 +73,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
           // Blue speaker
           new Pose2d(0.44, 5.52, new Rotation2d(0.0)));
 
-  public NoteTrackingManager(
+  public NoteMap(
       LocalizationSubsystem localization,
       SwerveSubsystem swerve,
       RobotCommands actions,
@@ -217,8 +217,8 @@ public class NoteTrackingManager extends LifecycleSubsystem {
         var angleX = (((centerX / 640.0) * FOV_HORIZONTAL) - HORIZONTAL_LEFT_VIEW);
         var angleY = -1 * (((centerY / 480.0) * FOV_VERTICAL) - VERTICAL_TOP_VIEW);
 
-        DogLog.log("NoteTracking/angley", angleY);
-        DogLog.log("NoteTracking/anglex", angleX);
+        DogLog.log("NoteMap/angley", angleY);
+        DogLog.log("NoteMap/anglex", angleX);
 
         var maybeNotePose = noteTxTyToPose(angleX, angleY);
 
@@ -344,15 +344,15 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   @Override
   public void robotPeriodic() {
     DogLog.log(
-        "NoteTracking/NotesExpired",
+        "NoteMap/NotesExpired",
         noteMap.removeIf(
             element -> {
-              DogLog.log("NoteTracking/ExpiredNote", element.notePose());
+              DogLog.log("NoteMap/ExpiredNote", element.notePose());
               return element.expiresAt() < Timer.getFPGATimestamp();
             }));
 
     DogLog.log(
-        "NoteTracking/NoteMap",
+        "NoteMap/NoteMap",
         noteMap.stream().map(NoteMapElement::notePose).toArray(Pose2d[]::new));
 
     Stopwatch.getInstance().start("Debug/NoteMapTime");
@@ -363,7 +363,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     var maybeClosest = getNearestNotePoseRelative(getPose(), 99987.0);
     if (maybeClosest.isPresent()) {
 
-      DogLog.log("NoteTracking/ClosestNote", maybeClosest.get().notePose());
+      DogLog.log("NoteMap/ClosestNote", maybeClosest.get().notePose());
     }
   }
 
