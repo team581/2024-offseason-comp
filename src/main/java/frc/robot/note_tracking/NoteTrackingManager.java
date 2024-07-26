@@ -4,6 +4,8 @@
 
 package frc.robot.note_tracking;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathConstraints;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -30,6 +32,7 @@ import frc.robot.vision.VisionSubsystem;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 public class NoteTrackingManager extends LifecycleSubsystem {
@@ -43,6 +46,8 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private static final String LIMELIGHT_NAME = "limelight-note";
   private final InterpolatingDoubleTreeMap tyToDistance = new InterpolatingDoubleTreeMap();
   private ArrayList<NoteMapElement> noteMap = new ArrayList<>();
+  private static final PathConstraints DEFAULT_CONSTRAINTS =
+      new PathConstraints(2.0, 2.0, 2 * Math.PI, 4 * Math.PI);
 
   private static final double FOV_VERTICAL = 48.953;
   private static final double FOV_HORIZONTAL = 62.544;
@@ -265,6 +270,25 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
   public Command intakeNearestMapNote(double thresholdMeters) {
     return intakeNoteAtPose(this::getPose, thresholdMeters);
+  }
+
+  public Command pathfindIntakeNote(Pose2d searchpose, double thresholdMeters) {
+    var noteAtSearchPose = getNearestNotePoseRelative(searchpose, thresholdMeters);
+    if (noteAtSearchPose.isPresent()) {
+      return Commands.defer(
+              () -> {
+                DogLog.log("Debug/PathFindShoot", true);
+                return AutoBuilder.pathfindToPose(
+                    noteAtSearchPose.get().notePose(), DEFAULT_CONSTRAINTS);
+              },
+              Set.of())
+          .unless(
+              () ->
+                  !mapContainsNote()
+                      || getPose().getTranslation().getDistance(searchpose.getTranslation()) < 1.0)
+                      .andThen(intakeNoteAtPose(noteAtSearchPose.get().notePose(), 1.0));
+    }
+    return Commands.none();
   }
 
   private Pose2d getPose() {
