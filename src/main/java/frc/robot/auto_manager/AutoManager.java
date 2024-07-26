@@ -129,25 +129,37 @@ public class AutoManager extends LifecycleSubsystem {
     return Commands.sequence(steps.stream().map(this::doAutoStep).toArray(Command[]::new));
   }
 
+  private Command pathfindToScore() {
+    return Commands.defer(
+            () -> {
+              return AutoBuilder.pathfindToPose(
+                  getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
+            },
+            Set.of())
+        .raceWith(actions.waitForSpeakerShotCommand())
+        .andThen(actions.speakerShotCommand())
+        .onlyIf(() -> robotManager.getState().hasNote);
+  }
+
+  private Command pathfindToOuttake() {
+    return Commands.defer(
+            () -> {
+              return AutoBuilder.pathfindToPose(
+                  getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
+            },
+            Set.of())
+        .andThen(actions.dropCommand())
+        .onlyIf(() -> robotManager.getState().hasNote);
+  }
+
   private Command cleanupNote() {
     // find and score a note
     DogLog.log("Debug/CleanupNote", true);
 
-    return noteMap
-        .intakeNearestMapNote(2.0)
-        .andThen(
-            Commands.defer(
-                    () -> {
-                      DogLog.log("Debug/CleanupNotePathfind", true);
-                      return AutoBuilder.pathfindToPose(
-                          getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
-                    },
-                    Set.of())
-                .andThen(actions.speakerShotCommand())
-                .unless(() -> !robotManager.getState().hasNote));
+    return noteMap.intakeNearestMapNote(2.0).andThen(pathfindToScore());
   }
 
-  private Command cleanupCommand() {
+  public Command cleanupCommand() {
     var robotPose = localization.getPose();
     var speakerCleanupPose = getSpeakerCleanupPose();
     // if we're close to speaker
@@ -180,30 +192,9 @@ public class AutoManager extends LifecycleSubsystem {
             1.5);
 
     if (step.action() == AutoNoteAction.OUTTAKE) {
-      command =
-          command
-              .andThen(
-                  Commands.defer(
-                          () -> {
-                            DogLog.log("Debug/PathFindOuttake", true);
-                            return AutoBuilder.pathfindToPose(
-                                getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
-                          },
-                          Set.of())
-                      .unless(() -> !robotManager.getState().hasNote))
-              .andThen(actions.dropCommand().unless(() -> !robotManager.getState().hasNote));
+      command = command.andThen(pathfindToOuttake());
     } else if (step.action() == AutoNoteAction.SCORE) {
-      command =
-          command.andThen(
-              Commands.defer(
-                      () -> {
-                        DogLog.log("Debug/PathFindShoot", true);
-                        return AutoBuilder.pathfindToPose(
-                            getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
-                      },
-                      Set.of())
-                  .andThen(actions.speakerShotCommand())
-                  .unless(() -> !robotManager.getState().hasNote));
+      command = command.andThen(pathfindToScore());
     }
 
     return command;

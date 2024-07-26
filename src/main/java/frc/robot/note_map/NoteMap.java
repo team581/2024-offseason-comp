@@ -4,7 +4,6 @@
 
 package frc.robot.note_map;
 
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -33,7 +32,6 @@ import frc.robot.vision.VisionSubsystem;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Supplier;
 
 public class NoteMap extends LifecycleSubsystem {
@@ -318,25 +316,6 @@ public class NoteMap extends LifecycleSubsystem {
     return intakeNoteAtPose(this::getPose, thresholdMeters);
   }
 
-  public Command pathfindIntakeNote(Pose2d searchpose, double thresholdMeters) {
-    var noteAtSearchPose = getNearestNotePoseRelative(searchpose, thresholdMeters);
-    if (noteAtSearchPose.isPresent()) {
-      return Commands.defer(
-              () -> {
-                DogLog.log("Debug/PathFindShoot", true);
-                return AutoBuilder.pathfindToPose(
-                    noteAtSearchPose.get().notePose(), DEFAULT_CONSTRAINTS);
-              },
-              Set.of())
-          .unless(
-              () ->
-                  !mapContainsNote()
-                      || getPose().getTranslation().getDistance(searchpose.getTranslation()) < 1.0)
-          .andThen(intakeNoteAtPose(noteAtSearchPose.get().notePose(), 1.0));
-    }
-    return Commands.none();
-  }
-
   private Pose2d getPose() {
     return localization.getPose();
   }
@@ -352,8 +331,7 @@ public class NoteMap extends LifecycleSubsystem {
             }));
 
     DogLog.log(
-        "NoteMap/NoteMap",
-        noteMap.stream().map(NoteMapElement::notePose).toArray(Pose2d[]::new));
+        "NoteMap/NoteMap", noteMap.stream().map(NoteMapElement::notePose).toArray(Pose2d[]::new));
 
     Stopwatch.getInstance().start("Debug/NoteMapTime");
     noteMap = getNewMap();
