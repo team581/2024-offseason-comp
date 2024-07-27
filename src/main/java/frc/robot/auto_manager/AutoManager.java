@@ -168,14 +168,20 @@ public class AutoManager extends LifecycleSubsystem {
 
       return AutoBuilder.pathfindToPose(speakerCleanupPose, DEFAULT_CONSTRAINTS)
           .until(() -> noteMap.mapContainsNote(robotPose, 3.0))
-          .andThen(cleanupNote().repeatedly().onlyWhile(() -> noteMap.mapContainsNote() || robotManager.getState().hasNote));
+          .andThen(
+              cleanupNote()
+                  .repeatedly()
+                  .onlyWhile(() -> noteMap.mapContainsNote() || robotManager.getState().hasNote));
     }
 
     // if we're close to midline
     DogLog.log("Debug/MidlineCleanup", true);
     return AutoBuilder.pathfindToPose(MIDLINE_CLEANUP_POSE, DEFAULT_CONSTRAINTS)
         .until(() -> noteMap.mapContainsNote(robotPose, 2.0))
-        .andThen(cleanupNote().repeatedly().onlyWhile(() -> noteMap.mapContainsNote() || robotManager.getState().hasNote));
+        .andThen(
+            cleanupNote()
+                .repeatedly()
+                .onlyWhile(() -> noteMap.mapContainsNote() || robotManager.getState().hasNote));
   }
 
   private Command doAutoStep(AutoNoteStep step) {
