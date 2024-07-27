@@ -1,0 +1,109 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 15.198025703430176,
+      "y": 5.552863121032715
+    },
+    "rotation": -3.0387216291393194e-28
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "homeClimber"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "preloadNote"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Six Piece 2 to 4.1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Six Piece 2 to 4.2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Six Piece 2 to 4.3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Six Piece 2 to 4.4"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Six Piece 2 to 4.5"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Six Piece 2 to 4.6"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Six Piece 2 to 4.7"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Six Piece 2 to 4.8"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "midlineNotesFromAmp456"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Red Choreo Autos",
+  "choreoAuto": true
+}

@@ -35,7 +35,6 @@ import frc.robot.config.RobotConfig.ShooterConfig;
 import frc.robot.config.RobotConfig.SwerveConfig;
 import frc.robot.config.RobotConfig.VisionConfig;
 import frc.robot.config.RobotConfig.WristConfig;
-import frc.robot.vision.VisionStrategy;
 
 class PracticeConfig {
   private static final ClosedLoopRampsConfigs CLOSED_LOOP_RAMP =
@@ -260,24 +259,7 @@ class PracticeConfig {
                       new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive))
                   .withClosedLoopRamps(CLOSED_LOOP_RAMP)
                   .withOpenLoopRamps(OPEN_LOOP_RAMP)),
-          new SwerveConfig(
-              new CurrentLimitsConfigs()
-                  .withSupplyCurrentLimit(20)
-                  .withStatorCurrentLimit(70)
-                  .withSupplyCurrentLimitEnable(true)
-                  .withStatorCurrentLimitEnable(true),
-              new CurrentLimitsConfigs()
-                  .withSupplyCurrentLimit(150)
-                  .withStatorCurrentLimit(70)
-                  .withSupplyCurrentLimitEnable(true)
-                  .withStatorCurrentLimitEnable(true),
-              new TorqueCurrentConfigs()
-                  .withPeakForwardTorqueCurrent(80)
-                  .withPeakReverseTorqueCurrent(-80),
-              new PhoenixPIDController(10, 0, 1),
-              true,
-              true,
-              true),
+          new SwerveConfig(new PhoenixPIDController(10, 0, 1), true, true, true),
           new IMUConfig(
               1,
               distanceToAngleTolerance -> {
@@ -286,7 +268,6 @@ class PracticeConfig {
               }),
           new LightsConfig(3),
           new VisionConfig(
-              VisionStrategy.TX_TY_AND_MEGATAG,
               4,
               0.005,
               0.01,

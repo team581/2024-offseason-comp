@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 15.198025703430176,
-      "y": 5.552863121032715
+      "x": 15.21444034576416,
+      "y": 5.554786682128906
     },
-    "rotation": 8.407083341517454e-36
+    "rotation": 1.5015418360566328e-25
   },
   "command": {
     "type": "sequential",
@@ -26,7 +26,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Red Six Piece 2 to 4 (1).1"
+            "pathName": "Red 4 Piece 2 to 3.1"
           }
         },
         {
@@ -38,13 +38,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Red Six Piece 2 to 4 (1).2"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Red Six Piece 2 to 4 (1).3"
+            "pathName": "Red 4 Piece 2 to 3.2"
           }
         },
         {
@@ -56,13 +50,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Red Six Piece 2 to 4 (1).4"
+            "pathName": "Red 4 Piece 2 to 3.3"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Red Six Piece 2 to 4 (1).5"
+            "pathName": "Red 4 Piece 2 to 3.4"
           }
         },
         {
@@ -74,25 +68,31 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Red Six Piece 2 to 4 (1).6"
+            "pathName": "Red 4 Piece 2 to 3.5"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Red Six Piece 2 to 4 (1).7"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Red Six Piece 2 to 4 (1).8"
+            "pathName": "Red 4 Piece 2 to 3.6"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "midlineNotesFromAmp456"
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red 4 Piece 2 to 3.7"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
           }
         }
       ]

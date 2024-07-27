@@ -2,6 +2,10 @@
   "[gradle]": {"editor.defaultFormatter": "richardwillis.vscode-spotless-gradle"},
   "java.configuration.updateBuildConfiguration": "automatic",
   "java.test.defaultConfig": "WPIlibUnitTests",
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnType": true
+  },
   "java.test.config": [{
     "workingDirectory": "${workspaceFolder}/build/jni/release",
     "name": "WPIlibUnitTests",

@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.auto_manager.AutoManager;
 import frc.robot.autos.Autos;
 import frc.robot.climber.ClimberSubsystem;
 import frc.robot.config.RobotConfig;
@@ -103,7 +104,9 @@ public class Robot extends TimedRobot {
       new LightsSubsystem(
           new CANdle(RobotConfig.get().lights().deviceID(), "rio"), robotManager, vision, intake);
   private final NoteTrackingManager noteTrackingManager =
-      new NoteTrackingManager(localization, swerve, actions, robotManager, imu);
+      new NoteTrackingManager(localization, swerve, actions, robotManager);
+  private final AutoManager autoManager =
+      new AutoManager(actions, noteTrackingManager, robotManager, localization);
 
   public Robot() {
     System.out.println("roboRIO serial number: " + RobotConfig.SERIAL_NUMBER);
@@ -115,7 +118,6 @@ public class Robot extends TimedRobot {
     DogLog.log("Metadata/ProjectName", BuildConstants.MAVEN_NAME);
     DogLog.log("Metadata/RoborioSerialNumber", RobotConfig.SERIAL_NUMBER);
     DogLog.log("Metadata/RobotName", RobotConfig.get().robotName());
-    DogLog.log("Metadata/VisionStrategy", RobotConfig.get().vision().strategy().toString());
     DogLog.log("Metadata/BuildDate", BuildConstants.BUILD_DATE);
     DogLog.log("Metadata/GitSHA", BuildConstants.GIT_SHA);
     DogLog.log("Metadata/GitDate", BuildConstants.GIT_DATE);
@@ -244,10 +246,7 @@ public class Robot extends TimedRobot {
         .y()
         .onTrue(actions.waitSubwooferShotCommand())
         .onFalse(actions.stowCommand());
-    operatorController
-        .povRight()
-        .whileTrue(noteTrackingManager.intakeNearestMapNote())
-        .onFalse(actions.stowCommand());
+    operatorController.povRight().onTrue(autoManager.testCommand()).onFalse(actions.stowCommand());
     operatorController
         .rightTrigger()
         .onTrue(actions.waitForSpeakerShotCommand())

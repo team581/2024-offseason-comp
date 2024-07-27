@@ -1,0 +1,67 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 15.12188720703125,
+      "y": 1.5268802642822266
+    },
+    "rotation": -8.81995325055039e-27
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "homeClimber"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "preloadNote"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red 3 Piece 8 to 6.1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red 3 Piece 8 to 6.2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red 3 Piece 8 to 6.3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red 3 Piece 8 to 6.4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Red Choreo Autos",
+  "choreoAuto": true
+}

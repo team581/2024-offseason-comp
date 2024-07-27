@@ -19,11 +19,11 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.config.RobotConfig;
 import frc.robot.fms.FmsSubsystem;
-import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.util.ControllerHelpers;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
@@ -32,8 +32,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public class SwerveSubsystem extends LifecycleSubsystem {
-  private static final double MAX_SPEED_SHOOTING =
-      Units.feetToMeters(LocalizationSubsystem.USE_SHOOT_WHILE_MOVE ? 3 : 3);
+  private static final double MAX_SPEED_SHOOTING = Units.feetToMeters(0.5);
   private static final double MAX_FLOOR_SPEED_SHOOTING = Units.feetToMeters(18);
   public static final double MaxSpeed = 4.75;
   private static final double MaxAngularRate = Units.rotationsToRadians(4);
@@ -67,25 +66,6 @@ public class SwerveSubsystem extends LifecycleSubsystem {
   private final double AccelerationLimit = 3.2;
   private Translation2d previousVelocity = new Translation2d();
 
-  /**
-   * Helper for applying current limits to swerve modules, since the CTR swerve builder API doesn't
-   * support it.
-   */
-  private static void applyCurrentLimits(SwerveModule module) {
-    module
-        .getDriveMotor()
-        .getConfigurator()
-        .apply(RobotConfig.get().swerve().driveMotorCurrentLimits());
-    module
-        .getSteerMotor()
-        .getConfigurator()
-        .apply(RobotConfig.get().swerve().steerMotorCurrentLimits());
-    module
-        .getDriveMotor()
-        .getConfigurator()
-        .apply(RobotConfig.get().swerve().driveMotorTorqueCurrentLimits());
-  }
-
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
   private boolean snapToAngle = false;
@@ -115,8 +95,8 @@ public class SwerveSubsystem extends LifecycleSubsystem {
   private ChassisSpeeds fieldRelativeSpeeds = new ChassisSpeeds();
   private boolean closedLoop = false;
 
-  private final PIDController xPid = new PIDController(1.5, 0, 0);
-  private final PIDController yPid = new PIDController(1.5, 0, 0);
+  private final PIDController xPid = new PIDController(2.0, 0, 0);
+  private final PIDController yPid = new PIDController(2.0, 0, 0);
   private final PIDController omegaPid = new PIDController(1.5, 0, 0);
 
   public SwerveSubsystem(CommandXboxController driveController) {
@@ -130,11 +110,6 @@ public class SwerveSubsystem extends LifecycleSubsystem {
     driveToAngle.HeadingController = RobotConfig.get().swerve().snapController();
     driveToAngle.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
     driveToAngle.HeadingController.setTolerance(0.02);
-
-    applyCurrentLimits(frontLeft);
-    applyCurrentLimits(frontRight);
-    applyCurrentLimits(backLeft);
-    applyCurrentLimits(backRight);
 
     omegaPid.enableContinuousInput(-Math.PI, Math.PI);
   }
@@ -279,11 +254,7 @@ public class SwerveSubsystem extends LifecycleSubsystem {
     DogLog.log("Swerve/SnapToAngle", snapToAngle);
     DogLog.log("Swerve/SnapToAngleGoal", goalSnapAngle.getDegrees());
     DogLog.log("Swerve/Pose", drivetrain.getState().Pose);
-    // TODO: Fix logging SwerveModuleState[] struct array
-    DogLog.log("Swerve/ModuleStates/0", drivetrain.getState().ModuleStates[0]);
-    DogLog.log("Swerve/ModuleStates/1", drivetrain.getState().ModuleStates[1]);
-    DogLog.log("Swerve/ModuleStates/2", drivetrain.getState().ModuleStates[2]);
-    DogLog.log("Swerve/ModuleStates/3", drivetrain.getState().ModuleStates[3]);
+    DogLog.log("Swerve/ModuleStates", drivetrain.getState().ModuleStates);
     DogLog.log("Swerve/ModuleTargets", drivetrain.getState().ModuleTargets);
 
     DogLog.log(
@@ -383,14 +354,17 @@ public class SwerveSubsystem extends LifecycleSubsystem {
   }
 
   public Command driveToPoseCommand(
-      Supplier<Optional<Pose2d>> targetSupplier, Supplier<Pose2d> currentPose) {
+      Supplier<Optional<Pose2d>> targetSupplier, Supplier<Pose2d> currentPose, boolean shouldEnd) {
     return run(() -> {
           var maybeTarget = targetSupplier.get();
 
           if (!maybeTarget.isPresent()) {
             setFieldRelativeSpeeds(new ChassisSpeeds(), closedLoop);
+            DogLog.log("Debug/DriveToPoseNoTarget", Timer.getFPGATimestamp());
             return;
           }
+
+          DogLog.log("Debug/DriveToPoseHasTarget", Timer.getFPGATimestamp());
 
           var target = maybeTarget.get();
 
@@ -403,12 +377,15 @@ public class SwerveSubsystem extends LifecycleSubsystem {
         })
         .until(
             () -> {
-              var maybeTarget = targetSupplier.get();
-              if (maybeTarget.isPresent()) {
-                var target = targetSupplier.get();
+              if (shouldEnd) {
+                var maybeTarget = targetSupplier.get();
+                if (maybeTarget.isPresent()) {
+                  var target = targetSupplier.get();
 
-                return atLocation(target.get(), currentPose.get());
+                  return atLocation(target.get(), currentPose.get());
+                }
               }
+
               return false;
             })
         .finallyDo(

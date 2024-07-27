@@ -28,7 +28,6 @@ import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
 import frc.robot.vision.DistanceAngle;
 import frc.robot.vision.VisionState;
-import frc.robot.vision.VisionStrategy;
 import frc.robot.vision.VisionSubsystem;
 import frc.robot.wrist.WristPositions;
 import frc.robot.wrist.WristSubsystem;
@@ -181,7 +180,7 @@ public class RobotManager extends LifecycleSubsystem {
           break;
         case OUTTAKE_SHOOTER:
           if (!state.climbing) {
-            state = RobotState.PREPARE_OUTTAKING_SHOOTER;
+            state = RobotState.PREPARE_PASS_LOW;
           }
           break;
         case WAIT_SHOOTER_AMP:
@@ -212,6 +211,11 @@ public class RobotManager extends LifecycleSubsystem {
         case AMP_SHOT:
           if (!state.climbing) {
             state = RobotState.AMP_SHOT;
+          }
+          break;
+        case DROP:
+          if (!state.climbing) {
+            state = RobotState.DROPPING;
           }
           break;
         case SUBWOOFER_SHOT:
@@ -341,16 +345,11 @@ public class RobotManager extends LifecycleSubsystem {
           var wristAtGoal = wrist.atAngleForFloorSpot(floorSpotVisionTargets.distance());
           var shooterAtGoal = shooter.atGoal(ShooterMode.FLOOR_SHOT);
           var headingAtGoal = imu.atAngleForFloorSpot(floorSpotVisionTargets.targetAngle());
-          // If using TX TY, then don't care about pose jitter
-          var jitterAtGoal =
-              localization.atSafeJitter()
-                  || RobotConfig.get().vision().strategy() == VisionStrategy.TX_TY_AND_MEGATAG;
           var swerveAtGoal = swerve.movingSlowEnoughForFloorShot();
           var angularVelocityAtGoal = Math.abs(imu.getRobotAngularVelocity().getDegrees()) < 360.0;
           DogLog.log("RobotManager/FloorShot/WristAtGoal", wristAtGoal);
           DogLog.log("RobotManager/FloorShot/ShooterAtGoal", shooterAtGoal);
           DogLog.log("RobotManager/FloorShot/HeadingAtGoal", headingAtGoal);
-          DogLog.log("RobotManager/FloorShot/JitterAtGoal", jitterAtGoal);
           DogLog.log("RobotManager/FloorShot/SwerveAtGoal", swerveAtGoal);
           DogLog.log("RobotManager/FloorShot/AngularVelocityAtGoal", angularVelocityAtGoal);
 
@@ -396,7 +395,6 @@ public class RobotManager extends LifecycleSubsystem {
         {
           boolean wristAtGoal = wrist.atAngleForSpeaker(speakerDistance);
           boolean shooterAtGoal = shooter.atGoal(ShooterMode.SPEAKER_SHOT);
-          boolean poseJitterSafe = localization.atSafeJitter();
           boolean swerveSlowEnough = swerve.movingSlowEnoughForSpeakerShot();
           boolean angularVelocitySlowEnough = imu.belowVelocityForVision(speakerDistance);
           boolean robotHeadingAtGoal =
@@ -405,8 +403,6 @@ public class RobotManager extends LifecycleSubsystem {
 
           if (DriverStation.isAutonomous() && vision.getState() == VisionState.OFFLINE) {
             limelightWorking = true;
-          } else if (RobotConfig.get().vision().strategy() == VisionStrategy.TX_TY_AND_MEGATAG) {
-            limelightWorking = speakerDistanceAngle.seesSpeakerTag();
           } else {
             limelightWorking = vision.getState() == VisionState.SEES_TAGS;
           }
@@ -414,18 +410,13 @@ public class RobotManager extends LifecycleSubsystem {
           DogLog.log("RobotManager/SpeakerShot/LimelightWorking", limelightWorking);
           DogLog.log("RobotManager/SpeakerShot/WristAtGoal", wristAtGoal);
           DogLog.log("RobotManager/SpeakerShot/ShooterAtGoal", shooterAtGoal);
-          DogLog.log("RobotManager/SpeakerShot/PoseJitterSafe", poseJitterSafe);
           DogLog.log("RobotManager/SpeakerShot/SwerveSlowEnough", swerveSlowEnough);
           DogLog.log(
               "RobotManager/SpeakerShot/AngularVelocitySlowEnough", angularVelocitySlowEnough);
           DogLog.log("RobotManager/SpeakerShot/RobotHeadingAtGoal", robotHeadingAtGoal);
-          if ((limelightWorking || DriverStation.isAutonomous())
+          if (limelightWorking
               && wristAtGoal
               && shooterAtGoal
-              // If using TX TY, then don't care about pose jitter
-              && (poseJitterSafe
-                  || DriverStation.isAutonomous()
-                  || RobotConfig.get().vision().strategy() == VisionStrategy.TX_TY_AND_MEGATAG)
               && swerveSlowEnough
               && angularVelocitySlowEnough
               && robotHeadingAtGoal) {
@@ -433,10 +424,10 @@ public class RobotManager extends LifecycleSubsystem {
           }
         }
         break;
-      case PREPARE_OUTTAKING_SHOOTER:
+      case PREPARE_PASS_LOW:
         if (noteManager.getState() == NoteState.IDLE_IN_QUEUER
             && shooter.atGoal(ShooterMode.OUTTAKE)) {
-          state = RobotState.OUTTAKING_SHOOTER;
+          state = RobotState.PASS_LOW;
         }
         break;
       case WAITING_MULTI_SPEAKER_SHOT:
@@ -449,7 +440,7 @@ public class RobotManager extends LifecycleSubsystem {
           state = RobotState.PREPARE_FLOOR_SHOT;
         }
         break;
-      case OUTTAKING_SHOOTER:
+      case PASS_LOW:
       case SHOOTER_AMP:
       case SUBWOOFER_SHOOT:
       case PODIUM_SHOOT:
@@ -457,6 +448,7 @@ public class RobotManager extends LifecycleSubsystem {
       case PRESET_3:
       case PRESET_MIDDLE:
       case PRESET_AMP:
+      case DROPPING:
       case PRESET_LEFT:
         if (noteManager.getState() == NoteState.IDLE_NO_GP) {
           state = RobotState.IDLE_NO_GP;
@@ -545,19 +537,26 @@ public class RobotManager extends LifecycleSubsystem {
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.outtakeRequest();
         break;
-      case PREPARE_OUTTAKING_SHOOTER:
+      case PREPARE_PASS_LOW:
         wrist.setAngle(WristPositions.OUTTAKING_SHOOTER);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.OUTTAKE);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.idleInQueuerRequest();
         break;
-      case OUTTAKING_SHOOTER:
+      case PASS_LOW:
         wrist.setAngle(WristPositions.OUTTAKING_SHOOTER);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.OUTTAKE);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.shooterOuttakeRequest();
+        break;
+      case DROPPING:
+        wrist.setAngle(WristPositions.OUTTAKING_SHOOTER);
+        elevator.setGoalHeight(ElevatorPositions.STOWED);
+        shooter.setGoalMode(ShooterMode.DROPPING);
+        climber.setGoalMode(ClimberMode.STOWED);
+        noteManager.dropRequest();
         break;
       case PREPARE_SHOOTER_AMP:
       case WAIT_SHOOTER_AMP:
@@ -891,6 +890,10 @@ public class RobotManager extends LifecycleSubsystem {
 
   public void shooterAmpRequest() {
     flags.check(RobotFlag.SHOOTER_AMP);
+  }
+
+  public void dropRequest() {
+    flags.check(RobotFlag.DROP);
   }
 
   public void waitShooterAmpRequest() {

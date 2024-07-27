@@ -4,16 +4,13 @@
 
 package frc.robot.config;
 
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.configs.TorqueCurrentConfigs;
 import com.ctre.phoenix6.mechanisms.swerve.utility.PhoenixPIDController;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
-import frc.robot.vision.VisionStrategy;
 import java.util.function.Consumer;
 
 public record RobotConfig(
@@ -99,16 +96,12 @@ public record RobotConfig(
   public record LightsConfig(int deviceID) {}
 
   public record SwerveConfig(
-      CurrentLimitsConfigs steerMotorCurrentLimits,
-      CurrentLimitsConfigs driveMotorCurrentLimits,
-      TorqueCurrentConfigs driveMotorTorqueCurrentLimits,
       PhoenixPIDController snapController,
       boolean invertRotation,
       boolean invertX,
       boolean invertY) {}
 
   public record VisionConfig(
-      VisionStrategy strategy,
       int translationHistoryArraySize,
       double xyStdDev,
       double thetaStdDev,

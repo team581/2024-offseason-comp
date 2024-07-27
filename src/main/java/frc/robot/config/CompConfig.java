@@ -35,7 +35,6 @@ import frc.robot.config.RobotConfig.ShooterConfig;
 import frc.robot.config.RobotConfig.SwerveConfig;
 import frc.robot.config.RobotConfig.VisionConfig;
 import frc.robot.config.RobotConfig.WristConfig;
-import frc.robot.vision.VisionStrategy;
 
 class CompConfig {
   private static final ClosedLoopRampsConfigs CLOSED_LOOP_RAMP =
@@ -265,24 +264,8 @@ class CompConfig {
                   .withClosedLoopRamps(CLOSED_LOOP_RAMP)
                   .withOpenLoopRamps(OPEN_LOOP_RAMP)),
           new SwerveConfig(
-              new CurrentLimitsConfigs()
-                  .withSupplyCurrentLimit(20)
-                  .withStatorCurrentLimit(70)
-                  .withSupplyCurrentLimitEnable(true)
-                  .withStatorCurrentLimitEnable(true),
-              new CurrentLimitsConfigs()
-                  .withSupplyCurrentLimit(120)
-                  .withStatorCurrentLimit(70)
-                  .withSupplyCurrentLimitEnable(true)
-                  .withStatorCurrentLimitEnable(true),
-              new TorqueCurrentConfigs()
-                  .withPeakForwardTorqueCurrent(80)
-                  .withPeakReverseTorqueCurrent(-80),
               // new PhoenixPIDController(50, 0, 5),
-              new PhoenixPIDController(20, 0, 2),
-              true,
-              true,
-              true),
+              new PhoenixPIDController(20, 0, 2), true, true, true),
           new IMUConfig(
               1,
               distanceToAngleTolerance -> {
@@ -291,7 +274,6 @@ class CompConfig {
               }),
           new LightsConfig(3),
           new VisionConfig(
-              VisionStrategy.TX_TY_AND_MEGATAG,
               4,
               0.4,
               0.4,

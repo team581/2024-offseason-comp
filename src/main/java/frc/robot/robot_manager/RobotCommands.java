@@ -244,6 +244,10 @@ public class RobotCommands {
         .withName("StopFloorShotCommand");
   }
 
+  public Command dropCommand() {
+    return Commands.runOnce(() -> robot.dropRequest(), requirements).withName("DropCommand");
+  }
+
   public Command unjamCommand() {
     return Commands.runOnce(() -> robot.unjamRequest(), requirements).withName("UnjamCommand");
   }

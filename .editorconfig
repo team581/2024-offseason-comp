@@ -14,3 +14,7 @@ insert_final_newline = true
 [*.gradle]
 indent_style = tab
 indent_size = 2
+
+[*.py]
+indent_style = space
+indent_size = 4
