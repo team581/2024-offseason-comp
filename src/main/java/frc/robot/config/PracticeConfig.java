@@ -211,7 +211,7 @@ class PracticeConfig {
           new IntakeConfig(
               15,
               2,
-              3,
+
               1,
               new Debouncer(0.05, DebounceType.kBoth),
               new TalonFXConfiguration()
@@ -237,7 +237,7 @@ class PracticeConfig {
                   .withClosedLoopRamps(CLOSED_LOOP_RAMP)
                   .withOpenLoopRamps(OPEN_LOOP_RAMP)),
           new RedirectConfig(
-              999,
+              4,
               new TalonFXConfiguration()
                   .withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(1))
                   .withCurrentLimits(

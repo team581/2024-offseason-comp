@@ -215,7 +215,7 @@ class CompConfig {
           new IntakeConfig(
               15,
               2,
-              3,
+
               1,
               new Debouncer(0.025, DebounceType.kBoth),
               new TalonFXConfiguration()
@@ -236,17 +236,17 @@ class CompConfig {
                   .withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(1))
                   .withCurrentLimits(
                       new CurrentLimitsConfigs()
-                          .withSupplyCurrentLimit(50)
+                          .withSupplyCurrentLimit(25)
                           .withSupplyCurrentLimitEnable(true))
                   .withClosedLoopRamps(CLOSED_LOOP_RAMP)
                   .withOpenLoopRamps(OPEN_LOOP_RAMP)),
           new RedirectConfig(
-              999,
+              4,
               new TalonFXConfiguration()
                   .withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(1))
                   .withCurrentLimits(
                       new CurrentLimitsConfigs()
-                          .withSupplyCurrentLimit(50)
+                          .withSupplyCurrentLimit(10)
                           .withSupplyCurrentLimitEnable(true))
                   .withClosedLoopRamps(CLOSED_LOOP_RAMP)
                   .withOpenLoopRamps(OPEN_LOOP_RAMP)),

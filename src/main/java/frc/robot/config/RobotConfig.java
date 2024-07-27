@@ -55,8 +55,7 @@ public record RobotConfig(
 
   public record IntakeConfig(
       int mainMotorID,
-      int leftCenteringMotorID,
-      int rightCenteringMotorID,
+      int centeringMotorID,
       int sensorID,
       Debouncer debouncer,
       TalonFXConfiguration motorConfig) {}
