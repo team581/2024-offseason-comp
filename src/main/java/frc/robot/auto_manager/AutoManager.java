@@ -138,28 +138,17 @@ public class AutoManager extends LifecycleSubsystem {
 
   public Command cleanupCommand() {
     var robotPose = localization.getPose();
-    var speakerCleanupPose = getSpeakerCleanupPose();
-    // if we're close to speaker
-    if (robotPose.getTranslation().getDistance(speakerCleanupPose.getTranslation()) < 3.0) {
-      DogLog.log("Debug/SpeakerCleanup", true);
+    
 
-      return AutoBuilder.pathfindToPose(speakerCleanupPose, DEFAULT_CONSTRAINTS)
-          .until(() -> noteMap.mapContainsNote(robotPose, 3.0))
-          .andThen(
+      return 
               cleanupNote()
                   .repeatedly()
-                  .onlyWhile(() -> noteMap.mapContainsNote() || robotManager.getState().hasNote));
-    }
+                  .onlyWhile(() -> noteMap.mapContainsNote() || robotManager.getState().hasNote);
+    
 
     // if we're close to midline
 
-    DogLog.log("Debug/MidlineCleanup", true);
-    return AutoBuilder.pathfindToPose(MIDLINE_CLEANUP_POSE, DEFAULT_CONSTRAINTS)
-        .until(() -> noteMap.mapContainsNote(robotPose, 2.0))
-        .andThen(
-            cleanupNote()
-                .repeatedly()
-                .onlyWhile(() -> noteMap.mapContainsNote() || robotManager.getState().hasNote));
+   
   }
 
   private Command doAutoStep(AutoNoteStep step) {
