@@ -156,7 +156,7 @@ public class AutoManager extends LifecycleSubsystem {
     // find and score a note
     DogLog.log("Debug/CleanupNote", true);
 
-    return noteMap.intakeNearestMapNote(2.0).andThen(pathfindToScore());
+    return noteMap.intakeNearestMapNote(3.0).andThen(pathfindToScore());
   }
 
   public Command cleanupCommand() {
@@ -168,14 +168,14 @@ public class AutoManager extends LifecycleSubsystem {
 
       return AutoBuilder.pathfindToPose(speakerCleanupPose, DEFAULT_CONSTRAINTS)
           .until(() -> noteMap.mapContainsNote(robotPose, 3.0))
-          .andThen(cleanupNote().repeatedly().onlyWhile(noteMap::mapContainsNote));
+          .andThen(cleanupNote().repeatedly().onlyWhile(() -> noteMap.mapContainsNote() || robotManager.getState().hasNote));
     }
 
     // if we're close to midline
     DogLog.log("Debug/MidlineCleanup", true);
     return AutoBuilder.pathfindToPose(MIDLINE_CLEANUP_POSE, DEFAULT_CONSTRAINTS)
         .until(() -> noteMap.mapContainsNote(robotPose, 2.0))
-        .andThen(cleanupNote().repeatedly().onlyWhile(noteMap::mapContainsNote));
+        .andThen(cleanupNote().repeatedly().onlyWhile(() -> noteMap.mapContainsNote() || robotManager.getState().hasNote));
   }
 
   private Command doAutoStep(AutoNoteStep step) {
