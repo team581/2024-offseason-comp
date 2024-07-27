@@ -6,6 +6,8 @@ package frc.robot;
 
 import com.ctre.phoenix.led.CANdle;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkMax;
 import dev.doglog.DogLog;
 import dev.doglog.DogLogOptions;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -31,6 +33,7 @@ import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.note_manager.NoteManager;
 import frc.robot.note_tracking.NoteTrackingManager;
 import frc.robot.queuer.QueuerSubsystem;
+import frc.robot.redirect.RedirectSubsystem;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
 import frc.robot.robot_manager.RobotState;
@@ -66,9 +69,13 @@ public class Robot extends TimedRobot {
           new TalonFX(RobotConfig.get().climber().leftMotorID(), RobotConfig.get().canivoreName()),
           new TalonFX(
               RobotConfig.get().climber().rightMotorID(), RobotConfig.get().canivoreName()));
+  private final RedirectSubsystem redirect =
+      new RedirectSubsystem(
+          new TalonFX(RobotConfig.get().redirect().motorID(), "rio"));
   private final IntakeSubsystem intake =
       new IntakeSubsystem(
-          new TalonFX(RobotConfig.get().intake().motorID(), RobotConfig.get().canivoreName()),
+          new TalonFX(RobotConfig.get().intake().mainMotorID(), RobotConfig.get().canivoreName()),
+          new CANSparkMax(RobotConfig.get().intake().centeringMotorID(), MotorType.kBrushed),
           new DigitalInput(RobotConfig.get().intake().sensorID()));
   private final SwerveSubsystem swerve = new SwerveSubsystem(driverController);
   private final ImuSubsystem imu = new ImuSubsystem(swerve);
@@ -87,7 +94,7 @@ public class Robot extends TimedRobot {
   private final VisionSubsystem vision = new VisionSubsystem(imu);
   private final LocalizationSubsystem localization = new LocalizationSubsystem(swerve, imu, vision);
   private final SnapManager snaps = new SnapManager(swerve, driverController);
-  private final NoteManager noteManager = new NoteManager(queuer, intake, conveyor);
+  private final NoteManager noteManager = new NoteManager(queuer, intake, conveyor, redirect);
   private final RobotManager robotManager =
       new RobotManager(
           wrist, elevator, shooter, localization, vision, climber, swerve, snaps, imu, noteManager);

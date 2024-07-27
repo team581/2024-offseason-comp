@@ -22,6 +22,7 @@ public record RobotConfig(
     ElevatorConfig elevator,
     IntakeConfig intake,
     ConveyorConfig conveyor,
+    RedirectConfig redirect,
     QueuerConfig queuer,
     SwerveConfig swerve,
     IMUConfig imu,
@@ -50,7 +51,11 @@ public record RobotConfig(
       TalonFXConfiguration rightMotorConfig) {}
 
   public record IntakeConfig(
-      int motorID, int sensorID, Debouncer debouncer, TalonFXConfiguration motorConfig) {}
+      int mainMotorID,
+      int centeringMotorID,
+      int sensorID,
+      Debouncer debouncer,
+      TalonFXConfiguration motorConfig) {}
 
   public record ConveyorConfig(
       int motorID,
@@ -59,6 +64,8 @@ public record RobotConfig(
       Debouncer handoffDebouncer,
       Debouncer scoringDebouncer,
       TalonFXConfiguration motorConfig) {}
+
+  public record RedirectConfig(int motorID, TalonFXConfiguration motorConfig) {}
 
   public record QueuerConfig(
       int motorID, int sensorID, Debouncer debouncer, TalonFXConfiguration motorConfig) {}
