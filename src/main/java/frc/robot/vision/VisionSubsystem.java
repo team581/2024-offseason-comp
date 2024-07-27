@@ -263,10 +263,6 @@ public class VisionSubsystem extends LifecycleSubsystem {
     } else {
       LimelightHelpers.setPriorityTagID("", 7);
     }
-    DogLog.log("Vision/DistanceFromSpeaker", getDistanceAngleSpeaker().distance());
-    DogLog.log("Vision/AngleFromSpeaker", getDistanceAngleSpeaker().targetAngle().getDegrees());
-    DogLog.log("Vision/DistanceFromFloorSpot", getDistanceAngleFloorShot().distance());
-    DogLog.log("Vision/AngleFromFloorSpot", getDistanceAngleFloorShot().targetAngle());
     DogLog.log("Vision/State", getState());
 
     var newHeartbeat = LimelightHelpers.getLimelightNTDouble("", "hb");

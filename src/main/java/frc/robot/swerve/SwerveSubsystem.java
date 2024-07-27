@@ -177,10 +177,6 @@ public class SwerveSubsystem extends LifecycleSubsystem {
             leftY *= -1.0;
           }
 
-          DogLog.log("Swerve/Controller/FinalLeftX", leftX);
-          DogLog.log("Swerve/Controller/FinalRightX", rightX);
-          DogLog.log("Swerve/Controller/FinalLeftY", leftY);
-
           ChassisSpeeds teleopSpeeds =
               new ChassisSpeeds(
                   -1.0 * leftY * MaxSpeed,
@@ -196,8 +192,6 @@ public class SwerveSubsystem extends LifecycleSubsystem {
           DogLog.log("Swerve/CurrentSpeed", currentSpeed);
           var scaled = teleopSpeeds.div(currentSpeed / MAX_SPEED_SHOOTING);
           DogLog.log("Swerve/ScaledSpeeds", scaled);
-          DogLog.log("Swerve/IsShooting", isShooting);
-          DogLog.log("Swerve/GoingToFast", currentSpeed > MAX_SPEED_SHOOTING);
           if (isShooting) {
             if (currentSpeed > MAX_SPEED_SHOOTING) {
               teleopSpeeds =
@@ -256,31 +250,6 @@ public class SwerveSubsystem extends LifecycleSubsystem {
     DogLog.log("Swerve/Pose", drivetrain.getState().Pose);
     DogLog.log("Swerve/ModuleStates", drivetrain.getState().ModuleStates);
     DogLog.log("Swerve/ModuleTargets", drivetrain.getState().ModuleTargets);
-
-    DogLog.log(
-        "Swerve/FrontLeft/DriveMotor/StatorCurrent",
-        frontLeft.getDriveMotor().getStatorCurrent().getValue());
-    DogLog.log(
-        "Swerve/FrontRight/DriveMotor/StatorCurrent",
-        frontRight.getDriveMotor().getStatorCurrent().getValue());
-    DogLog.log(
-        "Swerve/BackLeft/DriveMotor/StatorCurrent",
-        backLeft.getDriveMotor().getStatorCurrent().getValue());
-    DogLog.log(
-        "Swerve/BackRight/DriveMotor/StatorCurrent",
-        backRight.getDriveMotor().getStatorCurrent().getValue());
-    DogLog.log(
-        "Swerve/FrontLeft/DriveMotor/Voltage",
-        frontLeft.getDriveMotor().getMotorVoltage().getValue());
-    DogLog.log(
-        "Swerve/FrontRight/DriveMotor/Voltage",
-        frontRight.getDriveMotor().getMotorVoltage().getValue());
-    DogLog.log(
-        "Swerve/BackLeft/DriveMotor/Voltage",
-        backLeft.getDriveMotor().getMotorVoltage().getValue());
-    DogLog.log(
-        "Swerve/BackRight/DriveMotor/Voltage",
-        backRight.getDriveMotor().getMotorVoltage().getValue());
 
     DogLog.log("Swerve/RobotSpeed", getRobotRelativeSpeeds());
 

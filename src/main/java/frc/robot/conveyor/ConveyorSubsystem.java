@@ -40,9 +40,6 @@ public class ConveyorSubsystem extends LifecycleSubsystem {
     handoffDebouncedSensor = handoffDebouncer.calculate(sensorHasNote());
     DogLog.log("Conveyor/State", goalState);
     DogLog.log("Conveyor/SensorHasNote", sensorHasNote());
-    DogLog.log("Conveyor/SupplyCurrent", motor.getSupplyCurrent().getValueAsDouble());
-    DogLog.log("Conveyor/StatorCurrent", motor.getStatorCurrent().getValueAsDouble());
-    DogLog.log("Conveyor/Voltage", motor.getMotorVoltage().getValueAsDouble());
 
     switch (goalState) {
       case IDLE:

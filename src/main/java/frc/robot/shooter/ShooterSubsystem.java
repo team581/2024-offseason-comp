@@ -93,14 +93,7 @@ public class ShooterSubsystem extends LifecycleSubsystem {
     DogLog.log(
         "Shooter/GoalRPMForRightMotor", goalRPM * (usingNoteSpin ? ShooterRPMs.SPIN_RATIO : 1.0));
     DogLog.log("Shooter/LeftMotor/RPM", getRPM(leftMotor));
-    DogLog.log("Shooter/LeftMotor/SupplyCurrent", leftMotor.getSupplyCurrent().getValueAsDouble());
-    DogLog.log("Shooter/LeftMotor/StatorCurrent", leftMotor.getStatorCurrent().getValue());
-    DogLog.log("Shooter/LeftMotor/Voltage", leftMotor.getMotorVoltage().getValue());
-    DogLog.log("Shooter/RightMotor/StatorCurrent", rightMotor.getStatorCurrent().getValue());
-    DogLog.log("Shooter/RightMotor/Voltage", rightMotor.getMotorVoltage().getValue());
     DogLog.log("Shooter/RightMotor/RPM", getRPM(rightMotor));
-    DogLog.log(
-        "Shooter/RightMotor/SupplyCurrent", rightMotor.getSupplyCurrent().getValueAsDouble());
     DogLog.log("Shooter/AtGoal", atGoal(goalMode));
 
     if (goalMode == ShooterMode.FULLY_STOPPED) {
