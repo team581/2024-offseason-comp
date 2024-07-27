@@ -238,25 +238,27 @@ public class Robot extends TimedRobot {
         .y()
         .onTrue(actions.waitSubwooferShotCommand())
         .onFalse(actions.stowCommand());
-    operatorController.povRight().onTrue(autoManager.testCommand()).onFalse(actions.stowCommand());
-    operatorController
+        operatorController
         .rightTrigger()
         .onTrue(actions.waitForSpeakerShotCommand())
         .onFalse(actions.stowCommand());
-    // operatorController
-    //     .leftTrigger()
-    //     .onTrue(actions.waitShooterAmpCommand())
-    //     .onFalse(actions.stowCommand());
-    operatorController
-        .leftTrigger()
-        .whileTrue(autoManager.cleanupCommand())
-        .onFalse(actions.stowCommand());
-    operatorController.rightBumper().onTrue(actions.waitForAmpShotCommand());
-    operatorController.x().onTrue(actions.outtakeCommand()).onFalse(actions.stowCommand());
-    operatorController
+        // operatorController
+        //     .leftTrigger()
+        //     .onTrue(actions.waitShooterAmpCommand())
+        //     .onFalse(actions.stowCommand());
+        
+        operatorController.rightBumper().onTrue(actions.waitForAmpShotCommand());
+        operatorController.x().onTrue(actions.outtakeCommand()).onFalse(actions.stowCommand());
+        operatorController
         .leftBumper()
         .onTrue(actions.waitForFloorShotCommand())
         .onFalse(actions.cancelWaitingFloorShotCommand());
-    operatorController.back().onTrue(actions.homeCommand());
+        operatorController.back().onTrue(actions.homeCommand());
+        // TODO: revert before merge
+        operatorController
+        .leftTrigger()
+        .whileTrue(autoManager.cleanupCommand())
+        .onFalse(actions.stowCommand());
+        operatorController.povRight().onTrue(autoManager.testCommand()).onFalse(actions.stowCommand());
   }
 }
