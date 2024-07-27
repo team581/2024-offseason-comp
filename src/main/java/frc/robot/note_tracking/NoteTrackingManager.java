@@ -236,7 +236,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
                   if (nearestNote.isPresent()) {
                     snaps.setAngle(nearestNote.get().notePose().getRotation());
                     snaps.setEnabled(true);
-                    DogLog.log("Debug/IntakingOriginal", true);
+                    DogLog.log("Debug/IntakingOriginal", Timer.getFPGATimestamp());
 
                     return Optional.of(nearestNote.get().notePose());
 

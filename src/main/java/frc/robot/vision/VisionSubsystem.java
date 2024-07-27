@@ -99,7 +99,6 @@ public class VisionSubsystem extends LifecycleSubsystem {
     if (estimatePose.tagCount == 0) {
       return Optional.empty();
     }
-    DogLog.log("Vision/EstimatedPoseMT2", estimatePose.pose);
 
     for (int i = 0; i < estimatePose.rawFiducials.length; i++) {
       var fiducial = estimatePose.rawFiducials[i];

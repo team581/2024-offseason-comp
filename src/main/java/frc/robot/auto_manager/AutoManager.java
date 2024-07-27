@@ -123,21 +123,21 @@ public class AutoManager extends LifecycleSubsystem {
   }
 
   public Command doManyAutoSteps(List<AutoNoteStep> steps) {
-    DogLog.log("Debug/DoManyAutoSteps", true);
+    DogLog.log("Debug/DoManyAutoSteps", Timer.getFPGATimestamp());
 
     return Commands.sequence(steps.stream().map(this::doAutoStep).toArray(Command[]::new));
   }
 
   private Command cleanupNote() {
     // find and score a note
-    DogLog.log("Debug/CleanupNote", true);
+    DogLog.log("Debug/CleanupNote", Timer.getFPGATimestamp());
 
     return noteTrackingManager
         .intakeNearestMapNote(2.0)
         .andThen(
             Commands.defer(
                     () -> {
-                      DogLog.log("Debug/CleanupNotePathfind", true);
+                      DogLog.log("Debug/CleanupNotePathfind", Timer.getFPGATimestamp());
                       return AutoBuilder.pathfindToPose(
                           getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
                     },
@@ -151,7 +151,7 @@ public class AutoManager extends LifecycleSubsystem {
     var speakerCleanupPose = getSpeakerCleanupPose();
     // if we're close to speaker
     if (robotPose.getTranslation().getDistance(speakerCleanupPose.getTranslation()) < 3.0) {
-      DogLog.log("Debug/SpeakerCleanup", true);
+      DogLog.log("Debug/SpeakerCleanup", Timer.getFPGATimestamp());
 
       return AutoBuilder.pathfindToPose(speakerCleanupPose, DEFAULT_CONSTRAINTS)
           .until(noteTrackingManager::mapContainsNote)
@@ -159,7 +159,7 @@ public class AutoManager extends LifecycleSubsystem {
     }
 
     // if we're close to midline
-    DogLog.log("Debug/MidlineCleanup", true);
+    DogLog.log("Debug/MidlineCleanup", Timer.getFPGATimestamp());
 
     return AutoBuilder.pathfindToPose(MIDLINE_CLEANUP_POSE, DEFAULT_CONSTRAINTS)
         .until(noteTrackingManager::mapContainsNote)
@@ -174,7 +174,7 @@ public class AutoManager extends LifecycleSubsystem {
     var command =
         noteTrackingManager.intakeNoteAtPose(
             () -> {
-              DogLog.log("Debug/IntakeNoteAtPoseRequest", true);
+              DogLog.log("Debug/IntakeNoteAtPoseRequest", Timer.getFPGATimestamp());
               return step.noteSearchPose().get();
             },
             1.5);
@@ -185,7 +185,7 @@ public class AutoManager extends LifecycleSubsystem {
               .andThen(
                   Commands.defer(
                           () -> {
-                            DogLog.log("Debug/PathFindOuttake", true);
+                            DogLog.log("Debug/PathFindOuttake", Timer.getFPGATimestamp());
                             return AutoBuilder.pathfindToPose(
                                 getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
                           },
@@ -197,7 +197,7 @@ public class AutoManager extends LifecycleSubsystem {
           command.andThen(
               Commands.defer(
                       () -> {
-                        DogLog.log("Debug/PathFindShoot", true);
+                        DogLog.log("Debug/PathFindShoot", Timer.getFPGATimestamp());
                         return AutoBuilder.pathfindToPose(
                             getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
                       },
@@ -210,12 +210,10 @@ public class AutoManager extends LifecycleSubsystem {
   }
 
   public Command testCommand() {
-    DogLog.log("Debug/TestCommand", true);
-
     return Commands.sequence(
         Commands.runOnce(
             () -> {
-              DogLog.log("Debug/ResetNoteMap", true);
+              DogLog.log("Debug/ResetNoteMap", Timer.getFPGATimestamp());
 
               var now = Timer.getFPGATimestamp();
               noteTrackingManager.resetNoteMap(
