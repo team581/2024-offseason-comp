@@ -6,6 +6,10 @@ package frc.robot.redirect;
 
 public enum RedirectState {
   IDLE,
-  TO_QUEUER,
-  TO_CONVEYOR;
+  INTAKE_TO_QUEUER,
+  QUEUER_TO_CONVEYOR,
+  TO_OUTTAKE,
+  CONVEYOR_TO_QUEUER,
+  QUEUER_TO_SHOOTER;
+
 }
