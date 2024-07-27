@@ -45,9 +45,7 @@ public class NoteMap extends LifecycleSubsystem {
   private static final String LIMELIGHT_NAME = "limelight-note";
   private final InterpolatingDoubleTreeMap tyToDistance = new InterpolatingDoubleTreeMap();
   private ArrayList<NoteMapElement> noteMap = new ArrayList<>();
-  private static final PathConstraints DEFAULT_CONSTRAINTS =
-      new PathConstraints(2.0, 2.0, 2 * Math.PI, 4 * Math.PI);
-
+  
   private static final double FOV_VERTICAL = 48.953;
   private static final double FOV_HORIZONTAL = 62.544;
   private static final double HORIZONTAL_LEFT_VIEW = 30.015;
@@ -333,17 +331,9 @@ public class NoteMap extends LifecycleSubsystem {
     DogLog.log(
         "NoteMap/NoteMap", noteMap.stream().map(NoteMapElement::notePose).toArray(Pose2d[]::new));
 
-    Stopwatch.getInstance().start("Debug/NoteMapTime");
     noteMap = getNewMap();
-    Stopwatch.getInstance().stop("Debug/NoteMapTime");
-
-    // log closest note to bobot
-    var maybeClosest = getNearestNotePoseRelative(getPose(), 99987.0);
-    if (maybeClosest.isPresent()) {
-
-      DogLog.log("NoteMap/ClosestNote", maybeClosest.get().notePose());
-    }
   }
+
 
   public boolean mapContainsNote() {
     return noteMap.size() > 0.0;
@@ -355,7 +345,6 @@ public class NoteMap extends LifecycleSubsystem {
 
   private ArrayList<NoteMapElement> getNewMap() {
     List<Pose2d> visionNotes = getFilteredNotePoses();
-
     if (visionNotes.size() > 20) {
       // Something evil happened, don't update state
       return noteMap;
