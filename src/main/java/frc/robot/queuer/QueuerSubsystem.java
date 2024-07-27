@@ -38,10 +38,7 @@ public class QueuerSubsystem extends LifecycleSubsystem {
     // TODO: We accidentally were calling .calculate() twice for a very long time, and don't have
     // time to validate behavior when we call it just once
     debouncer.calculate(sensorHasNote());
-    DogLog.log("Queuer/Voltage", motor.getMotorVoltage().getValueAsDouble());
     DogLog.log("Queuer/State", goalState);
-    DogLog.log("Queuer/SupplyCurrent", motor.getSupplyCurrent().getValueAsDouble());
-    DogLog.log("Queuer/StatorCurrent", motor.getStatorCurrent().getValueAsDouble());
     DogLog.log("Queuer/SensorHasNote", sensorHasNote());
 
     switch (goalState) {

@@ -45,9 +45,6 @@ public class IntakeSubsystem extends LifecycleSubsystem {
     DogLog.log("Intake/DebouncedHasNote", debouncedSensor);
     DogLog.log("Intake/HasNote", hasNote());
     DogLog.log("Intake/SensorHasNote", sensorHasNote());
-    DogLog.log("Intake/SupplyCurrent", motor.getSupplyCurrent().getValueAsDouble());
-    DogLog.log("Intake/StatorCurrent", motor.getStatorCurrent().getValueAsDouble());
-    DogLog.log("Intake/Voltage", motor.getMotorVoltage().getValueAsDouble());
 
     switch (goalState) {
       case IDLE:
