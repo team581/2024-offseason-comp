@@ -21,16 +21,12 @@ public class IntakeSubsystem extends LifecycleSubsystem {
   private boolean debouncedSensor = false;
   private IntakeState goalState = IntakeState.IDLE;
 
-  public IntakeSubsystem(
-      TalonFX motor,
-      CANSparkMax intakeCentering,
-      DigitalInput sensor) {
+  public IntakeSubsystem(TalonFX motor, CANSparkMax intakeCentering, DigitalInput sensor) {
     super(SubsystemPriority.INTAKE);
 
     motor.getConfigurator().apply(RobotConfig.get().intake().motorConfig());
     intakeCentering.setSmartCurrentLimit(20);
     intakeCentering.burnFlash();
-
 
     this.motor = motor;
     this.intakeCentering = intakeCentering;
@@ -75,7 +71,6 @@ public class IntakeSubsystem extends LifecycleSubsystem {
         } else {
           motor.setVoltage(12);
           intakeCentering.setVoltage(12);
-
         }
         break;
       case TO_QUEUER_SLOW:
@@ -86,7 +81,6 @@ public class IntakeSubsystem extends LifecycleSubsystem {
         } else {
           motor.setVoltage(5);
           intakeCentering.setVoltage(5);
-
         }
         break;
 

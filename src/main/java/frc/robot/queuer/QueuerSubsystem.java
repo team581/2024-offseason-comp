@@ -8,19 +8,17 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Timer;
 import frc.robot.config.RobotConfig;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
 
 public class QueuerSubsystem extends LifecycleSubsystem {
-  
+
   private final TalonFX motor;
   private final DigitalInput sensor;
   private QueuerState goalState = QueuerState.IDLE;
   private final Debouncer debouncer = RobotConfig.get().queuer().debouncer();
   private boolean debouncedSensor = false;
-  
 
   public QueuerSubsystem(TalonFX motor, DigitalInput sensor) {
     super(SubsystemPriority.QUEUER);
@@ -29,7 +27,6 @@ public class QueuerSubsystem extends LifecycleSubsystem {
 
     this.sensor = sensor;
     this.motor = motor;
-
   }
 
   @Override
@@ -52,8 +49,7 @@ public class QueuerSubsystem extends LifecycleSubsystem {
           motor.setVoltage(1);
         }
         break;
-      
-        
+
       case PASS_TO_INTAKE:
         motor.setVoltage(-1);
         break;

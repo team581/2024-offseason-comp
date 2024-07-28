@@ -70,8 +70,7 @@ public class Robot extends TimedRobot {
           new TalonFX(
               RobotConfig.get().climber().rightMotorID(), RobotConfig.get().canivoreName()));
   private final RedirectSubsystem redirect =
-      new RedirectSubsystem(
-          new TalonFX(RobotConfig.get().redirect().motorID(), "rio"));
+      new RedirectSubsystem(new TalonFX(RobotConfig.get().redirect().motorID(), "rio"));
   private final IntakeSubsystem intake =
       new IntakeSubsystem(
           new TalonFX(RobotConfig.get().intake().mainMotorID(), RobotConfig.get().canivoreName()),

@@ -8,6 +8,6 @@ public enum QueuerState {
   IDLE,
   INTAKING,
   PASS_TO_SHOOTER,
-  
+
   PASS_TO_INTAKE;
 }

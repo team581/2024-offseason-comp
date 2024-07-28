@@ -113,7 +113,7 @@ public class Autos extends LifecycleSubsystem {
     registerCommand("midlineNotesFromSource876", autoCommands.getMidlineNotesSource876Command());
     registerCommand("altMidlineNotesFromAmp", autoCommands.getMidlineNotesAltAmpCommand());
     registerCommand("zeroGyro", autoCommands.doNothingCommand());
-    registerCommand("noteMap" , autoCommands.noteMapCommand());
+    registerCommand("noteMap", autoCommands.noteMapCommand());
 
     PathPlannerLogging.setLogActivePathCallback(
         (activePath) -> {

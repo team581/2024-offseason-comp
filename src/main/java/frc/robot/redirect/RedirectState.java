@@ -11,5 +11,4 @@ public enum RedirectState {
   TO_OUTTAKE,
   CONVEYOR_TO_QUEUER,
   QUEUER_TO_SHOOTER;
-
 }
