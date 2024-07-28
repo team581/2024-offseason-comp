@@ -99,7 +99,6 @@ public class Robot extends TimedRobot {
       new RobotManager(
           wrist, elevator, shooter, localization, vision, climber, swerve, snaps, imu, noteManager);
   private final RobotCommands actions = new RobotCommands(robotManager);
-  private final Autos autos = new Autos(swerve, localization, actions, robotManager);
   private final LightsSubsystem lightsSubsystem =
       new LightsSubsystem(
           new CANdle(RobotConfig.get().lights().deviceID(), "rio"), robotManager, vision, intake);
@@ -107,6 +106,7 @@ public class Robot extends TimedRobot {
       new NoteTrackingManager(localization, swerve, actions, robotManager);
   private final AutoManager autoManager =
       new AutoManager(actions, noteTrackingManager, robotManager, localization);
+  private final Autos autos = new Autos(swerve, localization, actions, robotManager, autoManager);
 
   public Robot() {
     System.out.println("roboRIO serial number: " + RobotConfig.SERIAL_NUMBER);
