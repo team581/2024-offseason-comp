@@ -11,6 +11,7 @@ import com.revrobotics.CANSparkMax;
 import dev.doglog.DogLog;
 import dev.doglog.DogLogOptions;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -112,6 +113,7 @@ public class Robot extends TimedRobot {
 
     DogLog.setOptions(
         new DogLogOptions().withCaptureNt(false).withNtPublish(RobotConfig.IS_DEVELOPMENT));
+    DogLog.setPdh(new PowerDistribution());
 
     // Record metadata
     DogLog.log("Metadata/ProjectName", BuildConstants.MAVEN_NAME);
