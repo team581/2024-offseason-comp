@@ -75,7 +75,7 @@ public class VisionSubsystem extends LifecycleSubsystem {
   public static void logCalibration() {
     var json = LimelightHelpers.getLatestResults("");
 
-    for (LimelightTarget_Fiducial fiducial : json.targetingResults.targets_Fiducials) {
+    for (LimelightTarget_Fiducial fiducial : json.targets_Fiducials) {
       var prefix = "Vision/Calibration/Tag" + fiducial.fiducialID + "/";
 
       Pose3d camPoseRelativeTag = fiducial.getCameraPose_TargetSpace();
