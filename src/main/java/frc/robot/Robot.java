@@ -241,27 +241,27 @@ public class Robot extends TimedRobot {
     operatorController.povDown().onTrue(actions.getClimberBackwardCommand());
 
     operatorController.a().onTrue(actions.stowCommand());
-    operatorController.b().onTrue(actions.waitPodiumShotCommand()).onFalse(actions.stowCommand());
+    // operatorController.b().onTrue(actions.waitPodiumShotCommand()).onFalse(actions.stowCommand());
     operatorController.povLeft().onTrue(actions.unjamCommand()).onFalse(actions.idleNoGPCommand());
-    operatorController
-        .y()
-        .onTrue(actions.waitSubwooferShotCommand())
-        .onFalse(actions.stowCommand());
+    // operatorController
+    //     .y()
+    //     .onTrue(actions.waitSubwooferShotCommand())
+    //     .onFalse(actions.stowCommand());
     operatorController.povRight().onTrue(autoManager.testCommand()).onFalse(actions.stowCommand());
-    operatorController
-        .rightTrigger()
-        .onTrue(actions.waitForSpeakerShotCommand())
-        .onFalse(actions.stowCommand());
+    // operatorController
+    //     .rightTrigger()
+    //     .onTrue(actions.waitForSpeakerShotCommand())
+    //     .onFalse(actions.stowCommand());
     // operatorController
     //     .leftTrigger()
     //     .onTrue(actions.waitShooterAmpCommand())
     //     .onFalse(actions.stowCommand());
     operatorController.rightBumper().onTrue(actions.waitForAmpShotCommand());
     operatorController.x().onTrue(actions.outtakeCommand()).onFalse(actions.stowCommand());
-    operatorController
-        .leftBumper()
-        .onTrue(actions.waitForFloorShotCommand())
-        .onFalse(actions.cancelWaitingFloorShotCommand());
+    // operatorController
+    //     .leftBumper()
+    //     .onTrue(actions.waitForFloorShotCommand())
+    //     .onFalse(actions.cancelWaitingFloorShotCommand());
     operatorController.back().onTrue(actions.homeCommand());
   }
 }
