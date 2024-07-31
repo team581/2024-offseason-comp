@@ -200,12 +200,6 @@
             {
               "type": "named",
               "data": {
-                "name": "outtakeShooter"
-              }
-            },
-            {
-              "type": "named",
-              "data": {
                 "name": "intakeFloor"
               }
             }

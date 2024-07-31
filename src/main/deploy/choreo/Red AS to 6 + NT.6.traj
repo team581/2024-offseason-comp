@@ -736,15 +736,5 @@
       "timestamp": 1.8870017939038553
     }
   ],
-  "eventMarkers": [
-    {
-      "timestamp": 0.3992575674227199,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "outtakeShooter"
-        }
-      }
-    }
-  ]
+  "eventMarkers": []
 }

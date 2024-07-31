@@ -2050,12 +2050,6 @@
             {
               "type": "named",
               "data": {
-                "name": "outtakeShooter"
-              }
-            },
-            {
-              "type": "named",
-              "data": {
                 "name": "intakeFloor"
               }
             }
@@ -2072,25 +2066,10 @@
             {
               "type": "named",
               "data": {
-                "name": "outtakeShooter"
-              }
-            },
-            {
-              "type": "named",
-              "data": {
                 "name": "intakeFloor"
               }
             }
           ]
-        }
-      }
-    },
-    {
-      "timestamp": 5.101451213231801,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "outtakeShooter"
         }
       }
     }

@@ -11613,8 +11613,8 @@
                     }
                 },
                 {
-                    "name": "outtake + intake",
-                    "target": 4,
+                    "name": "intake",
+                    "target": 3,
                     "trajTargetIndex": 4,
                     "targetTimestamp": 2.6506338252528274,
                     "offset": 0,
@@ -11622,12 +11622,6 @@
                         "type": "sequential",
                         "data": {
                             "commands": [
-                                {
-                                    "type": "named",
-                                    "data": {
-                                        "name": "outtakeShooter"
-                                    }
-                                },
                                 {
                                     "type": "named",
                                     "data": {
@@ -11639,7 +11633,7 @@
                     }
                 },
                 {
-                    "name": "outtake + intake",
+                    "name": "intake",
                     "target": 6,
                     "trajTargetIndex": 6,
                     "targetTimestamp": 4.01039479737255,
@@ -11651,29 +11645,10 @@
                                 {
                                     "type": "named",
                                     "data": {
-                                        "name": "outtakeShooter"
-                                    }
-                                },
-                                {
-                                    "type": "named",
-                                    "data": {
                                         "name": "intakeFloor"
                                     }
                                 }
                             ]
-                        }
-                    }
-                },
-                {
-                    "name": "outtake",
-                    "target": 8,
-                    "trajTargetIndex": 8,
-                    "targetTimestamp": 5.101451213231801,
-                    "offset": 0,
-                    "command": {
-                        "type": "named",
-                        "data": {
-                            "name": "outtakeShooter"
                         }
                     }
                 }

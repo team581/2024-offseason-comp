@@ -36,6 +36,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "outtakeShooter"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Red AS to 6 + NT.3"
@@ -48,6 +54,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "outtakeShooter"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Red AS to 6 + NT.5"
@@ -57,6 +69,12 @@
           "type": "path",
           "data": {
             "pathName": "Red AS to 6 + NT.6"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
           }
         },
         {
