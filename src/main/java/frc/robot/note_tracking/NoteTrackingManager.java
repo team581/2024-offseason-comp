@@ -33,6 +33,8 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public class NoteTrackingManager extends LifecycleSubsystem {
+  private static final double CAMERA_IMAGE_HEIGHT = 960.0;
+  private static final double CAMERA_IMAGE_WIDTH = 1280.0;
   // how much we keep a note in the map if it was added or updated from camera (seconds)
   private static final double NOTE_MAP_LIFETIME = 10.0;
   private final LocalizationSubsystem localization;
@@ -44,10 +46,10 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private final InterpolatingDoubleTreeMap tyToDistance = new InterpolatingDoubleTreeMap();
   private ArrayList<NoteMapElement> noteMap = new ArrayList<>();
 
-  private static final double FOV_VERTICAL = 48.953;
-  private static final double FOV_HORIZONTAL = 62.544;
-  private static final double HORIZONTAL_LEFT_VIEW = 30.015;
-  private static final double VERTICAL_TOP_VIEW = 23.979;
+  private static final double FOV_VERTICAL = 48.823;
+  private static final double FOV_HORIZONTAL = 62.074;
+  private static final double HORIZONTAL_LEFT_VIEW = 27.491;
+  private static final double VERTICAL_TOP_VIEW = 24.955;
 
   public NoteTrackingManager(
       LocalizationSubsystem localization,
@@ -114,9 +116,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
       return Optional.empty();
     }
 
-    if (ty < -15.0) {
-      return Optional.empty();
-    }
 
     double forwardDistanceToNote = tyToDistance.get(ty);
     Rotation2d angleFromNote = Rotation2d.fromDegrees(tx);
@@ -164,8 +163,8 @@ public class NoteTrackingManager extends LifecycleSubsystem {
         var centerX = (corners[i] + corners[i + 2]) / 2;
         var centerY = (corners[i + 1] + corners[i + 5]) / 2;
 
-        var angleX = (((centerX / 640.0) * FOV_HORIZONTAL) - HORIZONTAL_LEFT_VIEW);
-        var angleY = -1 * (((centerY / 480.0) * FOV_VERTICAL) - VERTICAL_TOP_VIEW);
+        var angleX = (((centerX / CAMERA_IMAGE_WIDTH) * FOV_HORIZONTAL) - HORIZONTAL_LEFT_VIEW);
+        var angleY = -1 * (((centerY / CAMERA_IMAGE_HEIGHT) * FOV_VERTICAL) - VERTICAL_TOP_VIEW);
 
         DogLog.log("NoteTracking/angley", angleY);
         DogLog.log("NoteTracking/anglex", angleX);
