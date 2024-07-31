@@ -58,6 +58,12 @@
           "data": {
             "pathName": "Red AS to 6 + NT.6"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "noteMap"
+          }
         }
       ]
     }
