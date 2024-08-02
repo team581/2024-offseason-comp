@@ -96,6 +96,11 @@ public class VisionSubsystem extends LifecycleSubsystem {
 
   private Optional<VisionResult> getRawVisionResult() {
     var estimatePose = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("");
+
+    if (estimatePose == null) {
+      return Optional.empty();
+    }
+
     if (estimatePose.tagCount == 0) {
       return Optional.empty();
     }

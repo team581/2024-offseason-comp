@@ -22,6 +22,7 @@ import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
 import frc.robot.vision.LimelightHelpers;
+import frc.robot.vision.LimelightHelpers.PoseEstimate;
 import frc.robot.vision.VisionSubsystem;
 
 public class LocalizationSubsystem extends LifecycleSubsystem {
@@ -86,9 +87,10 @@ public class LocalizationSubsystem extends LifecycleSubsystem {
 
     DogLog.log("Localization/OdometryPose", getOdometryPose());
     DogLog.log("Localization/EstimatedPose", getPose());
-    DogLog.log(
-        "Localization/LimelightPoseRaw",
-        LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("").pose);
+    PoseEstimate mt2Estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("");
+    if (mt2Estimate != null) {
+      DogLog.log("Localization/LimelightPoseRaw", mt2Estimate.pose);
+    }
 
     vision.setRobotPose(getPose());
   }
