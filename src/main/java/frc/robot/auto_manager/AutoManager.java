@@ -31,7 +31,7 @@ public class AutoManager extends LifecycleSubsystem {
   private final RobotManager robotManager;
   private final LocalizationSubsystem localization;
   private static final PathConstraints DEFAULT_CONSTRAINTS =
-      new PathConstraints(2.0, 2.0, 2 * Math.PI, 4 * Math.PI);
+      new PathConstraints(5.0, 5.0, 2 * Math.PI, 4 * Math.PI);
 
   public static final Pose2d RED_SPEAKER_CLEANUP_POSE =
       new Pose2d(
