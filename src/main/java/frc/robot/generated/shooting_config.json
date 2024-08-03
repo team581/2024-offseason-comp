@@ -2,55 +2,55 @@
   {
     "rpm": 3000,
     "distance": 1.0,
-    "angle": 49.20000000000006,
-    "time_of_flight": 0.42
+    "angle": 61.499999999999815,
+    "time_of_flight": 2.62
   },
   {
     "rpm": 3000,
     "distance": 2.0,
-    "angle": 35.600000000000044,
-    "time_of_flight": 0.34
+    "angle": 43.70000000000005,
+    "time_of_flight": 2.1
   },
   {
     "rpm": 4000,
     "distance": 2.5,
-    "angle": 38.50000000000005,
-    "time_of_flight": 0.46
+    "angle": 36.700000000000045,
+    "time_of_flight": 2.46
   },
   {
     "rpm": 4000,
     "distance": 3.5,
-    "angle": 37.30000000000005,
-    "time_of_flight": 0.44
+    "angle": 28.900000000000034,
+    "time_of_flight": 2.0
   },
   {
     "rpm": 4000,
     "distance": 4.5,
-    "angle": 37.30000000000005,
-    "time_of_flight": 0.44
+    "angle": 24.60000000000003,
+    "time_of_flight": 1.74
   },
   {
     "rpm": 4000,
     "distance": 5.5,
-    "angle": 37.30000000000005,
-    "time_of_flight": 0.44
+    "angle": 21.50000000000003,
+    "time_of_flight": 1.52
   },
   {
     "rpm": 4000,
     "distance": 6.0,
-    "angle": 37.30000000000005,
-    "time_of_flight": 0.44
+    "angle": 20.900000000000027,
+    "time_of_flight": 1.5
   },
   {
     "rpm": 4800,
     "distance": 6.5,
-    "angle": 39.00000000000005,
-    "time_of_flight": 0.54
+    "angle": 18.400000000000023,
+    "time_of_flight": 1.62
   },
   {
     "rpm": 4800,
     "distance": 8.0,
-    "angle": 39.00000000000005,
-    "time_of_flight": 0.54
+    "angle": 16.30000000000002,
+    "time_of_flight": 1.44
   }
 ]

@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import pathlib
 import json
 
+robot_wrist_length = 0.05543307086 #(14.08/2.54)/100  # meters
+speakerheight = 2.1844 #meters
 
 @dataclasses.dataclass
 class Point:
@@ -62,13 +64,26 @@ class ShooterInfo:
         self.distance = distance
         self.angle = angle
         self.rpm = rpm
+champs_table = [ShooterInfo(distance= 1.38, angle= 58.1, rpm= 3000), #0
+                ShooterInfo(distance= 2.16, angle= 47.8, rpm= 3000),
+                ShooterInfo(distance= 2.5, angle= 42.0, rpm= 4000),
+                ShooterInfo(distance= 3.5, angle= 33.9635, rpm= 4000),
+                ShooterInfo(distance= 4.5, angle= 28.20125, rpm= 4000),
+                ShooterInfo(distance= 5.5, angle= 25.84825, rpm= 4000),
+                ShooterInfo(distance= 6.5, angle= 21.30525, rpm= 4800),
+                ShooterInfo(distance= 7.5, angle= 20.27075, rpm= 4800),
+                ShooterInfo(distance= 9.0, angle= 18.7305, rpm= 4800) #8
+                ]
 class Model:
     def __init__(self, rpos: Point, gpos: Point, rpm: float):
         self.rpos = rpos
         self.gpos = gpos
         self.rpm = rpm
-        self.efficiency_percent = 15.0
+        self.efficiency_percent = 90.0
         self.wheel_diameter = 0.1016
+
+        self.speakerpoint_1 = gpos
+        self.speakerpoint_2 = Point(gpos.x - 0.6858,1.9812)
 
     def get_vel(self, rpm):
         return (math.pi  * self.wheel_diameter) * (rpm / 60) * (self.efficiency_percent/100.0)
@@ -80,7 +95,6 @@ def prunepoints(points: []) -> []:
             s = i
             break
     return points[:s]
-
 class ProjectileMotion:
     a_r = 0.0
 
@@ -91,6 +105,26 @@ class ProjectileMotion:
             self.a_r = 0.0015
         else:
             self.a_r = 0.0
+
+    def get_points(self, vector: Vector, exit: Point) -> list[Point]:
+        position = [exit]
+        velocity = [vector.topoint()]
+        acceleration = []
+        t = 0
+
+        while position[-1].y > 0:
+            current_acceleration = Point(x=0,
+                                         y=-9.8)
+            current_velocity = Point(x=velocity[-1].x + (self.dt * current_acceleration.x),
+                                     y=velocity[-1].y + (self.dt * current_acceleration.y))
+            current_position = Point(x=position[-1].x + (self.dt * current_velocity.x),
+                                     y=position[-1].y + (self.dt * current_velocity.y))
+            position.append(current_position)
+            velocity.append(current_velocity)
+            acceleration.append(current_acceleration)
+            t += self.dt
+        return position
+
 
     def getpoints(self, vector: Vector, exit: Point):
         n_p = [exit, exit]
@@ -114,15 +148,12 @@ class ProjectileMotion:
 
             n_p.append(p)
             t += self.dt
-
         return n_p
 
     def get_travel_time(self, points):
         return len(points) * self.dt
 
-robot_wrist_length = 0.05543307086 #(14.08/2.54)/100  # meters
-
-def getangle(model: Model, pm: ProjectileMotion):
+def get_angle(model: Model, pm: ProjectileMotion):
     vel = model.get_vel(model.rpm)
     closest_angle = -1
     local_min = 10000
@@ -140,6 +171,33 @@ def getangle(model: Model, pm: ProjectileMotion):
             local_min = min(local_min, dist)
         if local_min < final_min:
             final_min = local_min
+            closest_angle = current_angle
+        current_angle += angle_change
+    return closest_angle
+
+def get_angle_better(model: Model, pm: ProjectileMotion):
+    vel = model.get_vel(model.rpm)
+    closest_angle = -1
+    local_min = 10000
+    final_min = 10000
+    local_mean = 10000
+
+    min_angle = 0
+    max_angle = Vector.fromdegrees(61.5)
+    angle_change = Vector.fromdegrees(0.1)
+    current_angle = min_angle
+    while current_angle <= max_angle:
+        exitpoint = Point.add(model.rpos, Vector(current_angle, robot_wrist_length).topoint())
+        points = pm.getpoints(Vector(current_angle, vel), exitpoint)
+        for point in points:
+            dist_1 = point.dist(model.speakerpoint_1)
+            dist_2 = point.dist(model.speakerpoint_2)
+            local_min_1 = min(local_min, dist_1)
+            local_min_2 = min(local_min, dist_2)
+
+        local_mean = (local_min_1 + local_min_2)/2
+        if local_mean < final_min:
+            final_min = local_mean
             closest_angle = current_angle
         current_angle += angle_change
     return closest_angle
@@ -189,6 +247,10 @@ def draw_line(points):
     for i in range(1,len(points)):
         plt.plot([points[i-1].x,points[i].x],[points[i-1].y,points[i].y],"k-")
 
+def draw_line_red(points):
+    for i in range(1,len(points)):
+        plt.plot([points[i-1].x,points[i].x],[points[i-1].y,points[i].y],"r-")
+
 def draw_points(points):
     for i in points:
         plt.plot(i.x, i.y, "o")
@@ -204,9 +266,58 @@ def results():
     plt.grid()
     plt.show()
 
-# Set proper goal
+def test_eff_champ_table():
 
-input_points = [
+    setgoalposx = 9
+
+    for info in champs_table:
+        goalpos = Point(setgoalposx, speakerheight)
+        rpos = Point(setgoalposx-info.distance,0)
+
+        test_model = Model(rpos, goalpos, info.rpm)
+
+        test_pm = ProjectileMotion(0.02, True)
+        test_vector = Vector(Vector.fromdegrees(info.angle), test_model.get_vel(info.rpm))
+        wrist_vector = Vector(Vector.fromdegrees(info.angle), robot_wrist_length)
+        note_exit = wrist_vector.topoint().add(rpos)
+        start_duo = [rpos, note_exit]
+
+        points_list = test_pm.getpoints(test_vector, note_exit)
+        draw_line(add_lists([start_duo,points_list]))
+        draw_points(start_duo)
+    draw_points([goalpos])
+
+    draw_axis([-0.1,10],[-0.1,10])
+
+    draw_line_red([Point(goalpos.x + 0.229997,0), Point(goalpos.x + 0.229997,1.984502)])
+    draw_line_red([Point(goalpos.x - 0.923798,1.984502), Point(goalpos.x ,2.492502)])
+
+    results()
+
+def test_better():
+    for info in champs_table:
+        gpos = Point(9,speakerheight)
+        rpos = Point(9-info.distance,0)
+
+        model = Model(gpos, rpos, info.rpm)
+        pm = ProjectileMotion(0.02, True)
+        vector = Vector(get_angle_better(model,pm), model.get_vel(info.rpm))
+        exit2 = Vector(vector.angle, robot_wrist_length).topoint().add(rpos)
+        points = pm.get_points(vector,exit2)
+
+        draw_points([rpos,exit2])
+        draw_line(add_lists([[rpos,exit2],points]))
+    draw_points([gpos])
+
+    draw_axis([-0.1,10],[-0.1,10])
+
+    draw_line_red([Point(gpos.x + 0.229997,0), Point(gpos.x + 0.229997,1.984502)])
+    draw_line_red([Point(gpos.x - 0.923798,1.984502), Point(gpos.x ,2.492502)])
+
+    results()
+
+def generate_file():
+    input_points = [
     {"distance": 1.0, "rpm": 3000}, #1
     {"distance": 2.0, "rpm": 3000}, #2
     {"distance": 2.5, "rpm": 4000},  #3
@@ -216,69 +327,11 @@ input_points = [
     {"distance": 6.0, "rpm": 4000},  #7
     {"distance": 6.5, "rpm": 4800},  #8
     {"distance": 8.0, "rpm": 4800}   #9
-]
+    ]
+    shooting_config = []
 
-shooting_config = []
+    # shooting_config.append({"rpm": rpm, "distance": distance, "angle": Vector.fromradians(angle), "time_of_flight": time_of_flight})
+    shooting_config_file = pathlib.Path("src/main/java/frc/robot/generated/shooting_config.json")
+    shooting_config_file.write_text(json.dumps(shooting_config, indent=2))
 
-i = 1
-for input_point in range(len(input_points)):
-    rpos = Point(0,0)
-    wrist_pos = Point(Point.to_m(1.29),Point.to_m(10.76)) # measure
-
-    rpm = input_points[input_point]["rpm"]
-    distance = input_points[input_point]["distance"]
-    goalpos = Point(distance, 0.86)
-    projectile_motion = ProjectileMotion(0.02, True)
-    modelinfo = Model(rpos.add(wrist_pos), goalpos, rpm)
-    angle = getangle(modelinfo, projectile_motion)
-    modelinfo.rpos = rpos.add(Vector(angle, robot_wrist_length).topoint())
-    points = projectile_motion.getpoints(Vector(angle, modelinfo.get_vel(rpm)), modelinfo.rpos)
-    time_of_flight = projectile_motion.get_travel_time(points)
-
-    if i == 0:
-        plot(points, [modelinfo.rpos, modelinfo.gpos])
-
-    shooting_config.append({"rpm": rpm, "distance": distance, "angle": Vector.fromradians(angle), "time_of_flight": time_of_flight})
-    i+=1
-
-
-shooting_config_file = pathlib.Path("src/main/java/frc/robot/generated/shooting_config.json")
-shooting_config_file.write_text(json.dumps(shooting_config, indent=2))
-
-
-champs_table = [ShooterInfo(distance= 1.38, angle= 58.1, rpm= 3000), #0
-                ShooterInfo(distance= 2.16, angle= 47.8, rpm= 3000),
-                ShooterInfo(distance= 2.5, angle= 42.0, rpm= 4000),
-                ShooterInfo(distance= 3.5, angle= 33.9635, rpm= 4000),
-                ShooterInfo(distance= 4.5, angle= 28.20125, rpm= 4000),
-                ShooterInfo(distance= 5.5, angle= 25.84825, rpm= 4000),
-                ShooterInfo(distance= 6.5, angle= 21.30525, rpm= 4800),
-                ShooterInfo(distance= 7.5, angle= 20.27075, rpm= 4800),
-                ShooterInfo(distance= 9.0, angle= 18.7305, rpm= 4800) #8
-                ]
-
-setgoalposx = 9
-
-for info in champs_table:
-    goalpos = Point(setgoalposx, 0.86)
-    rpos = Point(setgoalposx-info.distance,0)
-
-    test_model = Model(rpos, goalpos, info.rpm)
-    test_pm = ProjectileMotion(0.02, True)
-    test_vector = Vector(Vector.fromdegrees(info.angle), test_model.get_vel(info.rpm))
-    wrist_vector = Vector(Vector.fromdegrees(info.angle), robot_wrist_length)
-    note_exit = wrist_vector.topoint().add(rpos)
-    start_duo = [rpos, note_exit]
-
-    points_list = test_pm.getpoints(test_vector, note_exit)
-    draw_line(add_lists([start_duo,points_list]))
-
-    draw_points(start_duo)
-
-draw_points([goalpos])
-
-draw_axis([-0.1,9.3],[-0.1,1])
-
-results()
-
-
+test_better()
