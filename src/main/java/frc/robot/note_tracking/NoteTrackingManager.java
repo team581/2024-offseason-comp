@@ -116,7 +116,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
       return Optional.empty();
     }
 
-
     double forwardDistanceToNote = tyToDistance.get(ty);
     Rotation2d angleFromNote = Rotation2d.fromDegrees(tx);
 
@@ -176,7 +175,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
         }
       }
     }
-
     return notePoses;
   }
 
@@ -273,19 +271,11 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   @Override
   public void robotPeriodic() {
     DogLog.log(
-        "NoteTracking/NotesExpired",
-        noteMap.removeIf(
-            element -> {
-              DogLog.log("NoteTracking/ExpiredNote", element.notePose());
-              return element.expiresAt() < Timer.getFPGATimestamp();
-            }));
-
-    DogLog.log(
         "NoteTracking/NoteMap",
         noteMap.stream().map(NoteMapElement::notePose).toArray(Pose2d[]::new));
 
     Stopwatch.getInstance().start("Debug/NoteMapTime");
-    noteMap = getNewMap();
+    updateMap();
     Stopwatch.getInstance().stop("Debug/NoteMapTime");
 
     // log closest note to bobot
@@ -300,48 +290,43 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     return noteMap.size() > 0.0;
   }
 
-  private ArrayList<NoteMapElement> getNewMap() {
+  private void updateMap() {
     List<Pose2d> visionNotes = getFilteredNotePoses();
 
-    if (visionNotes.size() > 20) {
-      // Something evil happened, don't update state
-      return noteMap;
-    }
+    // 1. Remove expired notes since that's easy
 
-    ArrayList<NoteMapElement> result = new ArrayList<>();
+    noteMap.removeIf(
+        element -> {
+          return element.expiresAt() < Timer.getFPGATimestamp();
+        });
 
-    result.addAll(
-        visionNotes.stream()
-            .map(pose -> new NoteMapElement(Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME, pose))
-            .toList());
+    // 2. Go through vision notes, and if it matches a note already in note map, replace it with the
+    // vision note
+    //    Otherwise, if we see a note with no match in the note map, add it to the array
+    // 3. Don't do anything to the remembered notes otherwise. They stick around till expired
 
-    for (var rememberedPose : noteMap) {
-      Optional<Pose2d> visionNoteMatch =
-          visionNotes.stream()
+    for (var visionNote : visionNotes) {
+      Optional<NoteMapElement> match =
+          noteMap.stream()
               .filter(
-                  visionNote -> {
-                    return visionNote
+                  rememberedNote -> {
+                    return rememberedNote
+                            .notePose()
                             .getTranslation()
-                            .getDistance(rememberedPose.notePose().getTranslation())
-                        < 1;
+                            .getDistance(visionNote.getTranslation())
+                        < 1.0;
                   })
               .min(
                   (a, b) ->
                       Double.compare(
-                          a.getTranslation()
-                              .getDistance(rememberedPose.notePose().getTranslation()),
-                          b.getTranslation()
-                              .getDistance(rememberedPose.notePose().getTranslation())));
+                          a.notePose().getTranslation().getDistance(visionNote.getTranslation()),
+                          b.notePose().getTranslation().getDistance(visionNote.getTranslation())));
 
-      if (visionNoteMatch.isPresent()) {
-
-        visionNotes.remove(visionNoteMatch.get());
-      } else {
-
-        result.add(rememberedPose);
+      if (match.isPresent()) {
+        noteMap.remove(match.get());
       }
-    }
 
-    return result;
+      noteMap.add(new NoteMapElement(Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME, visionNote));
+    }
   }
 }

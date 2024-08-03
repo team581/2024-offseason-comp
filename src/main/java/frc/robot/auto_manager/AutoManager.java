@@ -221,12 +221,12 @@ public class AutoManager extends LifecycleSubsystem {
                       List.of(
                           new NoteMapElement(now + 5, AutoNoteStep.noteIdToPose(4)),
                           new NoteMapElement(now + 5, AutoNoteStep.noteIdToPose(5)),
-                          new NoteMapElement(now + 5, AutoNoteStep.noteIdToPose(3)))));
+                          new NoteMapElement(now + 5, AutoNoteStep.noteIdToPose(6)))));
             }),
         doManyAutoSteps(
             List.of(
-                new AutoNoteStep(3, AutoNoteAction.OUTTAKE),
                 new AutoNoteStep(4, AutoNoteAction.SCORE),
-                new AutoNoteStep(5, AutoNoteAction.CLEANUP))));
+                new AutoNoteStep(5, AutoNoteAction.SCORE),
+                new AutoNoteStep(6, AutoNoteAction.SCORE))));
   }
 }
