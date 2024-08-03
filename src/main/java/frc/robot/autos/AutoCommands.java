@@ -252,7 +252,8 @@ public class AutoCommands {
         List.of(
             new AutoNoteStep(4, AutoNoteAction.SCORE),
             new AutoNoteStep(5, AutoNoteAction.SCORE),
-            new AutoNoteStep(6, AutoNoteAction.SCORE)));
+            new AutoNoteStep(3, AutoNoteAction.SCORE),
+            new AutoNoteStep(1, AutoNoteAction.SCORE)));
   }
 
   public Command testAuto() {
