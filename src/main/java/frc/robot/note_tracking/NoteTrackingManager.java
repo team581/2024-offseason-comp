@@ -257,6 +257,10 @@ public class NoteTrackingManager extends LifecycleSubsystem {
                     removeNote(intakedNote.get());
                   }
                 }))
+        .finallyDo(
+            () -> {
+              snaps.setEnabled(false);
+            })
         .withName("IntakeNearestNoteCommand");
   }
 
