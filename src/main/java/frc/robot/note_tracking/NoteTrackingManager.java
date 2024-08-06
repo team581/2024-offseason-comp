@@ -294,6 +294,10 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     return noteMap.size() > 0.0;
   }
 
+  public void addNoteToMap(Pose2d pose) {
+    noteMap.add(new NoteMapElement(Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME, pose));
+  }
+
   private void updateMap() {
     List<Pose2d> visionNotes = getFilteredNotePoses();
 

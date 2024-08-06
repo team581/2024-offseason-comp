@@ -42,7 +42,7 @@ public class AutoManager extends LifecycleSubsystem {
       new Pose2d(
           Units.inchesToMeters(0) + 2.0, Units.inchesToMeters(218.42), Rotation2d.fromDegrees(0));
   public static final Pose2d MIDLINE_CLEANUP_POSE = new Pose2d(8.271, 4.106, new Rotation2d(0));
-  public static final List<Pose2d> RED_DESTINATIONS =
+  public static final List<Pose2d> RED_SCORING_DESTINATIONS =
       List.of(
           new Pose2d(12.32, 5.16, Rotation2d.fromDegrees(5.62)),
           new Pose2d(12.73, 6.00, Rotation2d.fromDegrees(-6.73)),
@@ -59,7 +59,7 @@ public class AutoManager extends LifecycleSubsystem {
           new Pose2d(14.66, 3.27, Rotation2d.fromDegrees(51.23)),
           new Pose2d(14.83, 7.42, Rotation2d.fromDegrees(-56.14)));
 
-  public static final List<Pose2d> BLUE_DESTINATIONS =
+  public static final List<Pose2d> BLUE_SCORING_DESTINATIONS =
       List.of(
           new Pose2d(4.09, 5.16, Rotation2d.fromDegrees(174.8)),
           new Pose2d(4.37, 6.23, Rotation2d.fromDegrees(-171.57)),
@@ -77,6 +77,12 @@ public class AutoManager extends LifecycleSubsystem {
           new Pose2d(4.6, 6.83, Rotation2d.fromDegrees(-162.20)),
           new Pose2d(3.57, 2.72, Rotation2d.fromDegrees(138.0)));
 
+  public static final Pose2d RED_DROPPING_DESTINATION =
+      new Pose2d(11.25, 7.26, Rotation2d.fromDegrees(16.18));
+  public static final Pose2d BLUE_DROPPING_DESTINATION =
+      new Pose2d(5.33, 7.26, Rotation2d.fromDegrees(167.95));
+  private Pose2d DROPPED_NOTE_SEARCH = new Pose2d(12.84, 6.97, Rotation2d.fromDegrees(149.19));
+
   public AutoManager(
       RobotCommands actions,
       NoteTrackingManager noteTrackingManager,
@@ -91,9 +97,17 @@ public class AutoManager extends LifecycleSubsystem {
 
   private List<Pose2d> getScoringDestinations() {
     if (FmsSubsystem.isRedAlliance()) {
-      return RED_DESTINATIONS;
+      return RED_SCORING_DESTINATIONS;
     } else {
-      return BLUE_DESTINATIONS;
+      return BLUE_SCORING_DESTINATIONS;
+    }
+  }
+
+  private Pose2d getDroppingDestination() {
+    if (FmsSubsystem.isRedAlliance()) {
+      return RED_DROPPING_DESTINATION;
+    } else {
+      return BLUE_DROPPING_DESTINATION;
     }
   }
 
@@ -171,7 +185,7 @@ public class AutoManager extends LifecycleSubsystem {
       return cleanupCommand();
     }
 
-    var command =
+    var intakeNote =
         noteTrackingManager.intakeNoteAtPose(
             () -> {
               DogLog.log("Debug/IntakeNoteAtPoseRequest", Timer.getFPGATimestamp());
@@ -180,33 +194,39 @@ public class AutoManager extends LifecycleSubsystem {
             1.5);
 
     if (step.action() == AutoNoteAction.OUTTAKE) {
-      command =
-          command
-              .andThen(
-                  Commands.defer(
-                          () -> {
-                            DogLog.log("Debug/PathFindOuttake", Timer.getFPGATimestamp());
-                            return AutoBuilder.pathfindToPose(
-                                getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
-                          },
-                          Set.of())
-                      .unless(() -> !robotManager.getState().hasNote))
-              .andThen(actions.dropCommand().unless(() -> !robotManager.getState().hasNote));
-    } else if (step.action() == AutoNoteAction.SCORE) {
-      command =
-          command.andThen(
+      return intakeNote
+          // Pathfind to outtake
+          .andThen(
               Commands.defer(
-                      () -> {
-                        DogLog.log("Debug/PathFindShoot", Timer.getFPGATimestamp());
-                        return AutoBuilder.pathfindToPose(
-                            getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
-                      },
-                      Set.of())
-                  .andThen(actions.speakerShotCommand())
-                  .unless(() -> !robotManager.getState().hasNote));
+                  () -> {
+                    DogLog.log("Debug/PathFindOuttake", Timer.getFPGATimestamp());
+                    return AutoBuilder.pathfindToPose(
+                        getDroppingDestination(), DEFAULT_CONSTRAINTS);
+                  },
+                  Set.of()))
+          // Drop the note
+          .andThen(
+              actions
+                  .dropCommand()
+                  .andThen(
+                      Commands.runOnce(
+                          () -> {
+                            noteTrackingManager.addNoteToMap(localization.getPose());
+                          })))
+          .onlyIf(() -> robotManager.getState().hasNote);
     }
 
-    return command;
+    // Shoot note
+    return intakeNote.andThen(
+        Commands.defer(
+                () -> {
+                  DogLog.log("Debug/PathFindShoot", Timer.getFPGATimestamp());
+                  return AutoBuilder.pathfindToPose(
+                      getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
+                },
+                Set.of())
+            .andThen(actions.speakerShotCommand())
+            .unless(() -> !robotManager.getState().hasNote));
   }
 
   public Command testCommand() {
@@ -220,13 +240,15 @@ public class AutoManager extends LifecycleSubsystem {
                   new ArrayList<>(
                       List.of(
                           new NoteMapElement(now + 5, AutoNoteStep.noteIdToPose(4)),
-                          new NoteMapElement(now + 5, AutoNoteStep.noteIdToPose(5)),
-                          new NoteMapElement(now + 5, AutoNoteStep.noteIdToPose(6)))));
+                          new NoteMapElement(now + 5, AutoNoteStep.noteIdToPose(5)))));
             }),
         doManyAutoSteps(
             List.of(
-                new AutoNoteStep(4, AutoNoteAction.SCORE),
-                new AutoNoteStep(5, AutoNoteAction.SCORE),
-                new AutoNoteStep(6, AutoNoteAction.SCORE))));
+                new AutoNoteStep(4, AutoNoteAction.OUTTAKE),
+                new AutoNoteStep(5, AutoNoteAction.OUTTAKE),
+                new AutoNoteStep(()-> DROPPED_NOTE_SEARCH, AutoNoteAction.SCORE),
+                new AutoNoteStep(()-> DROPPED_NOTE_SEARCH, AutoNoteAction.SCORE)
+
+                )));
   }
 }
