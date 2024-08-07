@@ -32,16 +32,17 @@ public record AutoNoteStep(Supplier<Pose2d> noteSearchPose, AutoNoteAction actio
         } else {
           return new Pose2d(2.896, 7.001, new Rotation2d(0));
         }
+        // Subtract 0.5 meters from the x to put back on midline
       case 4:
-        return new Pose2d(8.271, 7.458, new Rotation2d(0));
+        return new Pose2d(8.771, 7.458, new Rotation2d(0));
       case 5:
-        return new Pose2d(8.271, 5.782, new Rotation2d(0));
+        return new Pose2d(8.771, 5.782, new Rotation2d(0));
       case 6:
-        return new Pose2d(8.271, 4.106, new Rotation2d(0));
+        return new Pose2d(8.771, 4.106, new Rotation2d(0));
       case 7:
-        return new Pose2d(8.271, 2.429, new Rotation2d(0));
+        return new Pose2d(8.771, 2.429, new Rotation2d(0));
       case 8:
-        return new Pose2d(8.271, 0.753, new Rotation2d(0));
+        return new Pose2d(8.771, 0.753, new Rotation2d(0));
       default:
         throw new IllegalArgumentException("Expected a note ID from between 1 and 8");
     }
