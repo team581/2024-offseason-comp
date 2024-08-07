@@ -81,7 +81,7 @@ public class AutoManager extends LifecycleSubsystem {
       new Pose2d(11.25, 7.26, Rotation2d.fromDegrees(16.18));
   public static final Pose2d BLUE_DROPPING_DESTINATION =
       new Pose2d(5.33, 7.26, Rotation2d.fromDegrees(167.95));
-  private Pose2d DROPPED_NOTE_SEARCH = new Pose2d(12.84, 6.97, Rotation2d.fromDegrees(149.19));
+  private Pose2d DROPPED_NOTE_SEARCH = new Pose2d(13.65, 7.22, Rotation2d.fromDegrees(-14.22));
 
   public AutoManager(
       RobotCommands actions,
@@ -193,6 +193,7 @@ public class AutoManager extends LifecycleSubsystem {
             },
             1.5);
 
+    
     if (step.action() == AutoNoteAction.OUTTAKE) {
       return intakeNote
           // Pathfind to outtake
@@ -203,7 +204,7 @@ public class AutoManager extends LifecycleSubsystem {
                     return AutoBuilder.pathfindToPose(
                         getDroppingDestination(), DEFAULT_CONSTRAINTS);
                   },
-                  Set.of()))
+                  Set.of()).onlyIf(() -> robotManager.getState().hasNote))
           // Drop the note
           .andThen(
               actions
@@ -211,9 +212,9 @@ public class AutoManager extends LifecycleSubsystem {
                   .andThen(
                       Commands.runOnce(
                           () -> {
-                            noteTrackingManager.addNoteToMap(localization.getPose());
-                          })))
-          .onlyIf(() -> robotManager.getState().hasNote);
+                            noteTrackingManager.addNoteToMap(getDroppingDestination());
+                          })).onlyIf(() -> robotManager.getState().hasNote))
+          ;
     }
 
     // Shoot note
@@ -246,9 +247,7 @@ public class AutoManager extends LifecycleSubsystem {
             List.of(
                 new AutoNoteStep(4, AutoNoteAction.OUTTAKE),
                 new AutoNoteStep(5, AutoNoteAction.OUTTAKE),
-                new AutoNoteStep(()-> DROPPED_NOTE_SEARCH, AutoNoteAction.SCORE),
-                new AutoNoteStep(()-> DROPPED_NOTE_SEARCH, AutoNoteAction.SCORE)
-
-                )));
+                new AutoNoteStep(() -> getDroppingDestination(), AutoNoteAction.SCORE),
+                new AutoNoteStep(() -> getDroppingDestination(), AutoNoteAction.SCORE))));
   }
 }
