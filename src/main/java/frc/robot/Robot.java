@@ -231,7 +231,8 @@ public class Robot extends TimedRobot {
     driverController
         .rightTrigger()
         .onTrue(actions.confirmShotCommand())
-        .onFalse(actions.stopShootingCommand());
+        .onFalse(actions.stopShootingCommand()
+            .andThen(actions.stowCommand()));
     driverController
         .rightBumper()
        .onTrue(actions.waitForAmpShotCommand())
