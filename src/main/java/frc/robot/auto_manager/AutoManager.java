@@ -23,7 +23,6 @@ import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class AutoManager extends LifecycleSubsystem {
   private final RobotCommands actions;
@@ -149,13 +148,12 @@ public class AutoManager extends LifecycleSubsystem {
     return noteTrackingManager
         .intakeNearestMapNote(2.0)
         .andThen(
-            Commands.defer(
+            Commands.deferredProxy(
                     () -> {
                       DogLog.log("Debug/CleanupNotePathfind", Timer.getFPGATimestamp());
                       return AutoBuilder.pathfindToPose(
                           getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
-                    },
-                    Set.of())
+                    })
                 .andThen(actions.speakerShotCommand())
                 .unless(() -> !robotManager.getState().hasNote));
   }
@@ -197,13 +195,12 @@ public class AutoManager extends LifecycleSubsystem {
       return intakeNote
           // Pathfind to outtake
           .andThen(
-              Commands.defer(
+              Commands.deferredProxy(
                       () -> {
                         DogLog.log("Debug/PathFindOuttake", Timer.getFPGATimestamp());
                         return AutoBuilder.pathfindToPose(
                             getDroppingDestination(), DEFAULT_CONSTRAINTS);
-                      },
-                      Set.of())
+                      })
                   .onlyIf(() -> robotManager.getState().hasNote))
           // Drop the note
           .andThen(
@@ -219,13 +216,12 @@ public class AutoManager extends LifecycleSubsystem {
 
     // Shoot note
     return intakeNote.andThen(
-        Commands.defer(
+        Commands.deferredProxy(
                 () -> {
                   DogLog.log("Debug/PathFindShoot", Timer.getFPGATimestamp());
                   return AutoBuilder.pathfindToPose(
                       getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
-                },
-                Set.of())
+                })
             .andThen(actions.speakerShotCommand())
             .unless(() -> !robotManager.getState().hasNote));
   }
