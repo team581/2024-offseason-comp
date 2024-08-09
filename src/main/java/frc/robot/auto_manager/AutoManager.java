@@ -193,18 +193,18 @@ public class AutoManager extends LifecycleSubsystem {
             },
             1.5);
 
-
     if (step.action() == AutoNoteAction.OUTTAKE) {
       return intakeNote
           // Pathfind to outtake
           .andThen(
               Commands.defer(
-                  () -> {
-                    DogLog.log("Debug/PathFindOuttake", Timer.getFPGATimestamp());
-                    return AutoBuilder.pathfindToPose(
-                        getDroppingDestination(), DEFAULT_CONSTRAINTS);
-                  },
-                  Set.of()).onlyIf(() -> robotManager.getState().hasNote))
+                      () -> {
+                        DogLog.log("Debug/PathFindOuttake", Timer.getFPGATimestamp());
+                        return AutoBuilder.pathfindToPose(
+                            getDroppingDestination(), DEFAULT_CONSTRAINTS);
+                      },
+                      Set.of())
+                  .onlyIf(() -> robotManager.getState().hasNote))
           // Drop the note
           .andThen(
               actions
@@ -213,8 +213,8 @@ public class AutoManager extends LifecycleSubsystem {
                       Commands.runOnce(
                           () -> {
                             noteTrackingManager.addNoteToMap(DROPPED_NOTE_SEARCH);
-                          })).onlyIf(() -> robotManager.getState().hasNote))
-          ;
+                          }))
+                  .onlyIf(() -> robotManager.getState().hasNote));
     }
 
     // Shoot note

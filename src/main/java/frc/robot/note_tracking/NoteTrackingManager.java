@@ -261,7 +261,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
             () -> {
               snaps.setEnabled(false);
             })
-          .withTimeout(4.0)
+        .withTimeout(4.0)
         .withName("IntakeNearestNoteCommand");
   }
 
