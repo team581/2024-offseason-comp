@@ -121,14 +121,23 @@ class ProjectileMotion:
         velocity = [vector.topoint()]
         acceleration = []
         t = 0
+        theta = vector.angle
 
         while position[-1].y > 0:
-            current_acceleration = Point(x=0,
-                                         y=-9.8)
+            
+            drag_force = (
+                self.a_r * ((velocity[-1].x ** 2) + (velocity[-1].y ** 2))
+            )
+
+            current_acceleration = Point(x=-drag_force*math.cos(theta),
+                                         y=(-9.81) + (-drag_force * math.sin(theta)))
             current_velocity = Point(x=velocity[-1].x + (self.dt * current_acceleration.x),
                                      y=velocity[-1].y + (self.dt * current_acceleration.y))
             current_position = Point(x=position[-1].x + (self.dt * current_velocity.x),
                                      y=position[-1].y + (self.dt * current_velocity.y))
+            
+            theta = math.atan(current_position.y - position[-1].y/current_position.x - position[-1].x)
+
             position.append(current_position)
             velocity.append(current_velocity)
             acceleration.append(current_acceleration)
@@ -235,7 +244,7 @@ def plot(line: [], points: []):
 
     plt.show()
 
-def split_point_list(points_list: []):
+def split_point_list(points_list: list[Point]):
     newlist_x = []
     newlist_y = []
     for i in points_list:
@@ -243,7 +252,7 @@ def split_point_list(points_list: []):
         newlist_y.append(i[1].y)
     return [newlist_x, newlist_y]
 
-def add_lists(list: []):
+def add_lists(list: list):
     newlist = []
     for s in list:
         for i in s:
@@ -275,7 +284,7 @@ def results():
 
 #//////////////////////////////////////////////////////////////////////
 
-def test_champ_table():
+def test_champ_table(drag:bool):
 
     setgoalposx = 9
 
@@ -285,13 +294,14 @@ def test_champ_table():
 
         test_model = Model(rpos, goalpos, info.rpm)
 
-        test_pm = ProjectileMotion(0.02, True)
+        test_pm = ProjectileMotion(0.02, drag)
         test_vector = Vector(Vector.fromdegrees(info.angle), test_model.get_vel(info.rpm))
         wrist_vector = Vector(Vector.fromdegrees(info.angle), robot_wrist_length)
         note_exit = wrist_vector.topoint().plus(rpos)
         start_duo = [rpos, note_exit]
 
-        points_list = test_pm.getpoints(test_vector, note_exit)
+        points_list = test_pm.get_points(test_vector, note_exit)
+
         draw_line(add_lists([start_duo,points_list]))
         draw_points(start_duo)
     draw_points([goalpos])
@@ -303,13 +313,13 @@ def test_champ_table():
 
     results()
 
-def test_anglesearch():
+def test_anglesearch(drag:bool):
     for info in champs_table_speaker:
         gpos = Point(9,speakerheight)
         rpos = Point(9-info.distance,0)
 
         model = Model(rpos, gpos, info.rpm)
-        pm = ProjectileMotion(0.02, True)
+        pm = ProjectileMotion(0.02, drag)
         vector = Vector(get_angle(model,pm), model.get_vel(info.rpm))
         exit2 = Vector(vector.angle, robot_wrist_length).topoint().plus(rpos)
         points = pm.get_points(vector,exit2)
@@ -325,13 +335,13 @@ def test_anglesearch():
 
     results()
 
-def test_better_anglesearch():
+def test_better_anglesearch(drag:bool):
     for info in champs_table_speaker:
         gpos = Point(9,speakerheight)
         rpos = Point(9-info.distance,0)
 
         model = Model(rpos, gpos, info.rpm)
-        pm = ProjectileMotion(0.02, True)
+        pm = ProjectileMotion(0.02, drag)
         vector = Vector(get_angle_better(model,pm), model.get_vel(info.rpm))
         exit2 = Vector(vector.angle, robot_wrist_length).topoint().plus(rpos)
         points = pm.get_points(vector,exit2)
@@ -347,7 +357,7 @@ def test_better_anglesearch():
 
     results()
 
-def generate_file_speaker():
+def generate_file_speaker(drag:bool):
     shooting_config = []
 
     for info in champs_table_speaker:
@@ -355,7 +365,7 @@ def generate_file_speaker():
         rpos = Point(9-info.distance,0)
 
         model = Model(rpos, gpos, info.rpm)
-        pm = ProjectileMotion(0.02, True)
+        pm = ProjectileMotion(0.02, drag)
         vector = Vector(get_angle_better(model,pm), model.get_vel(info.rpm))
         exit2 = Vector(vector.angle, robot_wrist_length).topoint().plus(rpos)
         points = pm.get_points(vector,exit2)
@@ -370,7 +380,7 @@ def generate_file_speaker():
     shooting_config_file = pathlib.Path("src/main/java/frc/robot/generated/speaker_shooting_config.json")
     shooting_config_file.write_text(json.dumps(shooting_config, indent=2))
 
-def generate_file_floor():
+def generate_file_floor(drag:bool):
     shooting_config = []
 
     for info in champs_table_speaker:
@@ -378,7 +388,7 @@ def generate_file_floor():
         rpos = Point(9-info.distance,0)
 
         model = Model(rpos, gpos, info.rpm)
-        pm = ProjectileMotion(0.02, True)
+        pm = ProjectileMotion(0.02, drag)
         vector = Vector(get_angle_floor(model,pm), model.get_vel(info.rpm))
         exit2 = Vector(vector.angle, robot_wrist_length).topoint().plus(rpos)
         points = pm.get_points(vector,exit2)
@@ -394,6 +404,6 @@ def generate_file_floor():
     shooting_config_file.write_text(json.dumps(shooting_config, indent=2))
 
 # generate_file_speaker()
-# test_better_anglesearch()
-# test_anglesearch()
-# test_champ_table()
+test_better_anglesearch(True)
+# test_anglesearch(True)
+# test_champ_table(True)
