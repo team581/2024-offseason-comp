@@ -191,7 +191,7 @@ public class AutoManager extends LifecycleSubsystem {
             },
             1.5);
 
-    if (step.action() == AutoNoteAction.OUTTAKE) {
+    if (step.action() == AutoNoteAction.DROP) {
       return intakeNote
           // Pathfind to outtake
           .andThen(
@@ -226,6 +226,21 @@ public class AutoManager extends LifecycleSubsystem {
             .unless(() -> !robotManager.getState().hasNote));
   }
 
+  public List<AutoNoteStep> test() {
+    // Reset dropped notes at start of auto
+    AutoNoteDropped.clearDroppedNotes();
+
+    // When we drop a note, add it to the lookup, which assigns an ID automatically
+    AutoNoteDropped.addDroppedNote(new Pose2d());
+
+    // Shorthand syntax for defining auto steps
+    return List.of(
+        AutoNoteStep.drop(4, 5),
+        AutoNoteStep.score(5, 6),
+        AutoNoteStep.score(10),
+        AutoNoteStep.score(11));
+  }
+
   public Command testCommand() {
     return Commands.sequence(
         Commands.runOnce(
@@ -241,7 +256,7 @@ public class AutoManager extends LifecycleSubsystem {
             }),
         doManyAutoSteps(
             List.of(
-                new AutoNoteStep(4, AutoNoteAction.OUTTAKE),
+                new AutoNoteStep(4, AutoNoteAction.DROP),
                 new AutoNoteStep(5, AutoNoteAction.SCORE),
                 new AutoNoteStep(() -> DROPPED_NOTE_SEARCH, AutoNoteAction.SCORE))));
   }
