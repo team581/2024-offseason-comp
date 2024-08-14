@@ -228,31 +228,42 @@ public class AutoManager extends LifecycleSubsystem {
   }
 
   private Command doAutoStep(AutoNoteStep step) {
-    if (step.action() == AutoNoteAction.CLEANUP) {
-      return cleanupCommand();
-    }
+    return switch (step.action()) {
+      case CLEANUP -> cleanupCommand();
+      case DROP ->
+          Commands.deferredProxy(
+              () -> {
+                // Go through each note in the step, and if it's there, use that
+                for (var poseSupplier : step.notes()) {
+                  if (noteTrackingManager
+                      .getNearestNotePoseRelative(poseSupplier.get(), 1.5)
+                      .isPresent()) {
 
-    if (step.action() == AutoNoteAction.DROP) {
+                    return findAndDropCommand(poseSupplier.get());
+                  }
+                }
 
-      for (var poseSupplier : step.notes()) {
-        if (noteTrackingManager.getNearestNotePoseRelative(poseSupplier.get(), 1.5).isPresent()) {
+                // None of the notes are tracked, so just entirely skip this step
+                return Commands.none();
+              });
+      case SCORE ->
+          Commands.deferredProxy(
+              () -> {
+                for (var poseSupplier : step.notes()) {
+                  // TODO: Ignore if supplied pose is null/optional.empty, once we add that later
 
-          return findAndDropCommand(poseSupplier.get());
-        }
-      }
-    }
+                  if (noteTrackingManager
+                      .getNearestNotePoseRelative(poseSupplier.get(), 1.5)
+                      .isPresent()) {
 
-    // Score
-    for (var poseSupplier : step.notes()) {
-      // TODO: Ignore if supplied pose is null/optional.empty, once we add that later
+                    return findAndScoreCommand(poseSupplier.get());
+                  }
+                }
 
-      if (noteTrackingManager.getNearestNotePoseRelative(poseSupplier.get(), 1.5).isPresent()) {
-
-        return findAndScoreCommand(poseSupplier.get());
-      }
-    }
-
-    return Commands.none();
+                // None of the notes are tracked, so just entirely skip this step
+                return Commands.none();
+              });
+    };
   }
 
   public Command testCommand() {
