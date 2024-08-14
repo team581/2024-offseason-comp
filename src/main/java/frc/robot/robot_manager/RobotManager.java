@@ -90,6 +90,8 @@ public class RobotManager extends LifecycleSubsystem {
     shooter.setSpeakerDistance(speakerDistance);
     shooter.setFloorSpotDistance(floorSpotDistance);
 
+    DogLog.log("distanceToSpeaker", speakerDistance);
+
     // State transitions from requests
     for (RobotFlag flag : flags.getChecked()) {
       switch (flag) {
