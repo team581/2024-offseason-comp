@@ -17,17 +17,17 @@ public record AutoNoteStep(AutoNoteAction action, List<Supplier<Pose2d>> notes) 
     List<Integer> list = List.of(noteIds);
 
     return new AutoNoteStep(
-        AutoNoteAction.DROP, list.stream().map(AutoNoteStep::noteIdToResolvable).toList());
+        AutoNoteAction.DROP, list.stream().map(AutoNoteStep::noteIdToPose).toList());
   }
 
   static AutoNoteStep score(Integer... noteIds) {
     List<Integer> list = List.of(noteIds);
 
     return new AutoNoteStep(
-        AutoNoteAction.SCORE, list.stream().map(AutoNoteStep::noteIdToResolvable).toList());
+        AutoNoteAction.SCORE, list.stream().map(AutoNoteStep::noteIdToPose).toList());
   }
 
-  private static Supplier<Pose2d> noteIdToResolvable(int id) {
+  private static Supplier<Pose2d> noteIdToPose(int id) {
     if (id >= 10) {
       // Dropped note ID
       return new AutoNoteDropped(id - 10)::getPose;

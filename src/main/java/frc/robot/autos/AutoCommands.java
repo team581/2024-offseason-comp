@@ -9,8 +9,6 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.auto_manager.AutoManager;
-import frc.robot.auto_manager.AutoNoteAction;
-import frc.robot.auto_manager.AutoNoteStep;
 import frc.robot.fms.FmsSubsystem;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
@@ -248,9 +246,7 @@ public class AutoCommands {
   }
 
   public Command noteMapCommand() {
-    return autoManager.doManyAutoSteps(
-        List.of(
-        ));
+    return autoManager.doManyAutoSteps(List.of());
   }
 
   public Command testAuto() {

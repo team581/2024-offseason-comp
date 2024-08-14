@@ -15,11 +15,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.fms.FmsSubsystem;
 import frc.robot.localization.LocalizationSubsystem;
+import frc.robot.note_tracking.NoteMapElement;
 import frc.robot.note_tracking.NoteTrackingManager;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
+import java.util.ArrayList;
 import java.util.List;
 
 public class AutoManager extends LifecycleSubsystem {
@@ -220,6 +222,7 @@ public class AutoManager extends LifecycleSubsystem {
                     Commands.runOnce(
                         () -> {
                           noteTrackingManager.addNoteToMap(DROPPED_NOTE_SEARCH);
+                          AutoNoteDropped.addDroppedNote(DROPPED_NOTE_SEARCH);
                         }))
                 .onlyIf(() -> robotManager.getState().hasNote));
   }
@@ -253,11 +256,20 @@ public class AutoManager extends LifecycleSubsystem {
   }
 
   public Command testCommand() {
-    return doManyAutoSteps(
-      List.of(
-        AutoNoteStep.score(4,5),
-        AutoNoteStep.drop(5,6)
-      )
-    );
+    return Commands.sequence(
+        Commands.runOnce(
+            () -> {
+              DogLog.log("Debug/TestP1", true);
+
+              var now = Timer.getFPGATimestamp();
+              noteTrackingManager.resetNoteMap(
+                  new ArrayList<>(
+                      List.of(
+                          new NoteMapElement(now + 5, AutoNoteStaged.noteIdToPose(4)),
+                          new NoteMapElement(now + 5, AutoNoteStaged.noteIdToPose(5)),
+                          new NoteMapElement(now + 5, AutoNoteStaged.noteIdToPose(6)))));
+            }),
+        doManyAutoSteps(
+            List.of(AutoNoteStep.drop(4, 5), AutoNoteStep.score(5, 6), AutoNoteStep.score(10))));
   }
 }

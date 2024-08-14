@@ -9,7 +9,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.fms.FmsSubsystem;
 
 public class AutoNoteStaged {
-  private static Pose2d noteIdToPose(int noteId) {
+  public static Pose2d noteIdToPose(int noteId) {
     switch (noteId) {
       case 1:
         if (FmsSubsystem.isRedAlliance()) {
