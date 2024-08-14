@@ -255,7 +255,8 @@ public class AutoManager extends LifecycleSubsystem {
   public Command testCommand() {
     return doManyAutoSteps(
       List.of(
-        AutoNoteStep.score(4,5)
+        AutoNoteStep.score(4,5),
+        AutoNoteStep.drop(5,6)
       )
     );
   }
