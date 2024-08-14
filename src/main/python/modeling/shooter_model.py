@@ -100,7 +100,7 @@ class Model:
         self.wheel_diameter = 0.1016
 
         self.speakerpoint_1 = gpos
-        self.speakerpoint_2 = Point(gpos.x - 0.43,gpos.y - 0.2032)
+        self.speakerpoint_2 = Point(gpos.x - 0.43,gpos.y - Point.to_m(12))
 
     def get_vel(self, rpm):
         return (math.pi  * self.wheel_diameter) * (rpm / 60) * (self.efficiency_percent/100.0)
