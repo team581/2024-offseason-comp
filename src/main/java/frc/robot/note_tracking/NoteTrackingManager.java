@@ -74,7 +74,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
    * Get the pose of the note closest to the provided location, within a threshold. Returns
    * optional.empty if no notes are tracked or notes exceed the threshold.
    */
-  private Optional<NoteMapElement> getNearestNotePoseRelative(
+  public Optional<NoteMapElement> getNearestNotePoseRelative(
       Pose2d searchLocation, double thresholdMeters) {
 
     var maybeElement =

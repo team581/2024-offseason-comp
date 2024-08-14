@@ -250,10 +250,7 @@ public class AutoCommands {
   public Command noteMapCommand() {
     return autoManager.doManyAutoSteps(
         List.of(
-            new AutoNoteStep(4, AutoNoteAction.SCORE),
-            new AutoNoteStep(5, AutoNoteAction.SCORE),
-            new AutoNoteStep(3, AutoNoteAction.SCORE),
-            new AutoNoteStep(1, AutoNoteAction.SCORE)));
+        ));
   }
 
   public Command testAuto() {

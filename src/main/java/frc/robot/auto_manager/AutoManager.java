@@ -15,13 +15,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.fms.FmsSubsystem;
 import frc.robot.localization.LocalizationSubsystem;
-import frc.robot.note_tracking.NoteMapElement;
 import frc.robot.note_tracking.NoteTrackingManager;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
-import java.util.ArrayList;
 import java.util.List;
 
 public class AutoManager extends LifecycleSubsystem {
@@ -178,86 +176,87 @@ public class AutoManager extends LifecycleSubsystem {
         .andThen(cleanupNote().repeatedly().onlyWhile(noteTrackingManager::mapContainsNote));
   }
 
+  private Command findAndScoreCommand(Pose2d searchPose) {
+    return noteTrackingManager
+        .intakeNoteAtPose(
+            () -> {
+              DogLog.log("Debug/IntakeNoteAtPoseRequest", Timer.getFPGATimestamp());
+              return searchPose;
+            },
+            1.5)
+        .andThen(
+            Commands.deferredProxy(
+                    () -> {
+                      DogLog.log("Debug/PathFindShoot", Timer.getFPGATimestamp());
+                      return AutoBuilder.pathfindToPose(
+                          getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
+                    })
+                .andThen(actions.speakerShotCommand())
+                .unless(() -> !robotManager.getState().hasNote));
+  }
+
+  private Command findAndDropCommand(Pose2d searchPose) {
+    return noteTrackingManager
+        .intakeNoteAtPose(
+            () -> {
+              DogLog.log("Debug/IntakeNoteAtPoseRequest", Timer.getFPGATimestamp());
+              return searchPose;
+            },
+            1.5)
+        // Pathfind to outtake
+        .andThen(
+            Commands.deferredProxy(
+                    () -> {
+                      DogLog.log("Debug/PathFindOuttake", Timer.getFPGATimestamp());
+                      return AutoBuilder.pathfindToPose(
+                          getDroppingDestination(), DEFAULT_CONSTRAINTS);
+                    })
+                .onlyIf(() -> robotManager.getState().hasNote))
+        // Drop the note
+        .andThen(
+            actions
+                .dropCommand()
+                .andThen(
+                    Commands.runOnce(
+                        () -> {
+                          noteTrackingManager.addNoteToMap(DROPPED_NOTE_SEARCH);
+                        }))
+                .onlyIf(() -> robotManager.getState().hasNote));
+  }
+
   private Command doAutoStep(AutoNoteStep step) {
     if (step.action() == AutoNoteAction.CLEANUP) {
       return cleanupCommand();
     }
 
-    var intakeNote =
-        noteTrackingManager.intakeNoteAtPose(
-            () -> {
-              DogLog.log("Debug/IntakeNoteAtPoseRequest", Timer.getFPGATimestamp());
-              return step.noteSearchPose().get();
-            },
-            1.5);
-
     if (step.action() == AutoNoteAction.DROP) {
-      return intakeNote
-          // Pathfind to outtake
-          .andThen(
-              Commands.deferredProxy(
-                      () -> {
-                        DogLog.log("Debug/PathFindOuttake", Timer.getFPGATimestamp());
-                        return AutoBuilder.pathfindToPose(
-                            getDroppingDestination(), DEFAULT_CONSTRAINTS);
-                      })
-                  .onlyIf(() -> robotManager.getState().hasNote))
-          // Drop the note
-          .andThen(
-              actions
-                  .dropCommand()
-                  .andThen(
-                      Commands.runOnce(
-                          () -> {
-                            noteTrackingManager.addNoteToMap(DROPPED_NOTE_SEARCH);
-                          }))
-                  .onlyIf(() -> robotManager.getState().hasNote));
+
+      for (var poseSupplier : step.notes()) {
+        if (noteTrackingManager.getNearestNotePoseRelative(poseSupplier.get(), 1.5).isPresent()) {
+
+          return findAndDropCommand(poseSupplier.get());
+        }
+      }
     }
 
-    // Shoot note
-    return intakeNote.andThen(
-        Commands.deferredProxy(
-                () -> {
-                  DogLog.log("Debug/PathFindShoot", Timer.getFPGATimestamp());
-                  return AutoBuilder.pathfindToPose(
-                      getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
-                })
-            .andThen(actions.speakerShotCommand())
-            .unless(() -> !robotManager.getState().hasNote));
-  }
+    // Score
+    for (var poseSupplier : step.notes()) {
+      // TODO: Ignore if supplied pose is null/optional.empty, once we add that later
 
-  public List<AutoNoteStep> test() {
-    // Reset dropped notes at start of auto
-    AutoNoteDropped.clearDroppedNotes();
+      if (noteTrackingManager.getNearestNotePoseRelative(poseSupplier.get(), 1.5).isPresent()) {
 
-    // When we drop a note, add it to the lookup, which assigns an ID automatically
-    AutoNoteDropped.addDroppedNote(new Pose2d());
+        return findAndScoreCommand(poseSupplier.get());
+      }
+    }
 
-    // Shorthand syntax for defining auto steps
-    return List.of(
-        AutoNoteStep.drop(4, 5),
-        AutoNoteStep.score(5, 6),
-        AutoNoteStep.score(10),
-        AutoNoteStep.score(11));
+    return Commands.none();
   }
 
   public Command testCommand() {
-    return Commands.sequence(
-        Commands.runOnce(
-            () -> {
-              DogLog.log("Debug/ResetNoteMap", Timer.getFPGATimestamp());
-
-              var now = Timer.getFPGATimestamp();
-              noteTrackingManager.resetNoteMap(
-                  new ArrayList<>(
-                      List.of(
-                          new NoteMapElement(now + 5, AutoNoteStep.noteIdToPose(4)),
-                          new NoteMapElement(now + 5, AutoNoteStep.noteIdToPose(5)))));
-            }),
-        doManyAutoSteps(
-            List.of(
-                new AutoNoteStep(4, AutoNoteAction.DROP),
-                new AutoNoteStep(5, AutoNoteAction.SCORE),
-                new AutoNoteStep(() -> DROPPED_NOTE_SEARCH, AutoNoteAction.SCORE))));
+    return doManyAutoSteps(
+      List.of(
+        AutoNoteStep.score(4,5)
+      )
+    );
   }
 }
