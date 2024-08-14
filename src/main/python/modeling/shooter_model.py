@@ -72,16 +72,9 @@ class ShooterInfo:
         self.distance = distance
         self.angle = angle
         self.rpm = rpm
-champs_table_speaker = [ShooterInfo(distance= 1.38, angle= 58.1, rpm= 3000.0), #0
-                        ShooterInfo(distance= 2.16, angle= 47.8, rpm= 3000.0),
-                        ShooterInfo(distance= 2.5, angle= 42.0, rpm= 4000.0),
-                        ShooterInfo(distance= 3.5, angle= 33.9635, rpm= 4000.0),
-                        ShooterInfo(distance= 4.5, angle= 28.20125, rpm= 4000.0),
-                        ShooterInfo(distance= 5.5, angle= 25.84825, rpm= 4000.0),
-                        ShooterInfo(distance= 6.5, angle= 21.30525, rpm= 4800.0),
-                        ShooterInfo(distance= 7.5, angle= 20.27075, rpm= 4800.0),
-                        ShooterInfo(distance= 9.0, angle= 18.7305, rpm= 4800.0) #8
-                        ]
+
+    
+
 champs_table_floor = [ShooterInfo(distance= 0.0 , angle= 58.1, rpm= 1000.0), #0
                         ShooterInfo(distance= 1.0, angle= 47.8, rpm= 1000.0),
                         ShooterInfo(distance= 1.2, angle= 42.0, rpm= 1500.0),
@@ -447,8 +440,8 @@ def generate_file_floor(drag:bool):
 # test_anglesearch(True)
 # test_champ_table(True)
 
-generate_speaker_distance_rpm()
-generate_speaker_distance_angle(True)
+# generate_speaker_distance_rpm()
+# generate_speaker_distance_angle(True)
 
 # generate_floor_distance_rpm()
 # generate_floor_distance_angle(True)
