@@ -14,6 +14,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.auto_manager.AutoNoteDropped;
 import frc.robot.config.RobotConfig;
 import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.robot_manager.RobotCommands;
@@ -67,6 +68,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   }
 
   public void resetNoteMap(ArrayList<NoteMapElement> startingValues) {
+    AutoNoteDropped.clearDroppedNotes();
     noteMap = startingValues;
   }
 
