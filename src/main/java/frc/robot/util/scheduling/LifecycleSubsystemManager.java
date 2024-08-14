@@ -44,8 +44,8 @@ public class LifecycleSubsystemManager {
   public void ready() {
     Collections.sort(
         subsystems,
-        (Comparator.comparingInt((LifecycleSubsystem subsystem) -> subsystem.priority.value)
-            .reversed()));
+        Comparator.comparingInt((LifecycleSubsystem subsystem) -> subsystem.priority.value)
+            .reversed());
 
     for (LifecycleSubsystem lifecycleSubsystem : subsystems) {
       commandScheduler.registerSubsystem(lifecycleSubsystem);

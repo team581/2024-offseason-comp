@@ -5,7 +5,7 @@
       "x": 15.151942253112791,
       "y": 6.983804225921631
     },
-    "rotation": 1.4098535135790427e-28
+    "rotation": 2.026012586301527e-27
   },
   "command": {
     "type": "sequential",
@@ -27,6 +27,60 @@
           "type": "path",
           "data": {
             "pathName": "Red AS to 6 + NT.1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red AS to 6 + NT.2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "outtakeShooter"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red AS to 6 + NT.3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red AS to 6 + NT.4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "outtakeShooter"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red AS to 6 + NT.5"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red AS to 6 + NT.6"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "noteMap"
           }
         }
       ]

@@ -19,11 +19,11 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.config.RobotConfig;
 import frc.robot.fms.FmsSubsystem;
-import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.util.ControllerHelpers;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
@@ -32,8 +32,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public class SwerveSubsystem extends LifecycleSubsystem {
-  private static final double MAX_SPEED_SHOOTING =
-      Units.feetToMeters(LocalizationSubsystem.USE_SHOOT_WHILE_MOVE ? 3 : 3);
+  private static final double MAX_SPEED_SHOOTING = Units.feetToMeters(0.5);
   private static final double MAX_FLOOR_SPEED_SHOOTING = Units.feetToMeters(18);
   public static final double MaxSpeed = 4.75;
   private static final double MaxAngularRate = Units.rotationsToRadians(4);
@@ -96,9 +95,9 @@ public class SwerveSubsystem extends LifecycleSubsystem {
   private ChassisSpeeds fieldRelativeSpeeds = new ChassisSpeeds();
   private boolean closedLoop = false;
 
-  private final PIDController xPid = new PIDController(1.5, 0, 0);
-  private final PIDController yPid = new PIDController(1.5, 0, 0);
-  private final PIDController omegaPid = new PIDController(1.5, 0, 0);
+  private final PIDController xPid = new PIDController(3.2, 0, 0);
+  private final PIDController yPid = new PIDController(3.2, 0, 0);
+  private final PIDController omegaPid = new PIDController(1.0, 0, 0);
 
   public SwerveSubsystem(CommandXboxController driveController) {
     super(SubsystemPriority.SWERVE);
@@ -178,10 +177,6 @@ public class SwerveSubsystem extends LifecycleSubsystem {
             leftY *= -1.0;
           }
 
-          DogLog.log("Swerve/Controller/FinalLeftX", leftX);
-          DogLog.log("Swerve/Controller/FinalRightX", rightX);
-          DogLog.log("Swerve/Controller/FinalLeftY", leftY);
-
           ChassisSpeeds teleopSpeeds =
               new ChassisSpeeds(
                   -1.0 * leftY * MaxSpeed,
@@ -197,8 +192,6 @@ public class SwerveSubsystem extends LifecycleSubsystem {
           DogLog.log("Swerve/CurrentSpeed", currentSpeed);
           var scaled = teleopSpeeds.div(currentSpeed / MAX_SPEED_SHOOTING);
           DogLog.log("Swerve/ScaledSpeeds", scaled);
-          DogLog.log("Swerve/IsShooting", isShooting);
-          DogLog.log("Swerve/GoingToFast", currentSpeed > MAX_SPEED_SHOOTING);
           if (isShooting) {
             if (currentSpeed > MAX_SPEED_SHOOTING) {
               teleopSpeeds =
@@ -261,37 +254,8 @@ public class SwerveSubsystem extends LifecycleSubsystem {
     DogLog.log("Swerve/SnapToAngle", snapToAngle);
     DogLog.log("Swerve/SnapToAngleGoal", goalSnapAngle.getDegrees());
     DogLog.log("Swerve/Pose", drivetrain.getState().Pose);
-    // TODO: Fix logging SwerveModuleState[] struct array
-    DogLog.log("Swerve/ModuleStates/0", drivetrain.getState().ModuleStates[0]);
-    DogLog.log("Swerve/ModuleStates/1", drivetrain.getState().ModuleStates[1]);
-    DogLog.log("Swerve/ModuleStates/2", drivetrain.getState().ModuleStates[2]);
-    DogLog.log("Swerve/ModuleStates/3", drivetrain.getState().ModuleStates[3]);
+    DogLog.log("Swerve/ModuleStates", drivetrain.getState().ModuleStates);
     DogLog.log("Swerve/ModuleTargets", drivetrain.getState().ModuleTargets);
-
-    DogLog.log(
-        "Swerve/FrontLeft/DriveMotor/StatorCurrent",
-        frontLeft.getDriveMotor().getStatorCurrent().getValue());
-    DogLog.log(
-        "Swerve/FrontRight/DriveMotor/StatorCurrent",
-        frontRight.getDriveMotor().getStatorCurrent().getValue());
-    DogLog.log(
-        "Swerve/BackLeft/DriveMotor/StatorCurrent",
-        backLeft.getDriveMotor().getStatorCurrent().getValue());
-    DogLog.log(
-        "Swerve/BackRight/DriveMotor/StatorCurrent",
-        backRight.getDriveMotor().getStatorCurrent().getValue());
-    DogLog.log(
-        "Swerve/FrontLeft/DriveMotor/Voltage",
-        frontLeft.getDriveMotor().getMotorVoltage().getValue());
-    DogLog.log(
-        "Swerve/FrontRight/DriveMotor/Voltage",
-        frontRight.getDriveMotor().getMotorVoltage().getValue());
-    DogLog.log(
-        "Swerve/BackLeft/DriveMotor/Voltage",
-        backLeft.getDriveMotor().getMotorVoltage().getValue());
-    DogLog.log(
-        "Swerve/BackRight/DriveMotor/Voltage",
-        backRight.getDriveMotor().getMotorVoltage().getValue());
 
     DogLog.log("Swerve/RobotSpeed", getRobotRelativeSpeeds());
 
@@ -365,14 +329,17 @@ public class SwerveSubsystem extends LifecycleSubsystem {
   }
 
   public Command driveToPoseCommand(
-      Supplier<Optional<Pose2d>> targetSupplier, Supplier<Pose2d> currentPose) {
+      Supplier<Optional<Pose2d>> targetSupplier, Supplier<Pose2d> currentPose, boolean shouldEnd) {
     return run(() -> {
           var maybeTarget = targetSupplier.get();
 
           if (!maybeTarget.isPresent()) {
             setFieldRelativeSpeeds(new ChassisSpeeds(), closedLoop);
+            DogLog.log("Debug/DriveToPoseNoTarget", Timer.getFPGATimestamp());
             return;
           }
+
+          DogLog.log("Debug/DriveToPoseHasTarget", Timer.getFPGATimestamp());
 
           var target = maybeTarget.get();
 
@@ -385,12 +352,15 @@ public class SwerveSubsystem extends LifecycleSubsystem {
         })
         .until(
             () -> {
-              var maybeTarget = targetSupplier.get();
-              if (maybeTarget.isPresent()) {
-                var target = targetSupplier.get();
+              if (shouldEnd) {
+                var maybeTarget = targetSupplier.get();
+                if (maybeTarget.isPresent()) {
+                  var target = targetSupplier.get();
 
-                return atLocation(target.get(), currentPose.get());
+                  return atLocation(target.get(), currentPose.get());
+                }
               }
+
               return false;
             })
         .finallyDo(

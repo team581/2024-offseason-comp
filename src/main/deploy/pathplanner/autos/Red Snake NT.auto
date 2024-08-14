@@ -1,0 +1,43 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 15.226025581359863,
+      "y": 6.536499977111816
+    },
+    "rotation": -6.957977453661477e-27
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "homeClimber"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "preloadNote"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Snake NT.1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "noteMap"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Red Choreo Autos",
+  "choreoAuto": true
+}

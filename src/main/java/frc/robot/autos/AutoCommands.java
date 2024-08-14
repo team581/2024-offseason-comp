@@ -8,10 +8,14 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.auto_manager.AutoManager;
+import frc.robot.auto_manager.AutoNoteAction;
+import frc.robot.auto_manager.AutoNoteStep;
 import frc.robot.fms.FmsSubsystem;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
 import frc.robot.robot_manager.RobotState;
+import java.util.List;
 
 public class AutoCommands {
   private static final boolean USE_DYNAMIC_AUTOS = true;
@@ -25,10 +29,12 @@ public class AutoCommands {
 
   private final RobotCommands actions;
   private final RobotManager robotManager;
+  private final AutoManager autoManager;
 
-  public AutoCommands(RobotCommands actions, RobotManager robotManager) {
+  public AutoCommands(RobotCommands actions, RobotManager robotManager, AutoManager autoManager) {
     this.actions = actions;
     this.robotManager = robotManager;
+    this.autoManager = autoManager;
   }
 
   public Command doNothingCommand() {
@@ -239,6 +245,12 @@ public class AutoCommands {
             .andThen(
                 followPathForAlliance(red6ToLeftWingShot, blue6ToLeftWingShot)
                     .andThen(speakerShotWithTimeout())));
+  }
+
+  public Command noteMapCommand() {
+    return autoManager.doManyAutoSteps(
+        List.of(
+        ));
   }
 
   public Command testAuto() {

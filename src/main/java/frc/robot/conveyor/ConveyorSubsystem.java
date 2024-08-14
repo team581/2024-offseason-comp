@@ -40,9 +40,6 @@ public class ConveyorSubsystem extends LifecycleSubsystem {
     handoffDebouncedSensor = handoffDebouncer.calculate(sensorHasNote());
     DogLog.log("Conveyor/State", goalState);
     DogLog.log("Conveyor/SensorHasNote", sensorHasNote());
-    DogLog.log("Conveyor/SupplyCurrent", motor.getSupplyCurrent().getValueAsDouble());
-    DogLog.log("Conveyor/StatorCurrent", motor.getStatorCurrent().getValueAsDouble());
-    DogLog.log("Conveyor/Voltage", motor.getMotorVoltage().getValueAsDouble());
 
     switch (goalState) {
       case IDLE:
@@ -61,13 +58,11 @@ public class ConveyorSubsystem extends LifecycleSubsystem {
       case INTAKE_TO_QUEUER:
         motor.setVoltage(3);
         break;
-      case SHUFFLE_ASSIST_WHEN_QUEUER_SENSOR_TURNS_OFF:
-        motor.setVoltage(4);
-        break;
+
       case QUEUER_TO_INTAKE:
         motor.setVoltage(-12);
         break;
-      case CONVEYOR_TO_INTAKE:
+      case CONVEYOR_TO_REDIRECT:
         motor.setVoltage(3);
         break;
       case AMP_SHOT:
@@ -87,9 +82,7 @@ public class ConveyorSubsystem extends LifecycleSubsystem {
           motor.setVoltage(outVoltage);
         }
         break;
-      case SHUFFLE:
-        motor.setVoltage(-0.5);
-        break;
+
       default:
         break;
     }

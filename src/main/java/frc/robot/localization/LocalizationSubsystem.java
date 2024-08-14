@@ -9,12 +9,9 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -22,32 +19,19 @@ import frc.robot.config.RobotConfig;
 import frc.robot.fms.FmsSubsystem;
 import frc.robot.imu.ImuSubsystem;
 import frc.robot.swerve.SwerveSubsystem;
-import frc.robot.util.TimedDataBuffer;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
 import frc.robot.vision.LimelightHelpers;
+import frc.robot.vision.LimelightHelpers.PoseEstimate;
 import frc.robot.vision.VisionSubsystem;
 
 public class LocalizationSubsystem extends LifecycleSubsystem {
-  private static final double SHOOT_WHILE_MOVE_LOOKAHEAD = 0.2;
-  public static final boolean USE_SHOOT_WHILE_MOVE = false;
-
   private final SwerveSubsystem swerve;
   private final ImuSubsystem imu;
   private final SwerveDrivePoseEstimator poseEstimator;
   private final SwerveDriveOdometry odometry;
   private final VisionSubsystem vision;
-  private Pose2d savedExpected = new Pose2d();
   private double lastAddedVisionTimestamp = 0;
-  private int loops = 0;
-  private double vector = 0;
-
-  private final TimedDataBuffer xHistory =
-      new TimedDataBuffer(RobotConfig.get().vision().translationHistoryArraySize());
-  private final TimedDataBuffer yHistory =
-      new TimedDataBuffer(RobotConfig.get().vision().translationHistoryArraySize());
-  private final TimedDataBuffer distanceToSavedHistory =
-      new TimedDataBuffer(RobotConfig.get().vision().translationHistoryArraySize());
 
   private final TimeInterpolatableBuffer<Pose2d> poseHistory =
       TimeInterpolatableBuffer.createBuffer(1.5);
@@ -102,28 +86,13 @@ public class LocalizationSubsystem extends LifecycleSubsystem {
     poseHistory.addSample(Timer.getFPGATimestamp(), poseEstimator.getEstimatedPosition());
 
     DogLog.log("Localization/OdometryPose", getOdometryPose());
-    // DogLog.log("Localization/SavedExpectedPose", getSavedExpectedPose(false));
     DogLog.log("Localization/EstimatedPose", getPose());
-    DogLog.log("Localization/ChangedDirection", changedDirection());
-    // DogLog.log(
-    //     "Localization/ExpectedPose", getExpectedPose(SHOOT_WHILE_MOVE_LOOKAHEAD, true));
-    DogLog.log(
-        "Localization/LimelightPoseRaw",
-        LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("").pose);
+    PoseEstimate mt2Estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("");
+    if (mt2Estimate != null) {
+      DogLog.log("Localization/LimelightPoseRaw", mt2Estimate.pose);
+    }
 
-    var timestamp = Timer.getFPGATimestamp();
-    xHistory.addData(timestamp, getPose().getX());
-    yHistory.addData(timestamp, getPose().getY());
-    distanceToSavedHistory.addData(
-        timestamp,
-        Math.sqrt(
-            Math.pow(getPose().getX() - getSavedExpectedPose(false).getX(), 2)
-                + Math.pow(getPose().getY() - getSavedExpectedPose(false).getY(), 2)));
-
-    // vision.setRobotPose(getExpectedPose(SHOOT_WHILE_MOVE_LOOKAHEAD, USE_SHOOT_WHILE_MOVE));
-    // TODO: Broken, makes the robot spin in circles slowly when shooting
-    vision.setRobotPose(getSavedExpectedPose(true));
-    loops++;
+    vision.setRobotPose(getPose());
   }
 
   public Pose2d getPose() {
@@ -141,27 +110,6 @@ public class LocalizationSubsystem extends LifecycleSubsystem {
 
   public void resetPose(Pose2d pose) {
     resetPose(pose, pose);
-  }
-
-  public Pose2d getSavedExpectedPose(boolean reloadLoops) {
-    if (USE_SHOOT_WHILE_MOVE) {
-      if ((loops >= SHOOT_WHILE_MOVE_LOOKAHEAD * 50.0)
-          && !atPose(getPose().getTranslation(), savedExpected.getTranslation())
-      // || changedDirection()
-      ) {
-        savedExpected = getExpectedPose(SHOOT_WHILE_MOVE_LOOKAHEAD, USE_SHOOT_WHILE_MOVE);
-        if (reloadLoops) {
-          loops = 0;
-        }
-      }
-    } else {
-      savedExpected = getPose();
-    }
-    return savedExpected;
-  }
-
-  private static boolean atPose(Translation2d poseOne, Translation2d poseTwo) {
-    return poseOne.getDistance(poseTwo) < 0.1;
   }
 
   public void resetPose(Pose2d estimatedPose, Pose2d odometryPose) {
@@ -185,64 +133,5 @@ public class LocalizationSubsystem extends LifecycleSubsystem {
   public Command getZeroCommand() {
     return Commands.runOnce(
         () -> resetGyro(Rotation2d.fromDegrees(FmsSubsystem.isRedAlliance() ? 0 : 180)));
-  }
-
-  public boolean changedDirection() {
-    var hist = distanceToSavedHistory;
-    if (hist.lookupData(0) - hist.lookupData(1) > 0.1) {
-      return true;
-    }
-    return false;
-  }
-
-  public Pose2d getExpectedPose(double lookAhead, boolean shootWhileMove) {
-    var velocities = swerve.getRobotRelativeSpeeds();
-    var angularVelocity = Rotation2d.fromDegrees(imu.getRobotAngularVelocity().getDegrees() * 1.00);
-    if (Math.abs(angularVelocity.getDegrees()) < 0.1) {
-      angularVelocity = Rotation2d.fromDegrees(0);
-    }
-    var xDifference =
-        imu.getXAcceleration() * Math.pow(lookAhead, 2) / 2
-            + velocities.vxMetersPerSecond * lookAhead;
-    var yDifference =
-        imu.getYAcceleration() * Math.pow(lookAhead, 2) / 2
-            + velocities.vyMetersPerSecond * lookAhead;
-    var thetaDifference = new Rotation2d(angularVelocity.getRadians() * lookAhead * -1);
-
-    var expectedPose =
-        new Pose2d(
-            new Translation2d(xDifference + getPose().getX(), yDifference + getPose().getY()),
-            thetaDifference.plus(imu.getRobotHeading()));
-    boolean movingSlowEnough = false;
-    vector = Math.sqrt(Math.pow(xDifference, 2) + Math.pow(yDifference, 2));
-
-    if (vector < 0.05) {
-      movingSlowEnough = true;
-    } else {
-      movingSlowEnough = false;
-    }
-
-    if (!shootWhileMove || movingSlowEnough) {
-      return getPose();
-    }
-
-    return expectedPose;
-  }
-
-  public boolean atSafeJitter() {
-    // Get first value of X & Y from history
-    double xDifference =
-        Math.abs(xHistory.lookupData(-Double.POSITIVE_INFINITY) - getPose().getX());
-    double yDifference =
-        Math.abs(yHistory.lookupData(-Double.POSITIVE_INFINITY) - getPose().getY());
-
-    ChassisSpeeds speeds = new ChassisSpeeds(xDifference, yDifference, 0);
-
-    // This doesn't check angular velocity, because we trust that to be correct & not have jitter
-    // X & Y from pose estimator have the jitter
-    double linearSpeed =
-        Math.sqrt(Math.pow(speeds.vxMetersPerSecond, 2) + Math.pow(speeds.vyMetersPerSecond, 2));
-
-    return linearSpeed < Units.feetToMeters(0.3);
   }
 }

@@ -6,15 +6,19 @@ package frc.robot;
 
 import com.ctre.phoenix.led.CANdle;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkMax;
 import dev.doglog.DogLog;
 import dev.doglog.DogLogOptions;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.auto_manager.AutoManager;
 import frc.robot.autos.Autos;
 import frc.robot.climber.ClimberSubsystem;
 import frc.robot.config.RobotConfig;
@@ -30,6 +34,7 @@ import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.note_manager.NoteManager;
 import frc.robot.note_tracking.NoteTrackingManager;
 import frc.robot.queuer.QueuerSubsystem;
+import frc.robot.redirect.RedirectSubsystem;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
 import frc.robot.robot_manager.RobotState;
@@ -65,9 +70,12 @@ public class Robot extends TimedRobot {
           new TalonFX(RobotConfig.get().climber().leftMotorID(), RobotConfig.get().canivoreName()),
           new TalonFX(
               RobotConfig.get().climber().rightMotorID(), RobotConfig.get().canivoreName()));
+  private final RedirectSubsystem redirect =
+      new RedirectSubsystem(new TalonFX(RobotConfig.get().redirect().motorID(), "rio"));
   private final IntakeSubsystem intake =
       new IntakeSubsystem(
-          new TalonFX(RobotConfig.get().intake().motorID(), RobotConfig.get().canivoreName()),
+          new TalonFX(RobotConfig.get().intake().mainMotorID(), RobotConfig.get().canivoreName()),
+          new CANSparkMax(RobotConfig.get().intake().centeringMotorID(), MotorType.kBrushed),
           new DigitalInput(RobotConfig.get().intake().sensorID()));
   private final SwerveSubsystem swerve = new SwerveSubsystem(driverController);
   private final ImuSubsystem imu = new ImuSubsystem(swerve);
@@ -86,29 +94,31 @@ public class Robot extends TimedRobot {
   private final VisionSubsystem vision = new VisionSubsystem(imu);
   private final LocalizationSubsystem localization = new LocalizationSubsystem(swerve, imu, vision);
   private final SnapManager snaps = new SnapManager(swerve, driverController);
-  private final NoteManager noteManager = new NoteManager(queuer, intake, conveyor);
+  private final NoteManager noteManager = new NoteManager(queuer, intake, conveyor, redirect);
   private final RobotManager robotManager =
       new RobotManager(
           wrist, elevator, shooter, localization, vision, climber, swerve, snaps, imu, noteManager);
   private final RobotCommands actions = new RobotCommands(robotManager);
-  private final Autos autos = new Autos(swerve, localization, actions, robotManager);
   private final LightsSubsystem lightsSubsystem =
       new LightsSubsystem(
           new CANdle(RobotConfig.get().lights().deviceID(), "rio"), robotManager, vision, intake);
   private final NoteTrackingManager noteTrackingManager =
-      new NoteTrackingManager(localization, swerve, actions, robotManager, imu);
+      new NoteTrackingManager(localization, swerve, actions, robotManager);
+  private final AutoManager autoManager =
+      new AutoManager(actions, noteTrackingManager, robotManager, localization);
+  private final Autos autos = new Autos(swerve, localization, actions, robotManager, autoManager);
 
   public Robot() {
     System.out.println("roboRIO serial number: " + RobotConfig.SERIAL_NUMBER);
 
     DogLog.setOptions(
         new DogLogOptions().withCaptureNt(false).withNtPublish(RobotConfig.IS_DEVELOPMENT));
+    DogLog.setPdh(new PowerDistribution());
 
     // Record metadata
     DogLog.log("Metadata/ProjectName", BuildConstants.MAVEN_NAME);
     DogLog.log("Metadata/RoborioSerialNumber", RobotConfig.SERIAL_NUMBER);
     DogLog.log("Metadata/RobotName", RobotConfig.get().robotName());
-    DogLog.log("Metadata/VisionStrategy", RobotConfig.get().vision().strategy().toString());
     DogLog.log("Metadata/BuildDate", BuildConstants.BUILD_DATE);
     DogLog.log("Metadata/GitSHA", BuildConstants.GIT_SHA);
     DogLog.log("Metadata/GitDate", BuildConstants.GIT_DATE);
@@ -238,17 +248,13 @@ public class Robot extends TimedRobot {
         .onTrue(actions.waitSubwooferShotCommand())
         .onFalse(actions.stowCommand());
     operatorController
-        .povRight()
-        .whileTrue(noteTrackingManager.intakeNearestMapNote())
+        .leftTrigger()
+        .onTrue(autoManager.testCommand())
         .onFalse(actions.stowCommand());
     operatorController
         .rightTrigger()
         .onTrue(actions.waitForSpeakerShotCommand())
         .onFalse(actions.stowCommand());
-    // operatorController
-    //     .leftTrigger()
-    //     .onTrue(actions.waitShooterAmpCommand())
-    //     .onFalse(actions.stowCommand());
     operatorController.rightBumper().onTrue(actions.waitForAmpShotCommand());
     operatorController.x().onTrue(actions.outtakeCommand()).onFalse(actions.stowCommand());
     operatorController

@@ -32,11 +32,11 @@ import frc.robot.config.RobotConfig.IMUConfig;
 import frc.robot.config.RobotConfig.IntakeConfig;
 import frc.robot.config.RobotConfig.LightsConfig;
 import frc.robot.config.RobotConfig.QueuerConfig;
+import frc.robot.config.RobotConfig.RedirectConfig;
 import frc.robot.config.RobotConfig.ShooterConfig;
 import frc.robot.config.RobotConfig.SwerveConfig;
 import frc.robot.config.RobotConfig.VisionConfig;
 import frc.robot.config.RobotConfig.WristConfig;
-import frc.robot.vision.VisionStrategy;
 
 class CompConfig {
   private static final ClosedLoopRampsConfigs CLOSED_LOOP_RAMP =
@@ -217,6 +217,7 @@ class CompConfig {
               0.75),
           new IntakeConfig(
               15,
+              2,
               1,
               new Debouncer(0.025, DebounceType.kBoth),
               new TalonFXConfiguration()
@@ -237,7 +238,17 @@ class CompConfig {
                   .withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(1))
                   .withCurrentLimits(
                       new CurrentLimitsConfigs()
-                          .withSupplyCurrentLimit(50)
+                          .withSupplyCurrentLimit(25)
+                          .withSupplyCurrentLimitEnable(true))
+                  .withClosedLoopRamps(CLOSED_LOOP_RAMP)
+                  .withOpenLoopRamps(OPEN_LOOP_RAMP)),
+          new RedirectConfig(
+              4,
+              new TalonFXConfiguration()
+                  .withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(1))
+                  .withCurrentLimits(
+                      new CurrentLimitsConfigs()
+                          .withSupplyCurrentLimit(10)
                           .withSupplyCurrentLimitEnable(true))
                   .withClosedLoopRamps(CLOSED_LOOP_RAMP)
                   .withOpenLoopRamps(OPEN_LOOP_RAMP)),
@@ -266,19 +277,18 @@ class CompConfig {
               }),
           new LightsConfig(3),
           new VisionConfig(
-              VisionStrategy.TX_TY_AND_MEGATAG,
               4,
               0.4,
               0.4,
               tyToNoteDistance -> {
-                tyToNoteDistance.put(3.0 - 24.5, Units.inchesToMeters(0 + 20.5));
-                tyToNoteDistance.put(10.5 - 24.5, Units.inchesToMeters(10.5 + 20.5));
-                tyToNoteDistance.put(20.0 - 24.5, Units.inchesToMeters(18.5 + 20.5));
-                tyToNoteDistance.put(30.0 - 24.5, Units.inchesToMeters(29.5 + 20.5));
-                tyToNoteDistance.put(35.0 - 24.5, Units.inchesToMeters(40.0 + 20.5));
-                tyToNoteDistance.put(40.0 - 24.5, Units.inchesToMeters(58.5 + 20.5));
-                tyToNoteDistance.put(45.0 - 24.5, Units.inchesToMeters(90 + 20.5));
-                tyToNoteDistance.put(47.0 - 24.5, Units.inchesToMeters(114.0 + 20.5));
+                tyToNoteDistance.put(-19.9, Units.inchesToMeters(17.75 + 7 - 1.5));
+                tyToNoteDistance.put(-14.815, Units.inchesToMeters(17.75 + 7 + 3.75));
+                tyToNoteDistance.put(-6.3, Units.inchesToMeters(17.75 + 7 + 14.0));
+                tyToNoteDistance.put(0.4, Units.inchesToMeters(17.75 + 7 + 22.9));
+                tyToNoteDistance.put(5.65, Units.inchesToMeters(17.75 + 7 + 34.25));
+                tyToNoteDistance.put(9.39, Units.inchesToMeters(17.75 + 7 + 47.1));
+                tyToNoteDistance.put(11.85, Units.inchesToMeters(17.75 + 7 + 60.1));
+                tyToNoteDistance.put(15.25, Units.inchesToMeters(17.75 + 7 + 88.9));
               },
               // x=right, y= forward, z=up
               new Translation3d(-0.025, Units.inchesToMeters(-1), Units.inchesToMeters(23.25)),

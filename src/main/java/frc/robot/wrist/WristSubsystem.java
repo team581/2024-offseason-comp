@@ -90,11 +90,8 @@ public class WristSubsystem extends LifecycleSubsystem {
 
     DogLog.log(
         "Wrist/Position", Rotation2d.fromRotations(motor.getPosition().getValue()).getDegrees());
-    DogLog.log("Wrist/StatorCurrent", motor.getStatorCurrent().getValue());
-    DogLog.log("Wrist/SupplyCurrent", motor.getSupplyCurrent().getValue());
     DogLog.log("Wrist/HomingState", homingState);
     DogLog.log("Wrist/GoalAngle", goalAngle.getDegrees());
-    DogLog.log("Wrist/LowestSeenAngle", lowestSeenAngle.getDegrees());
   }
 
   private Rotation2d getHomeAngleFromLowestSeen() {

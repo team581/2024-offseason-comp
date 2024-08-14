@@ -22,6 +22,7 @@ import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.auto_manager.AutoManager;
 import frc.robot.config.RobotConfig;
 import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.robot_manager.RobotCommands;
@@ -56,17 +57,20 @@ public class Autos extends LifecycleSubsystem {
   private final AutoChooser autoChooser;
   private final RobotManager robotManager;
   private final AutoCommands autoCommands;
+  private final AutoManager autoManager;
 
   public Autos(
       SwerveSubsystem swerve,
       LocalizationSubsystem localization,
       RobotCommands actions,
-      RobotManager robotManager) {
+      RobotManager robotManager,
+      AutoManager autoManager) {
     super(SubsystemPriority.AUTOS);
     this.swerve = swerve;
     this.robotManager = robotManager;
+    this.autoManager = autoManager;
 
-    autoCommands = new AutoCommands(actions, robotManager);
+    autoCommands = new AutoCommands(actions, robotManager, autoManager);
 
     // Configure AutoBuilder last
     AutoBuilder.configureHolonomic(
@@ -109,6 +113,7 @@ public class Autos extends LifecycleSubsystem {
     registerCommand("midlineNotesFromSource876", autoCommands.getMidlineNotesSource876Command());
     registerCommand("altMidlineNotesFromAmp", autoCommands.getMidlineNotesAltAmpCommand());
     registerCommand("zeroGyro", autoCommands.doNothingCommand());
+    registerCommand("noteMap", autoCommands.noteMapCommand());
 
     PathPlannerLogging.setLogActivePathCallback(
         (activePath) -> {

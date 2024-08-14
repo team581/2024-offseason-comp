@@ -108,9 +108,6 @@ public class ElevatorSubsystem extends LifecycleSubsystem {
         throw new IllegalStateException("Elevator can't do mid match homing");
     }
 
-    DogLog.log("Elevator/Voltage", motor.getMotorVoltage().getValueAsDouble());
-    DogLog.log("Elevator/StatorCurrent", motor.getStatorCurrent().getValueAsDouble());
-    DogLog.log("Elevator/SupplyCurrent", motor.getSupplyCurrent().getValueAsDouble());
     DogLog.log("Elevator/Height", getHeight());
     DogLog.log("Elevator/GoalHeight", goalHeight);
   }

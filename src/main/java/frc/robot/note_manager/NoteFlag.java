@@ -9,7 +9,7 @@ public enum NoteFlag {
   LAZY_INTAKE,
   SHOOTER_SCORE,
   SHOOTER_OUTTAKE,
-  IDLE_IN_QUEUER_SHUFFLE,
+
   IDLE_IN_QUEUER,
   IDLE_NO_GP,
   AMP_SCORE,
@@ -17,5 +17,6 @@ public enum NoteFlag {
   TRAP_WAIT,
   TRAP_SCORE,
   UNJAM,
+  DROP,
   OUTTAKE;
 }

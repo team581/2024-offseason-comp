@@ -24,6 +24,7 @@ public class VisionUtil {
           new Pose2d(10.27, 7.79, new Rotation2d(0)),
           new Pose2d(10.36, 7.74, new Rotation2d(0)),
           "AMP_SIDE_STAGE");
+  // TODO: This is super wrong and makes vision evil
   private static final VisionInterpolationData STAGE_MIDDLE =
       new VisionInterpolationData(
           new Pose2d(17.0, 9.7, new Rotation2d(0)),
@@ -31,7 +32,7 @@ public class VisionUtil {
           "StageMiddle");
 
   private static final List<VisionInterpolationData> DATA_POINTS =
-      List.of(SUBWOOFER, STAGE_FRONT, AMP_SIDE_STAGE, STAGE_MIDDLE);
+      List.of(SUBWOOFER, STAGE_FRONT, AMP_SIDE_STAGE);
 
   /**
    * @param visionInput - pose from the limelight
@@ -39,9 +40,8 @@ public class VisionUtil {
    */
   public static Pose2d interpolatePose(Pose2d visionInput) {
     double distanceSum = 0;
-    double distancePoint = 0;
     for (var dataPoint : DATA_POINTS) {
-      distancePoint =
+      double distancePoint =
           dataPoint.visionPose().getTranslation().getDistance(visionInput.getTranslation());
 
       distanceSum += distancePoint;
@@ -49,8 +49,9 @@ public class VisionUtil {
     double weightedX = 0;
     double weightedY = 0;
     Rotation2d weightedRotation = new Rotation2d();
+
     for (var dataPoint : DATA_POINTS) {
-      distancePoint =
+      double distancePoint =
           dataPoint.visionPose().getTranslation().getDistance(visionInput.getTranslation());
       var weight = 1 - ((distanceSum - distancePoint) / distanceSum);
       var result = dataPoint.visionPose().minus(dataPoint.measuredPose()).times(weight);
