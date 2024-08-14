@@ -4,8 +4,6 @@
 
 package frc.robot.config;
 
-import org.opencv.objdetect.Dictionary;
-
 import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;

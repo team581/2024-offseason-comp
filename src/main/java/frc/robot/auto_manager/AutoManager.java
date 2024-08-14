@@ -205,25 +205,24 @@ public class AutoManager extends LifecycleSubsystem {
               return searchPose;
             },
             1.5)
-        // Pathfind to outtake
         .andThen(
-            Commands.deferredProxy(
-                    () -> {
-                      DogLog.log("Debug/PathFindOuttake", Timer.getFPGATimestamp());
-                      return AutoBuilder.pathfindToPose(
-                          getDroppingDestination(), DEFAULT_CONSTRAINTS);
-                    })
-                .onlyIf(() -> robotManager.getState().hasNote))
-        // Drop the note
-        .andThen(
-            actions
-                .dropCommand()
-                .andThen(
-                    Commands.runOnce(
+            Commands.sequence(
+                    // Pathfind to outtake
+                    Commands.deferredProxy(
                         () -> {
-                          noteTrackingManager.addNoteToMap(DROPPED_NOTE_SEARCH);
-                          AutoNoteDropped.addDroppedNote(DROPPED_NOTE_SEARCH);
-                        }))
+                          DogLog.log("Debug/PathFindOuttake", Timer.getFPGATimestamp());
+                          return AutoBuilder.pathfindToPose(
+                              getDroppingDestination(), DEFAULT_CONSTRAINTS);
+                        }),
+                    // Drop the note
+                    actions
+                        .dropCommand()
+                        .andThen(
+                            Commands.runOnce(
+                                () -> {
+                                  noteTrackingManager.addNoteToMap(DROPPED_NOTE_SEARCH);
+                                  AutoNoteDropped.addDroppedNote(DROPPED_NOTE_SEARCH);
+                                })))
                 .onlyIf(() -> robotManager.getState().hasNote));
   }
 
