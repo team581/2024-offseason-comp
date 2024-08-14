@@ -72,24 +72,24 @@ class ShooterInfo:
         self.distance = distance
         self.angle = angle
         self.rpm = rpm
-champs_table_speaker = [ShooterInfo(distance= 1.38, angle= 58.1, rpm= 3000), #0
-                        ShooterInfo(distance= 2.16, angle= 47.8, rpm= 3000),
-                        ShooterInfo(distance= 2.5, angle= 42.0, rpm= 4000),
-                        ShooterInfo(distance= 3.5, angle= 33.9635, rpm= 4000),
-                        ShooterInfo(distance= 4.5, angle= 28.20125, rpm= 4000),
-                        ShooterInfo(distance= 5.5, angle= 25.84825, rpm= 4000),
-                        ShooterInfo(distance= 6.5, angle= 21.30525, rpm= 4800),
-                        ShooterInfo(distance= 7.5, angle= 20.27075, rpm= 4800),
-                        ShooterInfo(distance= 9.0, angle= 18.7305, rpm= 4800) #8
+champs_table_speaker = [ShooterInfo(distance= 1.38, angle= 58.1, rpm= 3000.0), #0
+                        ShooterInfo(distance= 2.16, angle= 47.8, rpm= 3000.0),
+                        ShooterInfo(distance= 2.5, angle= 42.0, rpm= 4000.0),
+                        ShooterInfo(distance= 3.5, angle= 33.9635, rpm= 4000.0),
+                        ShooterInfo(distance= 4.5, angle= 28.20125, rpm= 4000.0),
+                        ShooterInfo(distance= 5.5, angle= 25.84825, rpm= 4000.0),
+                        ShooterInfo(distance= 6.5, angle= 21.30525, rpm= 4800.0),
+                        ShooterInfo(distance= 7.5, angle= 20.27075, rpm= 4800.0),
+                        ShooterInfo(distance= 9.0, angle= 18.7305, rpm= 4800.0) #8
                         ]
-champs_table_floor = [ShooterInfo(distance= 0.0 , angle= 58.1, rpm= 1000), #0
-                        ShooterInfo(distance= 1.0, angle= 47.8, rpm= 1000),
-                        ShooterInfo(distance= 1.2, angle= 42.0, rpm= 1500),
-                        ShooterInfo(distance= 3.0, angle= 33.9635, rpm= 1800),
-                        ShooterInfo(distance= 5.8, angle= 28.20125, rpm= 2700),
-                        ShooterInfo(distance= 6.5, angle= 25.84825, rpm= 2700),
-                        ShooterInfo(distance= 500.0, angle= 21.30525, rpm= 2700),
-                        ShooterInfo(distance= 581.0, angle= 20.27075, rpm= 3200)
+champs_table_floor = [ShooterInfo(distance= 0.0 , angle= 58.1, rpm= 1000.0), #0
+                        ShooterInfo(distance= 1.0, angle= 47.8, rpm= 1000.0),
+                        ShooterInfo(distance= 1.2, angle= 42.0, rpm= 1500.0),
+                        ShooterInfo(distance= 3.0, angle= 33.9635, rpm= 1800.0),
+                        ShooterInfo(distance= 5.8, angle= 28.20125, rpm= 2700.0),
+                        ShooterInfo(distance= 6.5, angle= 25.84825, rpm= 2700.0),
+                        ShooterInfo(distance= 500.0, angle= 21.30525, rpm= 2700.0),
+                        ShooterInfo(distance= 581.0, angle= 20.27075, rpm= 3200.0)
                         ]
 class Model:
     def __init__(self, rpos: Point, gpos: Point, rpm: float):
@@ -124,7 +124,7 @@ class ProjectileMotion:
         theta = vector.angle
 
         while position[-1].y > 0:
-            
+
             drag_force = (
                 self.a_r * ((velocity[-1].x ** 2) + (velocity[-1].y ** 2))
             )
@@ -135,7 +135,7 @@ class ProjectileMotion:
                                      y=velocity[-1].y + (self.dt * current_acceleration.y))
             current_position = Point(x=position[-1].x + (self.dt * current_velocity.x),
                                      y=position[-1].y + (self.dt * current_velocity.y))
-            
+
             theta = math.atan(current_position.y - position[-1].y/current_position.x - position[-1].x)
 
             position.append(current_position)
@@ -357,6 +357,44 @@ def test_better_anglesearch(drag:bool):
 
     results()
 
+def generate_speaker_distance_rpm():
+    for info in champs_table_speaker:
+        rpm = info.rpm
+        distance = info.distance
+        print(f'speakerDistanceToRPM.put({distance}, {rpm});')
+
+def generate_speaker_distance_angle(drag:bool):
+    for info in champs_table_speaker:
+        gpos = Point(9,speakerheight)
+        rpos = Point(9-info.distance,0)
+
+        model = Model(rpos, gpos, info.rpm)
+        pm = ProjectileMotion(0.02, drag)
+
+        distance = info.distance
+        angle = round(Vector.fromradians(get_angle_better(model,pm)),4)
+
+        print(f'speakerDistanceToAngle.put({distance}, {angle});')
+
+def generate_floor_distance_rpm():
+    for info in champs_table_floor:
+        rpm = info.rpm
+        distance = info.distance
+        print(f'floorSpotDistanceToRPM.put({distance}, {rpm});')
+
+def generate_floor_distance_angle(drag:bool):
+    for info in champs_table_floor:
+        gpos = Point(9,0)
+        rpos = Point(9-info.distance,0)
+
+        model = Model(rpos, gpos, info.rpm)
+        pm = ProjectileMotion(0.02, drag)
+
+        distance = info.distance
+        angle = round(Vector.fromradians(get_angle_floor(model,pm)),4)
+
+        print(f'floorSpotDistanceToAngle.put({distance}, {angle});')
+
 def generate_file_speaker(drag:bool):
     shooting_config = []
 
@@ -404,6 +442,14 @@ def generate_file_floor(drag:bool):
     shooting_config_file.write_text(json.dumps(shooting_config, indent=2))
 
 # generate_file_speaker()
-test_better_anglesearch(True)
+
+# test_better_anglesearch(True)
 # test_anglesearch(True)
 # test_champ_table(True)
+
+generate_speaker_distance_rpm()
+generate_speaker_distance_angle(True)
+
+# generate_floor_distance_rpm()
+# generate_floor_distance_angle(True)
+
