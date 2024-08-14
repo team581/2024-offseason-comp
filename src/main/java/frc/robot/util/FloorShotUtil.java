@@ -19,7 +19,8 @@ public class FloorShotUtil {
 
   private final double TimeConstant = 0.02;
 
-  public FloorShotUtil(SwerveSubsystem swerve, LocalizationSubsystem localization, VisionSubsystem vision) {
+  public FloorShotUtil(
+      SwerveSubsystem swerve, LocalizationSubsystem localization, VisionSubsystem vision) {
     this.swerve = swerve;
     this.localization = localization;
     this.vision = vision;
@@ -27,7 +28,9 @@ public class FloorShotUtil {
 
   public Transform2d getRobotVector() {
     var chassisSpeeds = swerve.getFieldRelativeSpeeds();
-    return new Transform2d(new Translation2d(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond), new Rotation2d(chassisSpeeds.omegaRadiansPerSecond));
+    return new Transform2d(
+        new Translation2d(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond),
+        new Rotation2d(chassisSpeeds.omegaRadiansPerSecond));
   }
 
   public Pose2d getLookAheadPose() {
@@ -35,7 +38,9 @@ public class FloorShotUtil {
     Pose2d currentPose = localization.getPose();
     double lookAheadX = currentPose.getX() + (chassisSpeeds.getX() * TimeConstant);
     double lookAheadY = currentPose.getY() + (chassisSpeeds.getY() * TimeConstant);
-    double lookAheadOmega = currentPose.getRotation().getRadians() + (chassisSpeeds.getRotation().getRadians() * TimeConstant);
+    double lookAheadOmega =
+        currentPose.getRotation().getRadians()
+            + (chassisSpeeds.getRotation().getRadians() * TimeConstant);
 
     return new Pose2d(lookAheadX, lookAheadY, new Rotation2d(lookAheadOmega));
   }
