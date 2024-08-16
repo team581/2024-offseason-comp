@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.auto_manager.AutoNoteDropped;
+import frc.robot.auto_manager.BoundingBox;
 import frc.robot.config.RobotConfig;
 import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.robot_manager.RobotCommands;
@@ -65,6 +66,34 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     this.robot = robot;
     this.snaps = robot.snaps;
     RobotConfig.get().vision().tyToNoteDistance().accept(tyToDistance);
+  }
+
+  private boolean noteInView(Pose2d notePose) {
+    Pose2d robotPose = getPose();
+    var tLB =
+        new Pose2d(1, 0.5, new Rotation2d())
+            .rotateBy(Rotation2d.fromDegrees(robotPose.getRotation().getDegrees()));
+    var tRB =
+        new Pose2d(1, -0.5, new Rotation2d())
+            .rotateBy(Rotation2d.fromDegrees(robotPose.getRotation().getDegrees()));
+    var bLB =
+        new Pose2d(0.3, 0.3, new Rotation2d())
+            .rotateBy(Rotation2d.fromDegrees(robotPose.getRotation().getDegrees()));
+    var bRB =
+        new Pose2d(0.3, -0.3, new Rotation2d())
+            .rotateBy(Rotation2d.fromDegrees(robotPose.getRotation().getDegrees()));
+
+    var topLeft =
+        new Pose2d(robotPose.getX() + tLB.getX(), robotPose.getY() + tLB.getY(), new Rotation2d());
+    var topRight =
+        new Pose2d(robotPose.getX() + tRB.getX(), robotPose.getY() + tRB.getY(), new Rotation2d());
+    var bottomLeft =
+        new Pose2d(robotPose.getX() + bLB.getX(), robotPose.getY() + bLB.getY(), new Rotation2d());
+    var bottomRight =
+        new Pose2d(robotPose.getX() + bRB.getX(), robotPose.getY() + bRB.getY(), new Rotation2d());
+
+    var box = new BoundingBox(topLeft, topRight, bottomLeft, bottomRight);
+    return box.containsPose(notePose);
   }
 
   public void resetNoteMap(ArrayList<NoteMapElement> startingValues) {
@@ -277,6 +306,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
   @Override
   public void robotPeriodic() {
+
     DogLog.log(
         "NoteTracking/NoteMap",
         noteMap.stream().map(NoteMapElement::notePose).toArray(Pose2d[]::new));

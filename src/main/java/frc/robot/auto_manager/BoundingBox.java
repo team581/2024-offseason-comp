@@ -4,9 +4,7 @@
 
 package frc.robot.auto_manager;
 
-import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.util.Units;
 
 public class BoundingBox {
 
