@@ -4,6 +4,8 @@
 
 package frc.robot.auto_manager;
 
+import java.util.Optional;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.fms.FmsSubsystem;
@@ -51,7 +53,7 @@ public class AutoNoteStaged {
     this.id = id;
   }
 
-  public Pose2d getPose() {
-    return noteIdToPose(id);
+  public Optional<Pose2d> getPose() {
+    return Optional.of(noteIdToPose(id));
   }
 }
