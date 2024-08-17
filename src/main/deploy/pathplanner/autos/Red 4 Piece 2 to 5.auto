@@ -1,0 +1,85 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 15.183030128479004,
+      "y": 5.533284664154053
+    },
+    "rotation": 1.8971347691874364e-25
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "homeClimber"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "preloadNote"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red 4 Piece 2 to 5.1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red 4 Piece 2 to 5.2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red 4 Piece 2 to 5.3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red 4 Piece 2 to 5.4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red 4 Piece 2 to 5.5"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Red Choreo Autos",
+  "choreoAuto": true
+}
