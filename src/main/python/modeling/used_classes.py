@@ -1,5 +1,7 @@
 import dataclasses
 import math
+import numerical_data as nd
+
 
 @dataclasses.dataclass
 class Point:
@@ -39,7 +41,8 @@ class Point:
     def to_in(m):
         inches = m / 0.0254
         return inches
-
+    def from_tuple(tuple:tuple):
+        return Point(tuple[0],tuple[1])
 @dataclasses.dataclass
 class Vector:
     angle: float  # Radians
@@ -59,35 +62,132 @@ class Vector:
 
     def fromdegrees(deg):
         return deg * (math.pi / 180)
-
-@dataclasses.dataclass
 class ShooterInfo:
-    distance: float
-    angle: float
-    rpm: float
+    def __init__(self, distance:float, angle:float , rpm:float):
+        self.distance = distance
+        self.angle = angle
+        self.rpm = rpm
+class Model:
+    def __init__(self, rpos: Point, gpos: Point, rpm: float):
+        self.rpos = rpos
+        self.gpos = gpos
+        self.rpm = rpm
+        self.efficiency_percent = nd._EFFICIENCY
+        self.wheel_diameter = nd._FLYWHEEL_DIAMETER
 
-    def get_table_floor(self):
-        champs_table_floor = [ShooterInfo(distance= 0.0 , angle= 58.1, rpm= 1000.0), #0
-                        ShooterInfo(distance= 1.0, angle= 47.8, rpm= 1000.0),
-                        ShooterInfo(distance= 1.2, angle= 42.0, rpm= 1500.0),
-                        ShooterInfo(distance= 3.0, angle= 33.9635, rpm= 1800.0),
-                        ShooterInfo(distance= 5.8, angle= 28.20125, rpm= 2700.0),
-                        ShooterInfo(distance= 6.5, angle= 25.84825, rpm= 2700.0),
-                        ShooterInfo(distance= 500.0, angle= 21.30525, rpm= 2700.0),
-                        ShooterInfo(distance= 581.0, angle= 20.27075, rpm= 3200.0)
-                        ]
-        return champs_table_floor
-    def get_speaker_table(self):
-        champs_table_speaker = [ShooterInfo(distance= 1.38, angle= 58.1, rpm= 3000.0), #0
-                                ShooterInfo(distance= 2.16, angle= 47.8, rpm= 3000.0),
-                                ShooterInfo(distance= 2.5, angle= 42.0, rpm= 4000.0),
-                                ShooterInfo(distance= 3.5, angle= 33.9635, rpm= 4000.0),
-                                ShooterInfo(distance= 4.5, angle= 28.20125, rpm= 4000.0),
-                                ShooterInfo(distance= 5.5, angle= 25.84825, rpm= 4000.0),
-                                ShooterInfo(distance= 6.5, angle= 21.30525, rpm= 4800.0),
-                                ShooterInfo(distance= 7.5, angle= 20.27075, rpm= 4800.0),
-                                ShooterInfo(distance= 9.0, angle= 18.7305, rpm= 4800.0) #8
-                                ]
-        return champs_table_speaker
+        self.speakerpoint_1 = Point.from_tuple(nd._SPEAKER_POINT_1)
+        self.speakerpoint_2 = Point.from_tuple(nd._SPEAKER_POINT_2)
 
+    def get_vel(self, rpm):
+        return (math.pi  * self.wheel_diameter) * (rpm / 60) * (self.efficiency_percent/100.0)
+class ProjectileMotion:
+    a_r = 0.0
+    t = 0
 
+    def __init__(self, dt: float, drag: bool):
+        self.dt = dt
+        self.drag = drag
+        if drag:
+            self.a_r = nd._AIR_RESISTANCE
+        else:
+            self.a_r = 0.0
+
+    def get_points(self, vector: Vector, exit: Point) -> list[Point]:
+        position = [exit]
+        velocity = [vector.topoint()]
+        acceleration = []
+        t = 0
+        theta = vector.angle
+
+        while position[-1].y > 0:
+
+            drag_force = (
+                self.a_r * ((velocity[-1].x ** 2) + (velocity[-1].y ** 2))
+            )
+
+            current_acceleration = Point(x=-drag_force*math.cos(theta),
+                                         y=(-9.81) + (-drag_force * math.sin(theta)))
+            current_velocity = Point(x=velocity[-1].x + (self.dt * current_acceleration.x),
+                                     y=velocity[-1].y + (self.dt * current_acceleration.y))
+            current_position = Point(x=position[-1].x + (self.dt * current_velocity.x),
+                                     y=position[-1].y + (self.dt * current_velocity.y))
+
+            theta = math.atan(current_position.y - position[-1].y/current_position.x - position[-1].x)
+
+            position.append(current_position)
+            velocity.append(current_velocity)
+            acceleration.append(current_acceleration)
+            t += self.dt
+        return position
+
+    def get_travel_time(self, points):
+        return len(points) * self.dt
+
+_SHOOTER_OFFSET_TO_ROBOT_CENTER = Point(nd._SHOOTER_X_OFFSET_RELATIVE_TO_ROBOT_CENTER,nd._SHOOTER_Y_OFFSET_RELATIVE_TO_ROBOT_CENTER)
+
+def get_angle(model: Model, pm: ProjectileMotion):
+    vel = model.get_vel(model.rpm)
+    closest_angle = -1
+    local_min = 10000
+    final_min = 10000
+
+    min_angle = Vector.fromdegrees(nd._MIN_ANGLE)
+    max_angle = Vector.fromdegrees(nd._MAX_ANGLE)
+    angle_change = Vector.fromdegrees(nd._ANGLE_CHANGE)
+    current_angle = min_angle
+    while current_angle <= max_angle:
+        exitpoint = model.rpos.plus(Vector(current_angle, nd._SHOOTER_LENGTH).topoint()).plus(_SHOOTER_OFFSET_TO_ROBOT_CENTER)
+        points = pm.get_points(Vector(current_angle, vel), exitpoint)
+        for point in points:
+            dist = point.dist(model.gpos)
+            local_min = min(local_min, dist)
+        if local_min < final_min:
+            final_min = local_min
+            closest_angle = current_angle
+        current_angle += angle_change
+    return closest_angle
+
+def get_angle_better(model: Model, pm: ProjectileMotion):
+    vel = model.get_vel(model.rpm)
+    closest_angle = -1
+    local_mean = 10000
+    final_min = 10000
+
+    min_angle = Vector.fromdegrees(nd._MIN_ANGLE)
+    max_angle = Vector.fromdegrees(nd._MAX_ANGLE)
+    angle_change = Vector.fromdegrees(nd._ANGLE_CHANGE)
+    current_angle = min_angle
+    while current_angle <= max_angle:
+        exitpoint = model.rpos.plus(Vector(current_angle, nd._SHOOTER_LENGTH).topoint()).plus(_SHOOTER_OFFSET_TO_ROBOT_CENTER)
+        points = pm.get_points(Vector(current_angle, vel), exitpoint)
+        for point in points:
+            dist_1 = point.dist(model.speakerpoint_1)
+            dist_2 = point.dist(model.speakerpoint_2)
+            local_mean = min(local_mean, (dist_1 + dist_2)/2)
+        if local_mean < final_min:
+            final_min = local_mean
+            closest_angle = current_angle
+        current_angle += angle_change
+    return closest_angle
+
+def get_angle_floor(model: Model, pm: ProjectileMotion):
+    vel = model.get_vel(model.rpm)
+    closest_angle = -1
+    local_min = 10000
+    final_min = 10000
+
+    min_angle = Vector.fromdegrees(nd._MIN_ANGLE)
+    max_angle = Vector.fromdegrees(nd._MAX_ANGLE)
+    angle_change = Vector.fromdegrees(nd._ANGLE_CHANGE)
+    current_angle = min_angle
+    while current_angle <= max_angle:
+        exitpoint = model.rpos.plus(Vector(current_angle, nd._SHOOTER_LENGTH).topoint()).plus(_SHOOTER_OFFSET_TO_ROBOT_CENTER)
+        points = pm.get_points(Vector(current_angle, vel), exitpoint)
+        for point in points:
+            dist = point.dist(model.gpos)
+            local_min = min(local_min, dist)
+        if local_min < final_min:
+            final_min = local_min
+            closest_angle = current_angle
+        current_angle += angle_change
+    return closest_angle
