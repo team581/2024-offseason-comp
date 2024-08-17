@@ -23,6 +23,7 @@ import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class AutoManager extends LifecycleSubsystem {
   private final RobotCommands actions;
@@ -186,6 +187,7 @@ public class AutoManager extends LifecycleSubsystem {
               return searchPose;
             },
             1.5)
+            .andThen(Commands.waitSeconds(1))
         .andThen(
             Commands.deferredProxy(
                     () -> {
@@ -194,7 +196,15 @@ public class AutoManager extends LifecycleSubsystem {
                           getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
                     })
                 .andThen(actions.speakerShotCommand())
-                .unless(() -> !robotManager.getState().hasNote));
+                .unless(() -> {
+
+
+                  var shouldNotRun = !robotManager.getState().hasNote;
+
+                  DogLog.log("Debug/FindAndScoreShouldNotRun", shouldNotRun);
+
+                  return shouldNotRun;
+                }));
   }
 
   private Command findAndDropCommand(Pose2d searchPose) {
@@ -234,11 +244,18 @@ public class AutoManager extends LifecycleSubsystem {
               () -> {
                 // Go through each note in the step, and if it's there, use that
                 for (var poseSupplier : step.notes()) {
+                  Optional<Pose2d> maybePose = poseSupplier.get();
+
+                  if (maybePose.isEmpty()) {
+                    continue;
+                  }
+
+                  var pose = maybePose.get();
                   if (noteTrackingManager
-                      .getNearestNotePoseRelative(poseSupplier.get(), 1.5)
+                      .getNearestNotePoseRelative(pose, 1.5)
                       .isPresent()) {
 
-                    return findAndDropCommand(poseSupplier.get());
+                    return findAndDropCommand(pose);
                   }
                 }
 
@@ -249,13 +266,30 @@ public class AutoManager extends LifecycleSubsystem {
           Commands.deferredProxy(
               () -> {
                 for (var poseSupplier : step.notes()) {
-                  // TODO: Ignore if supplied pose is null/optional.empty, once we add that later
+                  Optional<Pose2d> maybePose = poseSupplier.get();
+
+                  if (maybePose.isEmpty()) {
+                    continue;
+                  }
+
+                  var pose = maybePose.get();
 
                   if (noteTrackingManager
-                      .getNearestNotePoseRelative(poseSupplier.get(), 1.5)
+                      .getNearestNotePoseRelative(pose, 1.5)
                       .isPresent()) {
 
-                    return findAndScoreCommand(poseSupplier.get());
+
+                        // TODO: Find and score command needs to be restructured.
+                        // We need to make it where it will attempt intaking note 4
+                        // Then, it will intake note 5 (or next note idk)
+                        // Just keep intaking, and the way we go to scoring/dropping will be a .until()
+                        // so: Commands.sequence(intake(4), intake(5)).until(() -> robotHasNote() == true).andThen(score).unless(no note)
+                        // Intake note 4, then 5, etc.
+                        // Cancel that process, once we have a note
+                        // This prevents the evil logic of intaking multiple notes back to back
+                        // Then score, unless we didn't get any notes :(
+
+                    return findAndScoreCommand(pose);
                   }
                 }
 
@@ -280,6 +314,6 @@ public class AutoManager extends LifecycleSubsystem {
                           new NoteMapElement(now + 5, AutoNoteStaged.noteIdToPose(6)))));
             }),
         doManyAutoSteps(
-            List.of(AutoNoteStep.drop(4, 5), AutoNoteStep.score(5, 6), AutoNoteStep.score(10))));
+            List.of(AutoNoteStep.score(4, 5), AutoNoteStep.score(5, 6))));
   }
 }

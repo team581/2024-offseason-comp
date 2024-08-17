@@ -7,6 +7,7 @@ package frc.robot.auto_manager;
 import edu.wpi.first.math.geometry.Pose2d;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class AutoNoteDropped {
   private static int nextDroppedNoteId = 0;
@@ -28,7 +29,11 @@ public class AutoNoteDropped {
     this.droppedNoteId = droppedNoteId;
   }
 
-  public Pose2d getPose() {
-    return droppedNoteIdToPose.get(droppedNoteId);
+  public Optional<Pose2d> getPose() {
+    if (droppedNoteIdToPose.containsKey(droppedNoteId)) {
+      return Optional.of(droppedNoteIdToPose.get(droppedNoteId));
+    }
+
+    return Optional.empty();
   }
 }
