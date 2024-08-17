@@ -334,11 +334,10 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private void updateMap() {
     List<Pose2d> visionNotes = getFilteredNotePoses();
 
-    // 1. Remove expired notes since that's easy
-
+    // 1. Remove expired notes
     noteMap.removeIf(
         element -> {
-          return element.expiresAt() < Timer.getFPGATimestamp();
+          return (element.expiresAt() < Timer.getFPGATimestamp()) || noteInView(element.notePose());
         });
 
     // 2. Go through vision notes, and if it matches a note already in note map, replace it with the
