@@ -52,6 +52,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private static final double FOV_HORIZONTAL = 62.074;
   private static final double HORIZONTAL_LEFT_VIEW = 27.491;
   private static final double VERTICAL_TOP_VIEW = 24.955;
+  private BoundingBox viewBox;
 
   public NoteTrackingManager(
       LocalizationSubsystem localization,
@@ -69,6 +70,10 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   }
 
   private boolean noteInView(Pose2d notePose) {
+    return viewBox.containsPose(notePose);
+  }
+
+  private void updateBox() {
     Pose2d robotPose = getPose();
     var tLB =
         new Pose2d(1, 0.5, new Rotation2d())
@@ -92,8 +97,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     var bottomRight =
         new Pose2d(robotPose.getX() + bRB.getX(), robotPose.getY() + bRB.getY(), new Rotation2d());
 
-    var box = new BoundingBox(topLeft, topRight, bottomLeft, bottomRight);
-    return box.containsPose(notePose);
+    viewBox = new BoundingBox(topLeft, topRight, bottomLeft, bottomRight);
   }
 
   public void resetNoteMap(ArrayList<NoteMapElement> startingValues) {
@@ -310,7 +314,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     DogLog.log(
         "NoteTracking/NoteMap",
         noteMap.stream().map(NoteMapElement::notePose).toArray(Pose2d[]::new));
-
+    updateBox();
     Stopwatch.getInstance().start("Debug/NoteMapTime");
     updateMap();
     Stopwatch.getInstance().stop("Debug/NoteMapTime");
