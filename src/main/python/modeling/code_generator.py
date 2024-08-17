@@ -50,7 +50,7 @@ def generate_floor_distance_rpm():
 
 def generate_floor_distance_angle():
     for info in _CHAMPS_TABLE_FLOOR:
-        gpos = uc.Point(9,0)
+        gpos = uc.Point(9,nd._FLOOR_SPOT_HEIGHT)
         rpos = uc.Point(9-info.distance,0)
 
         model = uc.Model(rpos, gpos, info.rpm)
@@ -63,4 +63,6 @@ def generate_floor_distance_angle():
 
 
 
-generate_speaker_distance_angle()
+# generate_speaker_distance_angle()
+generate_floor_distance_rpm()
+generate_floor_distance_angle()
