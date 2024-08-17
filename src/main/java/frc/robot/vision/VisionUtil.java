@@ -47,7 +47,6 @@ public class VisionUtil {
     }
     double weightedX = 0;
     double weightedY = 0;
-    Rotation2d weightedRotation = new Rotation2d();
 
     for (var dataPoint : DATA_POINTS) {
       double distancePoint =
@@ -56,13 +55,12 @@ public class VisionUtil {
       var result = dataPoint.visionPose().minus(dataPoint.measuredPose()).times(weight);
       weightedX += result.getX();
       weightedY += result.getY();
-      weightedRotation = weightedRotation.plus(result.getRotation());
     }
     Pose2d interpolatedSum =
         new Pose2d(
             visionInput.getX() + weightedX,
             visionInput.getY() + weightedY,
-            visionInput.getRotation().plus(weightedRotation));
+            visionInput.getRotation());
     return interpolatedSum;
   }
 }
