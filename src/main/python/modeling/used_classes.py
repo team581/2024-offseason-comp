@@ -175,7 +175,9 @@ def get_angle_floor(model: Model, pm: ProjectileMotion):
     closest_angle = -1
     local_min = 10000
     final_min = 10000
-    max_tm = 0
+
+    height = 0
+    final_height = 0
 
     min_angle = Vector.fromdegrees(nd._MIN_ANGLE)
     max_angle = Vector.fromdegrees(nd._MAX_ANGLE)
@@ -184,14 +186,13 @@ def get_angle_floor(model: Model, pm: ProjectileMotion):
     while current_angle <= max_angle:
         exitpoint = model.rpos.plus(Vector(current_angle, nd._SHOOTER_LENGTH).topoint()).plus(_SHOOTER_OFFSET_TO_ROBOT_CENTER)
         points = pm.get_points(Vector(current_angle, vel), exitpoint)
-        tm = pm.get_travel_time(points)
         for point in points:
+            height = max(height,point.y)
             dist = point.dist(model.gpos)
             local_min = min(local_min, dist)
-        if max_tm < tm: #GET tO WORK ON THIS<--------------------------WORKK!!!@!---------------------------------------!!YWT!FUY!GUHUISHISTYF@^&*U!()
-            max_tm = tm
-        if local_min < final_min:
+        if local_min < final_min and height > final_height:
             final_min = local_min
+            final_height = height
             closest_angle = current_angle
         current_angle += angle_change
     return closest_angle
