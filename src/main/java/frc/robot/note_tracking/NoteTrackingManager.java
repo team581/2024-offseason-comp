@@ -97,7 +97,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
         new Translation2d(robotPose.getX() + bRB.getX(), robotPose.getY() + bRB.getY());
 
     cameraFieldBox = new BoundingBox(topLeft, topRight, bottomLeft, bottomRight);
-
   }
 
   public void resetNoteMap(ArrayList<NoteMapElement> startingValues) {

@@ -44,16 +44,16 @@ public class AutoManager extends LifecycleSubsystem {
           Units.inchesToMeters(0) + 2.0, Units.inchesToMeters(218.42), Rotation2d.fromDegrees(0));
   public static final Pose2d MIDLINE_CLEANUP_POSE = new Pose2d(8.271, 4.106, new Rotation2d(0));
   public static final List<Pose2d> RED_DESTINATIONS =
-  List.of(
-      new Pose2d(12.46, 6.35, Rotation2d.fromDegrees(-11.05)),
-      new Pose2d(12.19, 4.98, Rotation2d.fromDegrees(8.28)),
-      new Pose2d(13.67, 3.31, Rotation2d.fromDegrees(38.97)));
+      List.of(
+          new Pose2d(12.46, 6.35, Rotation2d.fromDegrees(-11.05)),
+          new Pose2d(12.19, 4.98, Rotation2d.fromDegrees(8.28)),
+          new Pose2d(13.67, 3.31, Rotation2d.fromDegrees(38.97)));
 
-public static final List<Pose2d> BLUE_DESTINATIONS =
-  List.of(
-      new Pose2d(4.32, 6.41, Rotation2d.fromDegrees(-169.48)),
-      new Pose2d(4.29, 5.02, Rotation2d.fromDegrees(172.97)),
-      new Pose2d(3.17, 3.21, Rotation2d.fromDegrees(142.74)));
+  public static final List<Pose2d> BLUE_DESTINATIONS =
+      List.of(
+          new Pose2d(4.32, 6.41, Rotation2d.fromDegrees(-169.48)),
+          new Pose2d(4.29, 5.02, Rotation2d.fromDegrees(172.97)),
+          new Pose2d(3.17, 3.21, Rotation2d.fromDegrees(142.74)));
 
   public static final Pose2d RED_DROPPING_DESTINATION =
       new Pose2d(11.25, 7.26, Rotation2d.fromDegrees(16.18));
