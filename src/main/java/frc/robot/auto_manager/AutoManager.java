@@ -43,40 +43,17 @@ public class AutoManager extends LifecycleSubsystem {
       new Pose2d(
           Units.inchesToMeters(0) + 2.0, Units.inchesToMeters(218.42), Rotation2d.fromDegrees(0));
   public static final Pose2d MIDLINE_CLEANUP_POSE = new Pose2d(8.271, 4.106, new Rotation2d(0));
-  public static final List<Pose2d> RED_SCORING_DESTINATIONS =
+  public static final List<Pose2d> RED_DESTINATIONS =
       List.of(
-          new Pose2d(12.32, 5.16, Rotation2d.fromDegrees(5.62)),
-          new Pose2d(12.73, 6.00, Rotation2d.fromDegrees(-6.73)),
-          new Pose2d(13.12, 7.13, Rotation2d.fromDegrees(-25.16)),
-          new Pose2d(13.23, 5.56, Rotation2d.fromDegrees(0.0)),
-          new Pose2d(14.28, 4.23, Rotation2d.fromDegrees(31.66)),
-          new Pose2d(15.02, 5.52, Rotation2d.fromDegrees(0.0)),
-          new Pose2d(15.35, 6.83, Rotation2d.fromDegrees(-58.15)),
-          new Pose2d(15.57, 4.19, Rotation2d.fromDegrees(60)),
-          new Pose2d(11.76, 6.56, Rotation2d.fromDegrees(-12.58)),
-          new Pose2d(13.12, 3.12, Rotation2d.fromDegrees(36.39)),
-          new Pose2d(12.92, 2.2, Rotation2d.fromDegrees(43.44)),
-          new Pose2d(12.92, 2.2, Rotation2d.fromDegrees(43.44)),
-          new Pose2d(14.66, 3.27, Rotation2d.fromDegrees(51.23)),
-          new Pose2d(14.83, 7.42, Rotation2d.fromDegrees(-56.14)));
+          new Pose2d(12.46, 6.35, Rotation2d.fromDegrees(-11.05)),
+          new Pose2d(12.19, 4.98, Rotation2d.fromDegrees(8.28)),
+          new Pose2d(13.67, 3.31, Rotation2d.fromDegrees(38.97)));
 
-  public static final List<Pose2d> BLUE_SCORING_DESTINATIONS =
+  public static final List<Pose2d> BLUE_DESTINATIONS =
       List.of(
-          new Pose2d(4.09, 5.16, Rotation2d.fromDegrees(174.8)),
-          new Pose2d(4.37, 6.23, Rotation2d.fromDegrees(-171.57)),
-          new Pose2d(3.38, 7.13, Rotation2d.fromDegrees(-151.77)),
-          new Pose2d(3.3, 5.49, Rotation2d.fromDegrees(-177.97)),
-          new Pose2d(2.50, 4.19, Rotation2d.fromDegrees(149.16)),
-          new Pose2d(3.09, 3.23, Rotation2d.fromDegrees(140.93)),
-          new Pose2d(0.85, 4.1, Rotation2d.fromDegrees(113.51)),
-          new Pose2d(1.04, 3.12, Rotation2d.fromDegrees(109.05)),
-          new Pose2d(1.6, 5.49, Rotation2d.fromDegrees(180.0)),
-          new Pose2d(2.14, 5.51, Rotation2d.fromDegrees(180.05)),
-          new Pose2d(0.91, 6.8, Rotation2d.fromDegrees(-124.38)),
-          new Pose2d(1.86, 7.02, Rotation2d.fromDegrees(-140.23)),
-          new Pose2d(2.35, 6.25, Rotation2d.fromDegrees(-162.2)),
-          new Pose2d(4.6, 6.83, Rotation2d.fromDegrees(-162.20)),
-          new Pose2d(3.57, 2.72, Rotation2d.fromDegrees(138.0)));
+          new Pose2d(4.32, 6.41, Rotation2d.fromDegrees(-169.48)),
+          new Pose2d(4.29, 5.02, Rotation2d.fromDegrees(172.97)),
+          new Pose2d(3.17, 3.21, Rotation2d.fromDegrees(142.74)));
 
   public static final Pose2d RED_DROPPING_DESTINATION =
       new Pose2d(11.25, 7.26, Rotation2d.fromDegrees(16.18));
@@ -98,9 +75,9 @@ public class AutoManager extends LifecycleSubsystem {
 
   private List<Pose2d> getScoringDestinations() {
     if (FmsSubsystem.isRedAlliance()) {
-      return RED_SCORING_DESTINATIONS;
+      return RED_DESTINATIONS;
     } else {
-      return BLUE_SCORING_DESTINATIONS;
+      return BLUE_DESTINATIONS;
     }
   }
 

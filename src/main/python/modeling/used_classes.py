@@ -1,6 +1,8 @@
 import dataclasses
 import math
 import numerical_data as nd
+import enum
+
 
 
 @dataclasses.dataclass
@@ -43,6 +45,23 @@ class Point:
         return inches
     def from_tuple(tuple:tuple):
         return Point(tuple[0],tuple[1])
+@enum.unique
+class PruneType(enum.Enum):
+    NONE = 1
+    PRE_APEX = 2
+    POST_APEX = 3
+
+def prune_points(prune_type: PruneType, points: list[Point]):
+    if (prune_type == PruneType.NONE):
+        return points
+    s=0
+    while points[s].y <= points[s+1].y:
+        s+=1
+    if (prune_type == PruneType.PRE_APEX):
+        return points[s:]
+    if (prune_type == PruneType.POST_APEX):
+        return points[:s]
+
 @dataclasses.dataclass
 class Vector:
     angle: float  # Radians
@@ -77,6 +96,8 @@ class Model:
 
         self.speakerpoint_1 = Point.from_tuple(nd._SPEAKER_POINT_1)
         self.speakerpoint_2 = Point.from_tuple(nd._SPEAKER_POINT_2)
+        self.speakerpoint_3 = Point.from_tuple(nd._SPEAKER_POINT_3)
+        self.floorspot = Point.from_tuple(nd._FLOOR_SPOT)
 
     def get_vel(self, rpm):
         return (math.pi  * self.wheel_diameter) * (rpm / 60) * (self.efficiency_percent/100.0)
@@ -125,33 +146,12 @@ class ProjectileMotion:
 
 _SHOOTER_OFFSET_TO_ROBOT_CENTER = Point(nd._SHOOTER_X_OFFSET_RELATIVE_TO_ROBOT_CENTER,nd._SHOOTER_Y_OFFSET_RELATIVE_TO_ROBOT_CENTER)
 
-def get_angle(model: Model, pm: ProjectileMotion):
+def angle_search(model: Model, pm: ProjectileMotion, prune: PruneType):
     vel = model.get_vel(model.rpm)
     closest_angle = -1
     local_min = 10000
     final_min = 10000
 
-    min_angle = Vector.fromdegrees(nd._MIN_ANGLE)
-    max_angle = Vector.fromdegrees(nd._MAX_ANGLE)
-    angle_change = Vector.fromdegrees(nd._ANGLE_CHANGE)
-    current_angle = min_angle
-    while current_angle <= max_angle:
-        exitpoint = model.rpos.plus(Vector(current_angle, nd._SHOOTER_LENGTH).topoint()).plus(_SHOOTER_OFFSET_TO_ROBOT_CENTER)
-        points = pm.get_points(Vector(current_angle, vel), exitpoint)
-        for point in points:
-            dist = point.dist(model.gpos)
-            local_min = min(local_min, dist)
-        if local_min < final_min:
-            final_min = local_min
-            closest_angle = current_angle
-        current_angle += angle_change
-    return closest_angle
-
-def get_angle_better(model: Model, pm: ProjectileMotion):
-    vel = model.get_vel(model.rpm)
-    closest_angle = -1
-    local_mean = 10000
-    final_min = 10000
 
     min_angle = Vector.fromdegrees(nd._MIN_ANGLE)
     max_angle = Vector.fromdegrees(nd._MAX_ANGLE)
@@ -160,39 +160,14 @@ def get_angle_better(model: Model, pm: ProjectileMotion):
     while current_angle <= max_angle:
         exitpoint = model.rpos.plus(Vector(current_angle, nd._SHOOTER_LENGTH).topoint()).plus(_SHOOTER_OFFSET_TO_ROBOT_CENTER)
         points = pm.get_points(Vector(current_angle, vel), exitpoint)
+        points = prune_points(prune, points)
         for point in points:
             dist_1 = point.dist(model.speakerpoint_1)
             dist_2 = point.dist(model.speakerpoint_2)
-            local_mean = min(local_mean, (dist_1 + dist_2)/2)
-        if local_mean < final_min:
-            final_min = local_mean
-            closest_angle = current_angle
-        current_angle += angle_change
-    return closest_angle
-
-def get_angle_floor(model: Model, pm: ProjectileMotion):
-    vel = model.get_vel(model.rpm)
-    closest_angle = -1
-    local_min = 10000
-    final_min = 10000
-
-    height = 0
-    final_height = 0
-
-    min_angle = Vector.fromdegrees(nd._MIN_ANGLE)
-    max_angle = Vector.fromdegrees(nd._MAX_ANGLE)
-    angle_change = Vector.fromdegrees(nd._ANGLE_CHANGE)
-    current_angle = min_angle
-    while current_angle <= max_angle:
-        exitpoint = model.rpos.plus(Vector(current_angle, nd._SHOOTER_LENGTH).topoint()).plus(_SHOOTER_OFFSET_TO_ROBOT_CENTER)
-        points = pm.get_points(Vector(current_angle, vel), exitpoint)
-        for point in points:
-            height = max(height,point.y)
-            dist = point.dist(model.gpos)
-            local_min = min(local_min, dist)
-        if local_min < final_min and height > final_height:
+            dist_3 = point.dist(model.speakerpoint_3)
+            local_min = min(local_min, (dist_1 + dist_2 + dist_3)/3)
+        if local_min < final_min:
             final_min = local_min
-            final_height = height
             closest_angle = current_angle
         current_angle += angle_change
     return closest_angle
