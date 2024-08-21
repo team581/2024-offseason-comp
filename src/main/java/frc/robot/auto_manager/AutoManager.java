@@ -6,7 +6,6 @@ package frc.robot.auto_manager;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
-import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
@@ -139,24 +138,20 @@ public class AutoManager extends LifecycleSubsystem {
   }
 
   public Command doManyAutoSteps(List<AutoNoteStep> steps) {
-    DogLog.log("Debug/DoManyAutoSteps", Timer.getFPGATimestamp());
 
     return Commands.sequence(steps.stream().map(this::doAutoStep).toArray(Command[]::new));
   }
 
   private Command cleanupNote() {
     // find and score a note
-    DogLog.log("Debug/CleanupNote", Timer.getFPGATimestamp());
 
     return noteTrackingManager
         .intakeNearestMapNote(2.0)
         .andThen(
             Commands.deferredProxy(
-                    () -> {
-                      DogLog.log("Debug/CleanupNotePathfind", Timer.getFPGATimestamp());
-                      return AutoBuilder.pathfindToPose(
-                          getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
-                    })
+                    () ->
+                        AutoBuilder.pathfindToPose(
+                            getClosestScoringDestination(), DEFAULT_CONSTRAINTS))
                 .andThen(actions.speakerShotCommand())
                 .unless(() -> !robotManager.getState().hasNote));
   }
@@ -166,7 +161,6 @@ public class AutoManager extends LifecycleSubsystem {
     var speakerCleanupPose = getSpeakerCleanupPose();
     // if we're close to speaker
     if (robotPose.getTranslation().getDistance(speakerCleanupPose.getTranslation()) < 3.0) {
-      DogLog.log("Debug/SpeakerCleanup", Timer.getFPGATimestamp());
 
       return AutoBuilder.pathfindToPose(speakerCleanupPose, DEFAULT_CONSTRAINTS)
           .until(noteTrackingManager::mapContainsNote)
@@ -174,7 +168,6 @@ public class AutoManager extends LifecycleSubsystem {
     }
 
     // if we're close to midline
-    DogLog.log("Debug/MidlineCleanup", Timer.getFPGATimestamp());
 
     return AutoBuilder.pathfindToPose(MIDLINE_CLEANUP_POSE, DEFAULT_CONSTRAINTS)
         .until(noteTrackingManager::mapContainsNote)
@@ -183,40 +176,19 @@ public class AutoManager extends LifecycleSubsystem {
 
   private Command scoreCommand() {
     return Commands.defer(
-            () -> {
-              DogLog.log("Debug/PathFindShoot", Timer.getFPGATimestamp());
-              return AutoBuilder.pathfindToPose(
-                  getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
-            }, Set.of(robotManager.swerve)).withTimeout(3)
-        .andThen(
-            Commands.runOnce(
-                () -> {
-                  DogLog.log("Debug/BeforeSpeakerShot", Timer.getFPGATimestamp());
-                }))
+            () -> AutoBuilder.pathfindToPose(getClosestScoringDestination(), DEFAULT_CONSTRAINTS),
+            Set.of(robotManager.swerve))
+        .withTimeout(3)
         .andThen(actions.speakerShotCommand())
-        .andThen(
-            Commands.runOnce(
-                () -> {
-                  DogLog.log("Debug/AfterSpeakerShot", Timer.getFPGATimestamp());
-                }))
-        .onlyWhile(
-            () -> {
-              var shouldRun = robotManager.getState().hasNote;
-
-              DogLog.log("Debug/ScoreShouldRun", shouldRun);
-
-              return shouldRun;
-            });
+        .onlyWhile(() -> robotManager.getState().hasNote);
   }
 
   private Command dropCommand() {
     return Commands.sequence(
             // Pathfind to outtake
             Commands.defer(
-                () -> {
-                  DogLog.log("Debug/PathFindOuttake", Timer.getFPGATimestamp());
-                  return AutoBuilder.pathfindToPose(getDroppingDestination(), DEFAULT_CONSTRAINTS);
-                }, Set.of(robotManager.swerve)),
+                () -> AutoBuilder.pathfindToPose(getDroppingDestination(), DEFAULT_CONSTRAINTS),
+                Set.of(robotManager.swerve)),
             // Drop the note
             actions
                 .dropCommand()
@@ -226,14 +198,8 @@ public class AutoManager extends LifecycleSubsystem {
                           noteTrackingManager.addNoteToMap(DROPPED_NOTE_SEARCH);
                           AutoNoteDropped.addDroppedNote(DROPPED_NOTE_SEARCH);
                         })))
-        .onlyIf(
-            () -> {
-              var shouldRun = robotManager.getState().hasNote;
-
-              DogLog.log("Debug/DropShouldRun", shouldRun);
-
-              return shouldRun;
-            }).withTimeout(2.5);
+        .onlyIf(() -> robotManager.getState().hasNote)
+        .withTimeout(2.5);
   }
 
   private Command doAutoStep(AutoNoteStep step) {
@@ -262,12 +228,7 @@ public class AutoManager extends LifecycleSubsystem {
   private Command intakeNoteAtPose(Supplier<Optional<Pose2d>> pose) {
     Optional<Pose2d> maybeSearchArea = pose.get();
     if (maybeSearchArea.isPresent()) {
-      return noteTrackingManager.intakeNoteAtPose(
-          () -> {
-            DogLog.log("Debug/IntakeNoteAtPoseRequest", Timer.getFPGATimestamp());
-            return maybeSearchArea.get();
-          },
-          1.5);
+      return noteTrackingManager.intakeNoteAtPose(maybeSearchArea::get, 1.5);
     }
     return Commands.none();
   }
@@ -282,8 +243,7 @@ public class AutoManager extends LifecycleSubsystem {
                       List.of(
                           new NoteMapElement(now + 5, AutoNoteStaged.noteIdToPose(3)),
                           new NoteMapElement(now + 5, AutoNoteStaged.noteIdToPose(2)),
-                          new NoteMapElement(now + 5, AutoNoteStaged.noteIdToPose(4))
-                          )));
+                          new NoteMapElement(now + 5, AutoNoteStaged.noteIdToPose(4)))));
             }),
         doManyAutoSteps(List.of(AutoNoteStep.score(3, 2), AutoNoteStep.score(4))));
   }
