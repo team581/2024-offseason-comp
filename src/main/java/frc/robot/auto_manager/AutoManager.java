@@ -24,6 +24,7 @@ import frc.robot.util.scheduling.SubsystemPriority;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 public class AutoManager extends LifecycleSubsystem {
@@ -181,31 +182,41 @@ public class AutoManager extends LifecycleSubsystem {
   }
 
   private Command scoreCommand() {
-    return Commands.deferredProxy(
+    return Commands.defer(
             () -> {
               DogLog.log("Debug/PathFindShoot", Timer.getFPGATimestamp());
               return AutoBuilder.pathfindToPose(
                   getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
-            })
+            }, Set.of(robotManager.swerve)).withTimeout(3)
+        .andThen(
+            Commands.runOnce(
+                () -> {
+                  DogLog.log("Debug/BeforeSpeakerShot", Timer.getFPGATimestamp());
+                }))
         .andThen(actions.speakerShotCommand())
-        .unless(
+        .andThen(
+            Commands.runOnce(
+                () -> {
+                  DogLog.log("Debug/AfterSpeakerShot", Timer.getFPGATimestamp());
+                }))
+        .onlyWhile(
             () -> {
-              var shouldNotRun = !robotManager.getState().hasNote;
+              var shouldRun = robotManager.getState().hasNote;
 
-              DogLog.log("Debug/ScoreShouldNotRun", shouldNotRun);
+              DogLog.log("Debug/ScoreShouldRun", shouldRun);
 
-              return shouldNotRun;
+              return shouldRun;
             });
   }
 
   private Command dropCommand() {
     return Commands.sequence(
             // Pathfind to outtake
-            Commands.deferredProxy(
+            Commands.defer(
                 () -> {
                   DogLog.log("Debug/PathFindOuttake", Timer.getFPGATimestamp());
                   return AutoBuilder.pathfindToPose(getDroppingDestination(), DEFAULT_CONSTRAINTS);
-                }),
+                }, Set.of(robotManager.swerve)),
             // Drop the note
             actions
                 .dropCommand()
@@ -215,33 +226,40 @@ public class AutoManager extends LifecycleSubsystem {
                           noteTrackingManager.addNoteToMap(DROPPED_NOTE_SEARCH);
                           AutoNoteDropped.addDroppedNote(DROPPED_NOTE_SEARCH);
                         })))
-        .unless(
+        .onlyIf(
             () -> {
-              var shouldNotRun = !robotManager.getState().hasNote;
+              var shouldRun = robotManager.getState().hasNote;
 
-              DogLog.log("Debug/DropShouldNotRun", shouldNotRun);
+              DogLog.log("Debug/DropShouldRun", shouldRun);
 
-              return shouldNotRun;
-            });
+              return shouldRun;
+            }).withTimeout(2.5);
   }
 
   private Command doAutoStep(AutoNoteStep step) {
     return switch (step.action()) {
       case CLEANUP -> cleanupCommand();
       case DROP ->
-          Commands.sequence(
-                  step.notes().stream().map(this::intakeNoteAtSearch).toArray(Command[]::new))
-              .until(() -> robotManager.getState().hasNote)
-              .andThen(dropCommand());
+          intakeAnyStepNotes(step)
+              // Then, once we have a note, do the drop
+              .andThen(dropCommand())
+              .withTimeout(6);
       case SCORE ->
-          Commands.sequence(
-                  step.notes().stream().map(this::intakeNoteAtSearch).toArray(Command[]::new))
-              .until(() -> robotManager.getState().hasNote)
-              .andThen(scoreCommand());
+          intakeAnyStepNotes(step)
+              // Then, once we have a note, do the score
+              .andThen(scoreCommand())
+              .withTimeout(6);
     };
   }
 
-  private Command intakeNoteAtSearch(Supplier<Optional<Pose2d>> pose) {
+  private Command intakeAnyStepNotes(AutoNoteStep step) {
+    // For each note in the step, try intaking until we get a note
+    return Commands.sequence(
+            step.notes().stream().map(this::intakeNoteAtPose).toArray(Command[]::new))
+        .until(() -> robotManager.getState().hasNote);
+  }
+
+  private Command intakeNoteAtPose(Supplier<Optional<Pose2d>> pose) {
     Optional<Pose2d> maybeSearchArea = pose.get();
     if (maybeSearchArea.isPresent()) {
       return noteTrackingManager.intakeNoteAtPose(
@@ -258,16 +276,15 @@ public class AutoManager extends LifecycleSubsystem {
     return Commands.sequence(
         Commands.runOnce(
             () -> {
-              DogLog.log("Debug/TestP1", true);
-
               var now = Timer.getFPGATimestamp();
               noteTrackingManager.resetNoteMap(
                   new ArrayList<>(
                       List.of(
-                          new NoteMapElement(now + 5, AutoNoteStaged.noteIdToPose(4)),
-                          new NoteMapElement(now + 5, AutoNoteStaged.noteIdToPose(5)),
-                          new NoteMapElement(now + 5, AutoNoteStaged.noteIdToPose(6)))));
+                          new NoteMapElement(now + 5, AutoNoteStaged.noteIdToPose(3)),
+                          new NoteMapElement(now + 5, AutoNoteStaged.noteIdToPose(2)),
+                          new NoteMapElement(now + 5, AutoNoteStaged.noteIdToPose(4))
+                          )));
             }),
-        doManyAutoSteps(List.of(AutoNoteStep.drop(4, 5), AutoNoteStep.score(5, 6))));
+        doManyAutoSteps(List.of(AutoNoteStep.score(3, 2), AutoNoteStep.score(4))));
   }
 }

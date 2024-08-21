@@ -6,8 +6,11 @@ package frc.robot.auto_manager;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.fms.FmsSubsystem;
 import java.util.Optional;
+
+import dev.doglog.DogLog;
 
 public class AutoNoteStaged {
   public static Pose2d noteIdToPose(int noteId) {
@@ -25,7 +28,9 @@ public class AutoNoteStaged {
           return new Pose2d(2.896, 5.553, new Rotation2d(0));
         }
       case 3:
-        if (FmsSubsystem.isRedAlliance()) {
+      DogLog.log("Debug/Note3AllianceRed", FmsSubsystem.isRedAlliance());
+      if (FmsSubsystem.isRedAlliance()) {
+          DogLog.log("Debug/Note3AllianceRedTime", Timer.getFPGATimestamp());
           return new Pose2d(13.65, 7.001, new Rotation2d(0));
         } else {
           return new Pose2d(2.896, 7.001, new Rotation2d(0));

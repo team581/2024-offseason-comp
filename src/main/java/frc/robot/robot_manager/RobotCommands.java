@@ -245,7 +245,11 @@ public class RobotCommands {
   }
 
   public Command dropCommand() {
-    return Commands.runOnce(() -> robot.dropRequest(), requirements).withName("DropCommand");
+    return Commands.runOnce(() -> robot.dropRequest(), requirements)
+
+    .andThen(robot.waitForStateCommand(RobotState.IDLE_NO_GP))
+
+    .withName("DropCommand");
   }
 
   public Command unjamCommand() {
