@@ -74,6 +74,9 @@ dependencies {
 
 	testImplementation 'org.junit.jupiter:junit-jupiter:5.11.0'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// https://mvnrepository.com/artifact/org.apache.commons/commons-geometry-euclidean
+	implementation 'org.apache.commons:commons-geometry-euclidean:1.0'
 }
 
 test {

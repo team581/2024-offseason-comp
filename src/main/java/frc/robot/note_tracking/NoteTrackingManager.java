@@ -48,6 +48,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private static final String LIMELIGHT_NAME = "limelight-note";
   private final InterpolatingDoubleTreeMap tyToDistance = new InterpolatingDoubleTreeMap();
   private ArrayList<NoteMapElement> noteMap = new ArrayList<>();
+  private BoundingBox cameraFieldBox;
 
   private static final double FOV_VERTICAL = 48.823;
   private static final double FOV_HORIZONTAL = 62.074;
@@ -70,6 +71,10 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   }
 
   private boolean noteInView(Pose2d notePose) {
+    return cameraFieldBox.contains(notePose.getTranslation());
+  }
+
+  private void updateBox() {
     Pose2d robotPose = getPose();
     var tLB =
         new Pose2d(1, 0.5, new Rotation2d())
@@ -84,17 +89,15 @@ public class NoteTrackingManager extends LifecycleSubsystem {
         new Pose2d(0.3, -0.3, new Rotation2d())
             .rotateBy(Rotation2d.fromDegrees(robotPose.getRotation().getDegrees()));
 
-    var topLeft =
-        new Pose2d(robotPose.getX() + tLB.getX(), robotPose.getY() + tLB.getY(), new Rotation2d());
-    var topRight =
-        new Pose2d(robotPose.getX() + tRB.getX(), robotPose.getY() + tRB.getY(), new Rotation2d());
+    var topLeft = new Translation2d(robotPose.getX() + tLB.getX(), robotPose.getY() + tLB.getY());
+    var topRight = new Translation2d(robotPose.getX() + tRB.getX(), robotPose.getY() + tRB.getY());
     var bottomLeft =
-        new Pose2d(robotPose.getX() + bLB.getX(), robotPose.getY() + bLB.getY(), new Rotation2d());
+        new Translation2d(robotPose.getX() + bLB.getX(), robotPose.getY() + bLB.getY());
     var bottomRight =
-        new Pose2d(robotPose.getX() + bRB.getX(), robotPose.getY() + bRB.getY(), new Rotation2d());
+        new Translation2d(robotPose.getX() + bRB.getX(), robotPose.getY() + bRB.getY());
 
-    var box = new BoundingBox(topLeft, topRight, bottomLeft, bottomRight);
-    return box.containsPose(notePose);
+    cameraFieldBox = new BoundingBox(topLeft, topRight, bottomLeft, bottomRight);
+
   }
 
   public void resetNoteMap(ArrayList<NoteMapElement> startingValues) {
@@ -314,7 +317,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     DogLog.log(
         "NoteTracking/NoteMap",
         noteMap.stream().map(NoteMapElement::notePose).toArray(Pose2d[]::new));
-
+    updateBox();
     Stopwatch.getInstance().start("Debug/NoteMapTime");
     updateMap();
     Stopwatch.getInstance().stop("Debug/NoteMapTime");
