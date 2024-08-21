@@ -43,14 +43,14 @@ def results():
     plt.show()
 
 
-def test_anglesearch_floor():
-    for info in cg._CHAMPS_TABLE_FLOOR:
-        gpos = uc.Point.from_tuple(nd._FLOOR_SPOT)
+def test_anglesearch_speaker():
+    for info in cg._CHAMPS_TABLE_SPEAKER:
+        gpos = uc.Point.from_tuple(nd._SPEAKER_POINT_1)
         rpos = uc.Point(gpos.x-info.distance,0)
 
         model = uc.Model(rpos, gpos, info.rpm)
         pm = uc.ProjectileMotion(nd._TIME_CHANGE, nd._USE_DRAG)
-        vector = uc.Vector(uc.get_angle_floor(model,pm), model.get_vel(info.rpm))
+        vector = uc.Vector(uc.angle_search(model,pm, uc.PruneType.NONE), model.get_vel(info.rpm))
         exit2 = uc.Vector(vector.angle, nd._SHOOTER_LENGTH).topoint().plus(rpos)
         points = pm.get_points(vector,exit2)
 
@@ -58,8 +58,29 @@ def test_anglesearch_floor():
         draw_line(add_lists([[rpos,exit2],points]))
     draw_points([gpos])
 
-    draw_axis([-0.1,10],[-0.1,1])
+    draw_line_red([uc.Point(gpos.x + 0.229997,0), uc.Point(gpos.x + 0.229997,1.984502)])
+    draw_line_red([uc.Point(gpos.x - 0.923798,1.984502), uc.Point(gpos.x ,2.492502)])
+    draw_axis([-0.1,10],[-0.1,10])
 
     results()
 
+def test_anglesearch_floor():
+    for info in cg._CHAMPS_TABLE_FLOOR:
+        gpos = uc.Point.from_tuple(nd._FLOOR_SPOT)
+        rpos = uc.Point(gpos.x-info.distance,0)
+
+        model = uc.Model(rpos, gpos, info.rpm)
+        pm = uc.ProjectileMotion(nd._TIME_CHANGE, nd._USE_DRAG)
+        vector = uc.Vector(uc.angle_search(model,pm, uc.PruneType.PRE_APEX), model.get_vel(info.rpm))
+        exit2 = uc.Vector(vector.angle, nd._SHOOTER_LENGTH).topoint().plus(rpos)
+        points = pm.get_points(vector,exit2)
+
+        draw_points([rpos,exit2])
+        draw_line(add_lists([[rpos,exit2],points]))
+    draw_points([gpos])
+    draw_axis([-0.1,10],[-0.1,10])
+
+    results()
+
+test_anglesearch_speaker()
 # test_anglesearch_floor()
