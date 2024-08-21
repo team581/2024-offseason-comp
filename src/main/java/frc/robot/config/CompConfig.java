@@ -20,8 +20,6 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import frc.robot.config.RobotConfig.ClimberConfig;
 import frc.robot.config.RobotConfig.ConveyorConfig;
@@ -29,6 +27,7 @@ import frc.robot.config.RobotConfig.ElevatorConfig;
 import frc.robot.config.RobotConfig.IMUConfig;
 import frc.robot.config.RobotConfig.IntakeConfig;
 import frc.robot.config.RobotConfig.LightsConfig;
+import frc.robot.config.RobotConfig.PerfToggles;
 import frc.robot.config.RobotConfig.QueuerConfig;
 import frc.robot.config.RobotConfig.RedirectConfig;
 import frc.robot.config.RobotConfig.ShooterConfig;
@@ -292,14 +291,8 @@ class CompConfig {
                 tyToNoteDistance.put(9.39, Units.inchesToMeters(17.75 + 7 + 47.1));
                 tyToNoteDistance.put(11.85, Units.inchesToMeters(17.75 + 7 + 60.1));
                 tyToNoteDistance.put(15.25, Units.inchesToMeters(17.75 + 7 + 88.9));
-              },
-              // x=right, y= forward, z=up
-              new Translation3d(-0.025, Units.inchesToMeters(-1), Units.inchesToMeters(23.25)),
-              new Rotation3d(0.0, Units.degreesToRadians(15.2), Units.degreesToRadians(-1.0)),
-              56.015,
-              81.428,
-              28.517,
-              -4.226));
+              }),
+          new PerfToggles(false, false));
 
   private CompConfig() {}
 }

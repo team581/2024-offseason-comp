@@ -7,10 +7,7 @@ package frc.robot.vision;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.util.Units;
@@ -20,12 +17,10 @@ import frc.robot.fms.FmsSubsystem;
 import frc.robot.imu.ImuSubsystem;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
-import frc.robot.vision.LimelightHelpers.LimelightTarget_Fiducial;
 import java.util.Optional;
 
 public class VisionSubsystem extends LifecycleSubsystem {
   private static final double FLOOR_SPOT_MAX_DISTANCE_FOR_SUBWOOFER = 14.0;
-  private static final boolean CALIBRATION_RIG_ENABLED = false;
   private static final boolean SHOOT_TO_SIDE_ENABLED = true;
   public static final boolean LIMELIGHT_UPSIDE_DOWN = true;
 
@@ -49,43 +44,6 @@ public class VisionSubsystem extends LifecycleSubsystem {
   private static final Pose2d BLUE_FLOOR_SHOT_ROBOT_FALLBACK_POSE =
       new Pose2d(new Translation2d(16.54 / 2.0 + 0.5, 1.25), new Rotation2d());
 
-  public static final Pose3d CAMERA_ON_BOT =
-      new Pose3d(RobotConfig.get().vision().lltranslation(), RobotConfig.get().vision().llAngle());
-
-  public static final Pose3d RED_SPEAKER_DOUBLE_TAG_CENTER =
-      new Pose3d(
-          Units.inchesToMeters(652.73),
-          Units.inchesToMeters(218.42 - 11.125),
-          Units.inchesToMeters(57.5),
-          new Rotation3d(0, 0, Units.degreesToRadians(180)));
-  public static final Pose3d BLUE_SPEAKER_DOUBLE_TAG_CENTER =
-      new Pose3d(
-          Units.inchesToMeters(0),
-          Units.inchesToMeters(218.42 - 11.125),
-          Units.inchesToMeters(57.5),
-          new Rotation3d(0, 0, Units.degreesToRadians(180)));
-
-  public static final Pose3d ROBOT_TO_CALIBRATION_TAG_CENTER =
-      new Pose3d(
-          Units.inchesToMeters(0),
-          Units.inchesToMeters(57.128),
-          Units.inchesToMeters(-64.75),
-          new Rotation3d(0, 0, 0));
-
-  public static void logCalibration() {
-    var json = LimelightHelpers.getLatestResults("");
-
-    for (LimelightTarget_Fiducial fiducial : json.targets_Fiducials) {
-      var prefix = "Vision/Calibration/Tag" + fiducial.fiducialID + "/";
-
-      Pose3d camPoseRelativeTag = fiducial.getCameraPose_TargetSpace();
-
-      Transform3d camPoseRelativeRobot = ROBOT_TO_CALIBRATION_TAG_CENTER.minus(camPoseRelativeTag);
-      DogLog.log(prefix + "camRelativeTag", camPoseRelativeTag);
-      DogLog.log(prefix + "camRelativeRobot", camPoseRelativeRobot);
-    }
-  }
-
   private final Timer limelightTimer = new Timer();
   private double limelightHeartbeat = -1;
 
@@ -105,14 +63,6 @@ public class VisionSubsystem extends LifecycleSubsystem {
       return Optional.empty();
     }
 
-    for (int i = 0; i < estimatePose.rawFiducials.length; i++) {
-      var fiducial = estimatePose.rawFiducials[i];
-
-      if (fiducial.ambiguity > 0.5) {
-        // return Optional.empty();
-      }
-    }
-
     // This prevents pose estimator from having crazy poses if the Limelight loses power
     if (estimatePose.pose.getX() == 0.0 && estimatePose.pose.getY() == 0.0) {
       return Optional.empty();
@@ -127,7 +77,7 @@ public class VisionSubsystem extends LifecycleSubsystem {
   public Optional<VisionResult> getVisionResult() {
     var maybeRawData = getRawVisionResult();
 
-    if (maybeRawData.isPresent()) {
+    if (RobotConfig.get().perfToggles().interpolatedVision() && maybeRawData.isPresent()) {
       var rawData = maybeRawData.get();
 
       return Optional.of(
@@ -193,10 +143,6 @@ public class VisionSubsystem extends LifecycleSubsystem {
       rawAngleDegrees += 180;
     }
     double angleDegrees = MathUtil.inputModulus(rawAngleDegrees, -180.0, 180.0);
-
-    // if (FmsSubsystem.isRedAlliance()) {
-    //   angleDegrees += 180.0;
-    // }
 
     double absoluteOffsetRadians =
         (angleToSideShotOffset.get(Units.degreesToRadians(Math.abs(angleDegrees))));
@@ -288,11 +234,6 @@ public class VisionSubsystem extends LifecycleSubsystem {
         imu.getPitchRate().getDegrees(),
         imu.getRoll().getDegrees(),
         imu.getRollRate().getDegrees());
-
-    if (CALIBRATION_RIG_ENABLED) {
-
-      logCalibration();
-    }
   }
 
   public VisionState getState() {

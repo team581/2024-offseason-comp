@@ -8,8 +8,6 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.mechanisms.swerve.utility.PhoenixPIDController;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import java.util.function.Consumer;
 
@@ -27,7 +25,8 @@ public record RobotConfig(
     SwerveConfig swerve,
     IMUConfig imu,
     LightsConfig lights,
-    VisionConfig vision) {
+    VisionConfig vision,
+    PerfToggles perfToggles) {
 
   public record ShooterConfig(
       int leftMotorID,
@@ -105,13 +104,9 @@ public record RobotConfig(
       int translationHistoryArraySize,
       double xyStdDev,
       double thetaStdDev,
-      Consumer<InterpolatingDoubleTreeMap> tyToNoteDistance,
-      Translation3d lltranslation,
-      Rotation3d llAngle,
-      double fovVert,
-      double fovHorz,
-      double principlePixelOffsetX,
-      double principlePixelOffsetY) {}
+      Consumer<InterpolatingDoubleTreeMap> tyToNoteDistance) {}
+
+  public record PerfToggles(boolean interpolatedVision, boolean noteMapInTeleop) {}
 
   // TODO: Change this to false during events
   public static final boolean IS_DEVELOPMENT = true;
@@ -121,6 +116,6 @@ public record RobotConfig(
       SERIAL_NUMBER != null && SERIAL_NUMBER.equals(PRACTICE_BOT_SERIAL_NUMBER);
 
   public static RobotConfig get() {
-    return IS_PRACTICE_BOT ? PracticeConfig.practiceBot : CompConfig.competitionBot;
+    return CompConfig.competitionBot;
   }
 }
