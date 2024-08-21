@@ -44,13 +44,13 @@ public class LocalizationSubsystem extends LifecycleSubsystem {
     poseEstimator =
         new SwerveDrivePoseEstimator(
             SwerveSubsystem.KINEMATICS,
-            imu.getRobotHeading(),
+            Rotation2d.fromDegrees(imu.getRobotHeading()),
             swerve.getModulePositions().toArray(new SwerveModulePosition[4]),
             new Pose2d());
     odometry =
         new SwerveDriveOdometry(
             SwerveSubsystem.KINEMATICS,
-            imu.getRobotHeading(),
+            Rotation2d.fromDegrees(imu.getRobotHeading()),
             swerve.getModulePositions().toArray(new SwerveModulePosition[4]));
   }
 
@@ -58,8 +58,8 @@ public class LocalizationSubsystem extends LifecycleSubsystem {
   public void robotPeriodic() {
     SwerveModulePosition[] modulePositions =
         swerve.getModulePositions().toArray(new SwerveModulePosition[4]);
-    odometry.update(imu.getRobotHeading(), modulePositions);
-    poseEstimator.update(imu.getRobotHeading(), modulePositions);
+    odometry.update(Rotation2d.fromDegrees(imu.getRobotHeading()), modulePositions);
+    poseEstimator.update(Rotation2d.fromDegrees(imu.getRobotHeading()), modulePositions);
 
     var maybeResults = vision.getVisionResult();
 
@@ -113,7 +113,7 @@ public class LocalizationSubsystem extends LifecycleSubsystem {
   }
 
   public void resetPose(Pose2d estimatedPose, Pose2d odometryPose) {
-    imu.setAngle(odometryPose.getRotation());
+    imu.setAngle(odometryPose.getRotation().getDegrees());
     poseEstimator.resetPosition(
         estimatedPose.getRotation(),
         swerve.getModulePositions().toArray(new SwerveModulePosition[4]),
@@ -124,14 +124,15 @@ public class LocalizationSubsystem extends LifecycleSubsystem {
         odometryPose);
   }
 
-  private void resetGyro(Rotation2d gyroAngle) {
-    Pose2d estimatedPose = new Pose2d(getPose().getTranslation(), gyroAngle);
-    Pose2d odometryPose = new Pose2d(getOdometryPose().getTranslation(), gyroAngle);
+  private void resetGyro(double gyroAngle) {
+    Pose2d estimatedPose =
+        new Pose2d(getPose().getTranslation(), Rotation2d.fromDegrees(gyroAngle));
+    Pose2d odometryPose =
+        new Pose2d(getOdometryPose().getTranslation(), Rotation2d.fromDegrees(gyroAngle));
     resetPose(estimatedPose, odometryPose);
   }
 
   public Command getZeroCommand() {
-    return Commands.runOnce(
-        () -> resetGyro(Rotation2d.fromDegrees(FmsSubsystem.isRedAlliance() ? 0 : 180)));
+    return Commands.runOnce(() -> resetGyro(FmsSubsystem.isRedAlliance() ? 0 : 180));
   }
 }

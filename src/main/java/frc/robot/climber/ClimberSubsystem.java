@@ -9,7 +9,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.LinearFilter;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import frc.robot.config.RobotConfig;
 import frc.robot.config.RobotConfig.ClimberConfig;
 import frc.robot.util.HomingState;
@@ -54,17 +54,21 @@ public class ClimberSubsystem extends LifecycleSubsystem {
         rightMotor.setVoltage(CONFIG.homingVoltage());
         if (filteredCurrent > CONFIG.homingCurrentThreshold()) {
           leftMotor.setPosition(
-              inchesToRotations(RobotConfig.get().climber().minDistance()).getRotations());
+              Units.degreesToRotations(
+                  inchesToRotations(RobotConfig.get().climber().minDistance())));
           rightMotor.setPosition(
-              inchesToRotations(RobotConfig.get().climber().minDistance()).getRotations());
+              Units.degreesToRotations(
+                  inchesToRotations(RobotConfig.get().climber().minDistance())));
           homingState = HomingState.HOMED;
         }
         break;
       case HOMED:
         leftMotor.setControl(
-            positionRequest.withPosition(inchesToRotations(clamp(goalDistance)).getRotations()));
+            positionRequest.withPosition(
+                Units.degreesToRotations(inchesToRotations(clamp(goalDistance)))));
         rightMotor.setControl(
-            positionRequest.withPosition(inchesToRotations(clamp(goalDistance)).getRotations()));
+            positionRequest.withPosition(
+                Units.degreesToRotations(inchesToRotations(clamp(goalDistance)))));
         break;
       case PRE_MATCH_HOMING:
         throw new IllegalStateException("Climber can't do pre match homing");
@@ -107,7 +111,7 @@ public class ClimberSubsystem extends LifecycleSubsystem {
   }
 
   public double getDistance(TalonFX motor) {
-    return rotationsToInches(Rotation2d.fromRotations(motor.getPosition().getValueAsDouble()));
+    return rotationsToInches(Units.rotationsToDegrees(motor.getPosition().getValueAsDouble()));
   }
 
   private void setGoalDistance(double distance) {
@@ -123,11 +127,11 @@ public class ClimberSubsystem extends LifecycleSubsystem {
   }
 
   // Tune the radius in inches later
-  private static double rotationsToInches(Rotation2d angle) {
-    return angle.getRotations() * (CONFIG.rotationsToDistance());
+  private static double rotationsToInches(double angle) {
+    return Units.degreesToRotations(angle) * (CONFIG.rotationsToDistance());
   }
 
-  private static Rotation2d inchesToRotations(double inches) {
-    return Rotation2d.fromRotations(inches / (CONFIG.rotationsToDistance()));
+  private static double inchesToRotations(double inches) {
+    return Units.rotationsToDegrees(inches / (CONFIG.rotationsToDistance()));
   }
 }

@@ -97,7 +97,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
         new Translation2d(robotPose.getX() + bRB.getX(), robotPose.getY() + bRB.getY());
 
     cameraFieldBox = new BoundingBox(topLeft, topRight, bottomLeft, bottomRight);
-
   }
 
   public void resetNoteMap(ArrayList<NoteMapElement> startingValues) {
@@ -164,7 +163,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
     var notePoseWithoutRotation =
         new Translation2d(-forwardDistanceToNote, -sidewaysDistanceToNote)
-            .rotateBy(Rotation2d.fromDegrees(robotPoseAtCapture.getRotation().getDegrees()));
+            .rotateBy(robotPoseAtCapture.getRotation());
 
     var notePoseWithRobot =
         new Translation2d(
@@ -175,7 +174,8 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     DistanceAngle noteDistanceAngle =
         VisionSubsystem.distanceAngleToTarget(
             new Pose2d(notePoseWithRobot, new Rotation2d()), robotPoseAtCapture);
-    Rotation2d rotation = new Rotation2d(noteDistanceAngle.targetAngle().getRadians() + Math.PI);
+    Rotation2d rotation =
+        new Rotation2d(Units.degreesToRadians(noteDistanceAngle.targetAngle()) + Math.PI);
 
     return Optional.of(new Pose2d(notePoseWithRobot, rotation));
   }
@@ -266,7 +266,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
                   var nearestNote = getNearestNotePoseRelative(searchPose.get(), thresholdMeters);
 
                   if (nearestNote.isPresent()) {
-                    snaps.setAngle(nearestNote.get().notePose().getRotation());
+                    snaps.setAngle(nearestNote.get().notePose().getRotation().getDegrees());
                     snaps.setEnabled(true);
                     DogLog.log("Debug/IntakingOriginal", Timer.getFPGATimestamp());
 

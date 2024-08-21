@@ -4,23 +4,21 @@
 
 package frc.robot.wrist;
 
-import edu.wpi.first.math.geometry.Rotation2d;
-
 public class WristPositions {
-  public static final Rotation2d STOWED = Rotation2d.fromDegrees(30);
-  public static final Rotation2d FULLY_STOWED = Rotation2d.fromDegrees(0);
+  public static final double STOWED = 30;
+  public static final double FULLY_STOWED = 0;
 
-  public static final Rotation2d OUTTAKING_SHOOTER = Rotation2d.fromDegrees(0);
+  public static final double OUTTAKING_SHOOTER = 0;
 
-  public static final Rotation2d SHOOTER_AMP = Rotation2d.fromDegrees(58.0);
+  public static final double SHOOTER_AMP = 58.0;
 
-  public static final Rotation2d SUBWOOFER_SHOT = Rotation2d.fromDegrees(59.0);
-  public static final Rotation2d AUTO_SUBWOOFER_SHOT = Rotation2d.fromDegrees(60.0);
-  public static final Rotation2d PRESET_AMP = Rotation2d.fromDegrees(43);
-  public static final Rotation2d PRESET_SOURCE = Rotation2d.fromDegrees(58.1);
-  public static final Rotation2d PRESET_MIDDLE = Rotation2d.fromDegrees(58.1);
-  public static final Rotation2d PRESET_3 = Rotation2d.fromDegrees(30);
-  public static final Rotation2d PODIUM_SHOT = Rotation2d.fromDegrees(26.5);
+  public static final double SUBWOOFER_SHOT = 59.0;
+  public static final double AUTO_SUBWOOFER_SHOT = 60.0;
+  public static final double PRESET_AMP = 43;
+  public static final double PRESET_SOURCE = 58.1;
+  public static final double PRESET_MIDDLE = 58.1;
+  public static final double PRESET_3 = 30;
+  public static final double PODIUM_SHOT = 26.5;
 
   private WristPositions() {}
 }

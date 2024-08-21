@@ -150,7 +150,7 @@ public class Autos extends LifecycleSubsystem {
     if (swerve.snapsEnabled()) {
       // Return an optional containing the rotation override (this should be a field relative
       // rotation)
-      return Optional.of(swerve.snapAngle());
+      return Optional.of(Rotation2d.fromDegrees(swerve.snapAngle()));
     } else {
       return Optional.empty();
     }

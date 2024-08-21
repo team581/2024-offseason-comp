@@ -10,7 +10,6 @@ import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
 import edu.wpi.first.math.util.Units;
@@ -47,10 +46,10 @@ public class ImuSubsystem extends LifecycleSubsystem {
 
   @Override
   public void robotPeriodic() {
-    Rotation2d robotHeading = this.getRobotHeading();
-    DogLog.log("Imu/RobotHeading", robotHeading.getDegrees());
-    DogLog.log("Imu/RobotHeadingModulo", MathUtil.inputModulus(robotHeading.getDegrees(), 0, 360));
-    DogLog.log("Imu/RobotHeadingRadians", robotHeading.getRadians());
+    double robotHeading = this.getRobotHeading();
+    DogLog.log("Imu/RobotHeading", robotHeading);
+    DogLog.log("Imu/RobotHeadingModulo", MathUtil.inputModulus(robotHeading, 0, 360));
+    DogLog.log("Imu/RobotHeadingRadians", Units.degreesToRadians(robotHeading));
 
     var yaw = this.imu.getYaw();
 
@@ -60,53 +59,55 @@ public class ImuSubsystem extends LifecycleSubsystem {
         Timer.getFPGATimestamp() - yawOffset, Units.degreesToRadians(yaw.getValueAsDouble()));
   }
 
-  public Rotation2d getRobotHeading() {
-    return Rotation2d.fromDegrees(imu.getYaw().getValue());
+  public double getRobotHeading() {
+    return imu.getYaw().getValue();
   }
 
-  public Rotation2d getRobotHeading(double timestamp) {
-    return Rotation2d.fromRadians(
-        robotHeadingHistory.getSample(timestamp).orElseGet(() -> getRobotHeading().getRadians()));
+  public double getRobotHeading(double timestamp) {
+    return Units.radiansToDegrees(
+        robotHeadingHistory
+            .getSample(timestamp)
+            .orElseGet(() -> Units.degreesToRadians(getRobotHeading())));
   }
 
-  public Rotation2d getPitch() {
-    return Rotation2d.fromDegrees(imu.getPitch().getValue());
+  public double getPitch() {
+    return imu.getPitch().getValue();
   }
 
-  public Rotation2d getPitchRate() {
-    return Rotation2d.fromDegrees(imu.getAngularVelocityYWorld().getValue());
+  public double getPitchRate() {
+    return imu.getAngularVelocityYWorld().getValue();
   }
 
-  public Rotation2d getRoll() {
-    return Rotation2d.fromDegrees(imu.getRoll().getValue());
+  public double getRoll() {
+    return imu.getRoll().getValue();
   }
 
-  public Rotation2d getRollRate() {
-    return Rotation2d.fromDegrees(imu.getAngularVelocityXWorld().getValue());
+  public double getRollRate() {
+    return imu.getAngularVelocityXWorld().getValue();
   }
 
-  public Rotation2d getRobotAngularVelocity() {
-    return Rotation2d.fromDegrees(imu.getRate());
+  public double getRobotAngularVelocity() {
+    return imu.getRate();
   }
 
-  public void setAngle(Rotation2d zeroAngle) {
-    this.imu.setYaw(zeroAngle.getDegrees());
+  public void setAngle(double zeroAngle) {
+    this.imu.setYaw(zeroAngle);
   }
 
-  private boolean atAngle(Rotation2d angle, Rotation2d tolerance) {
-    return Math.abs(getRobotHeading().minus(angle).getDegrees()) < tolerance.getDegrees();
+  private boolean atAngle(double angle, double tolerance) {
+    return Math.abs(getRobotHeading() - angle) < tolerance;
   }
 
   public boolean belowVelocityForVision(double distance) {
-    return getRobotAngularVelocity().getDegrees() < 10;
+    return getRobotAngularVelocity() < 10;
   }
 
-  public boolean atAngleForSpeaker(Rotation2d angle, double distance) {
-    return atAngle(angle, Rotation2d.fromDegrees(2.5));
+  public boolean atAngleForSpeaker(double angle, double distance) {
+    return atAngle(angle, 2.5);
   }
 
-  public boolean atAngleForFloorSpot(Rotation2d angle) {
-    return atAngle(angle, Rotation2d.fromDegrees(10));
+  public boolean atAngleForFloorSpot(double angle) {
+    return atAngle(angle, 10);
   }
 
   public double getYAcceleration() {

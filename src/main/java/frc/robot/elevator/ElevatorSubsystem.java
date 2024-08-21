@@ -10,7 +10,7 @@ import com.ctre.phoenix6.controls.StaticBrake;
 import com.ctre.phoenix6.hardware.TalonFX;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.config.RobotConfig;
@@ -72,7 +72,7 @@ public class ElevatorSubsystem extends LifecycleSubsystem {
           if (!preMatchHomingOccured) {
             double homingEndPosition = RobotConfig.get().elevator().homingEndPosition();
             double homedPosition = homingEndPosition + (getHeight() - lowestSeenHeight);
-            motor.setPosition(inchesToRotations(homedPosition).getRotations());
+            motor.setPosition(Units.degreesToRotations(inchesToRotations(homedPosition)));
 
             preMatchHomingOccured = true;
             homingState = HomingState.HOMED;
@@ -99,7 +99,7 @@ public class ElevatorSubsystem extends LifecycleSubsystem {
             motor.setControl(
                 positionRequest
                     .withSlot(slot)
-                    .withPosition(inchesToRotations(height).getRotations()));
+                    .withPosition(Units.degreesToRotations(inchesToRotations(height))));
           }
 
           break;
@@ -124,8 +124,8 @@ public class ElevatorSubsystem extends LifecycleSubsystem {
     return rotationsToInches(getMechanismRotations());
   }
 
-  private Rotation2d getMechanismRotations() {
-    return Rotation2d.fromRotations(motor.getPosition().getValueAsDouble());
+  private double getMechanismRotations() {
+    return Units.rotationsToDegrees(motor.getPosition().getValueAsDouble());
   }
 
   public HomingState getHomingState() {
@@ -136,12 +136,13 @@ public class ElevatorSubsystem extends LifecycleSubsystem {
     return Math.abs(getHeight() - distance) < RobotConfig.get().elevator().tolerance();
   }
 
-  private static double rotationsToInches(Rotation2d rotations) {
-    return rotations.getRotations() * (RobotConfig.get().elevator().rotationsToDistance());
+  private static double rotationsToInches(double rotations) {
+    return Units.degreesToRotations(rotations)
+        * (RobotConfig.get().elevator().rotationsToDistance());
   }
 
-  private static Rotation2d inchesToRotations(double inches) {
-    return Rotation2d.fromRotations(inches / (RobotConfig.get().elevator().rotationsToDistance()));
+  private static double inchesToRotations(double inches) {
+    return Units.rotationsToDegrees(inches / (RobotConfig.get().elevator().rotationsToDistance()));
   }
 
   private static double clampHeight(double height) {

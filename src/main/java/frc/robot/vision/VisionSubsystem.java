@@ -90,8 +90,8 @@ public class VisionSubsystem extends LifecycleSubsystem {
 
   public static DistanceAngle distanceAngleToTarget(Pose2d target, Pose2d current) {
     double distance = target.getTranslation().getDistance(current.getTranslation());
-    Rotation2d angle =
-        Rotation2d.fromRadians(
+    double angle =
+        Units.radiansToDegrees(
             Math.atan2(target.getY() - current.getY(), target.getX() - current.getX()));
 
     return new DistanceAngle(distance, angle, false);
@@ -137,7 +137,7 @@ public class VisionSubsystem extends LifecycleSubsystem {
       return originalPosition;
     }
 
-    double rawAngleDegrees = originalPosition.targetAngle().getDegrees();
+    double rawAngleDegrees = originalPosition.targetAngle();
 
     if (!FmsSubsystem.isRedAlliance()) {
       rawAngleDegrees += 180;
@@ -150,14 +150,8 @@ public class VisionSubsystem extends LifecycleSubsystem {
     DogLog.log("Vision/ShootToTheSide/Offset", Units.radiansToDegrees(offsetRadians));
 
     var adjustedAngle =
-        Rotation2d.fromRadians(originalPosition.targetAngle().getRadians() + offsetRadians);
-
-    DogLog.log(
-        "Vision/ShootToTheSide/OriginalShotPose",
-        new Pose2d(robotPose.getTranslation(), originalPosition.targetAngle()));
-    DogLog.log(
-        "Vision/ShootToTheSide/AdjustedResultShotPose",
-        new Pose2d(robotPose.getTranslation(), adjustedAngle));
+        Units.radiansToDegrees(
+            Units.degreesToRadians(originalPosition.targetAngle()) + offsetRadians);
 
     return new DistanceAngle(
         originalPosition.distance(), adjustedAngle, originalPosition.seesSpeakerTag());
@@ -228,12 +222,12 @@ public class VisionSubsystem extends LifecycleSubsystem {
 
     LimelightHelpers.SetRobotOrientation(
         "",
-        imu.getRobotHeading().getDegrees(),
-        imu.getRobotAngularVelocity().getDegrees(),
-        imu.getPitch().getDegrees(),
-        imu.getPitchRate().getDegrees(),
-        imu.getRoll().getDegrees(),
-        imu.getRollRate().getDegrees());
+        imu.getRobotHeading(),
+        imu.getRobotAngularVelocity(),
+        imu.getPitch(),
+        imu.getPitchRate(),
+        imu.getRoll(),
+        imu.getRollRate());
   }
 
   public VisionState getState() {
