@@ -69,7 +69,7 @@ public class SwerveSubsystem extends LifecycleSubsystem {
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
   private boolean snapToAngle = false;
-  private Rotation2d goalSnapAngle = new Rotation2d();
+  private double goalSnapAngle = 0;
   private final CommandXboxController controller;
 
   // My drivetrain
@@ -122,7 +122,7 @@ public class SwerveSubsystem extends LifecycleSubsystem {
         backRight.getPosition(true));
   }
 
-  public void setSnapToAngle(Rotation2d angle) {
+  public void setSnapToAngle(double angle) {
     goalSnapAngle = angle;
     snapToAngle = true;
   }
@@ -252,7 +252,7 @@ public class SwerveSubsystem extends LifecycleSubsystem {
   @Override
   public void robotPeriodic() {
     DogLog.log("Swerve/SnapToAngle", snapToAngle);
-    DogLog.log("Swerve/SnapToAngleGoal", goalSnapAngle.getDegrees());
+    DogLog.log("Swerve/SnapToAngleGoal", goalSnapAngle);
     DogLog.log("Swerve/Pose", drivetrain.getState().Pose);
     DogLog.log("Swerve/ModuleStates", drivetrain.getState().ModuleStates);
     DogLog.log("Swerve/ModuleTargets", drivetrain.getState().ModuleTargets);
@@ -279,7 +279,7 @@ public class SwerveSubsystem extends LifecycleSubsystem {
           driveToAngle
               .withVelocityX(limitedSpeeds.vxMetersPerSecond)
               .withVelocityY(limitedSpeeds.vyMetersPerSecond)
-              .withTargetDirection(goalSnapAngle)
+              .withTargetDirection(Rotation2d.fromDegrees(goalSnapAngle))
               .withDriveRequestType(driveType));
     } else {
       drivetrain.setControl(
@@ -295,7 +295,7 @@ public class SwerveSubsystem extends LifecycleSubsystem {
     return snapToAngle;
   }
 
-  public Rotation2d snapAngle() {
+  public double snapAngle() {
     return goalSnapAngle;
   }
 

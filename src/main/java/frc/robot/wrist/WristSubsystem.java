@@ -8,8 +8,8 @@ import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import dev.doglog.DogLog;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.config.RobotConfig;
 import frc.robot.util.HomingState;
@@ -20,7 +20,7 @@ public class WristSubsystem extends LifecycleSubsystem {
 
   private final TalonFX motor;
   private final PositionVoltage positionRequest =
-      new PositionVoltage(WristPositions.STOWED.getRotations()).withEnableFOC(true);
+      new PositionVoltage(Units.degreesToRotations(WristPositions.STOWED)).withEnableFOC(true);
 
   private final CoastOut coastNeutralRequest = new CoastOut();
 
@@ -33,11 +33,11 @@ public class WristSubsystem extends LifecycleSubsystem {
   private static final InterpolatingDoubleTreeMap distanceToAngleTolerance =
       new InterpolatingDoubleTreeMap();
 
-  private Rotation2d lowestSeenAngle = new Rotation2d(Double.MAX_VALUE);
+  private double lowestSeenAngle = Double.MAX_VALUE;
 
   private boolean preMatchHomingOccured = false;
 
-  private Rotation2d goalAngle = new Rotation2d();
+  private double goalAngle = 0;
 
   public WristSubsystem(TalonFX motor) {
     super(SubsystemPriority.WRIST);
@@ -52,9 +52,9 @@ public class WristSubsystem extends LifecycleSubsystem {
 
   @Override
   public void disabledPeriodic() {
-    Rotation2d currentAngle = getAngle();
+    double currentAngle = getAngle();
 
-    if (currentAngle.getDegrees() < lowestSeenAngle.getDegrees()) {
+    if (currentAngle < lowestSeenAngle) {
       lowestSeenAngle = currentAngle;
     }
   }
@@ -69,8 +69,8 @@ public class WristSubsystem extends LifecycleSubsystem {
         motor.disable();
 
         if (DriverStation.isEnabled() && !preMatchHomingOccured) {
-          Rotation2d homedAngle = getHomeAngleFromLowestSeen();
-          motor.setPosition(homedAngle.getRotations());
+          double homedAngle = getHomeAngleFromLowestSeen();
+          motor.setPosition(Units.degreesToRotations(homedAngle));
 
           preMatchHomingOccured = true;
           homingState = HomingState.HOMED;
@@ -80,52 +80,51 @@ public class WristSubsystem extends LifecycleSubsystem {
       case MID_MATCH_HOMING:
         throw new IllegalStateException("Wrist can't do mid match homing");
       case HOMED:
-        int slot = goalAngle.equals(RobotConfig.get().wrist().minAngle()) ? 1 : 0;
+        int slot = goalAngle == RobotConfig.get().wrist().minAngle() ? 1 : 0;
 
         motor.setControl(
-            positionRequest.withSlot(slot).withPosition(clampAngle(goalAngle).getRotations()));
+            positionRequest
+                .withSlot(slot)
+                .withPosition(Units.degreesToRotations(clampAngle(goalAngle))));
 
         break;
     }
 
-    DogLog.log(
-        "Wrist/Position", Rotation2d.fromRotations(motor.getPosition().getValue()).getDegrees());
+    DogLog.log("Wrist/Position", Units.rotationsToDegrees(motor.getPosition().getValue()));
     DogLog.log("Wrist/HomingState", homingState);
-    DogLog.log("Wrist/GoalAngle", goalAngle.getDegrees());
+    DogLog.log("Wrist/GoalAngle", goalAngle);
   }
 
-  private Rotation2d getHomeAngleFromLowestSeen() {
-    return Rotation2d.fromDegrees(
-        RobotConfig.get().wrist().homingEndPosition().getDegrees()
-            + (getAngle().getDegrees() - lowestSeenAngle.getDegrees()));
+  private double getHomeAngleFromLowestSeen() {
+    return (RobotConfig.get().wrist().homingEndPosition() + (getAngle() - lowestSeenAngle));
   }
 
-  public void setAngle(Rotation2d angle) {
+  public void setAngle(double angle) {
     angle = clampAngle(angle);
 
     goalAngle = angle;
   }
 
-  private static Rotation2d clampAngle(Rotation2d angle) {
-    if (angle.getDegrees() < RobotConfig.get().wrist().minAngle().getDegrees()) {
+  private static double clampAngle(double angle) {
+    if (angle < RobotConfig.get().wrist().minAngle()) {
       angle = RobotConfig.get().wrist().minAngle();
 
-    } else if (angle.getDegrees() > RobotConfig.get().wrist().maxAngle().getDegrees()) {
+    } else if (angle > RobotConfig.get().wrist().maxAngle()) {
       angle = RobotConfig.get().wrist().maxAngle();
     }
     return angle;
   }
 
-  public Rotation2d getAngle() {
-    return Rotation2d.fromRotations(motor.getPosition().getValueAsDouble());
+  public double getAngle() {
+    return Units.rotationsToDegrees(motor.getPosition().getValueAsDouble());
   }
 
-  public boolean atAngle(Rotation2d angle) {
-    return atAngle(angle, Rotation2d.fromDegrees(1));
+  public boolean atAngle(double angle) {
+    return atAngle(angle, 1);
   }
 
-  private boolean atAngle(Rotation2d angle, Rotation2d tolerance) {
-    return Math.abs(angle.getDegrees() - getAngle().getDegrees()) < tolerance.getDegrees();
+  private boolean atAngle(double angle, double tolerance) {
+    return Math.abs(angle - getAngle()) < tolerance;
   }
 
   public boolean atAngleForSpeaker(double distance) {
@@ -133,26 +132,22 @@ public class WristSubsystem extends LifecycleSubsystem {
   }
 
   public boolean atAngleForFloorSpot(double distance) {
-    return atAngle(getAngleFromDistanceToFloorSpot(distance), Rotation2d.fromDegrees(5));
+    return atAngle(getAngleFromDistanceToFloorSpot(distance), 5);
   }
 
   public HomingState getHomingState() {
     return homingState;
   }
 
-  public Rotation2d getAngleFromDistanceToSpeaker(double distance) {
-    return Rotation2d.fromDegrees(speakerDistanceToAngle.get(distance));
+  public double getAngleFromDistanceToSpeaker(double distance) {
+    return speakerDistanceToAngle.get(distance);
   }
 
-  private Rotation2d getToleranceFromDistance(double distance) {
-    return distance > 8
-        ? Rotation2d.fromDegrees(0.5)
-        : distance < 0.85
-            ? Rotation2d.fromDegrees(5.0)
-            : Rotation2d.fromDegrees(distanceToAngleTolerance.get(distance));
+  private double getToleranceFromDistance(double distance) {
+    return distance > 8 ? 0.5 : distance < 0.85 ? 5.0 : (distanceToAngleTolerance.get(distance));
   }
 
-  public Rotation2d getAngleFromDistanceToFloorSpot(double distance) {
-    return Rotation2d.fromDegrees(floorSpotDistanceToAngle.get(distance));
+  public double getAngleFromDistanceToFloorSpot(double distance) {
+    return floorSpotDistanceToAngle.get(distance);
   }
 }

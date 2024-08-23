@@ -7,7 +7,6 @@ package frc.robot.config;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.mechanisms.swerve.utility.PhoenixPIDController;
 import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import java.util.function.Consumer;
 
@@ -72,9 +71,9 @@ public record RobotConfig(
   public record WristConfig(
       int motorID,
       TalonFXConfiguration motorConfig,
-      Rotation2d homingEndPosition,
-      Rotation2d minAngle,
-      Rotation2d maxAngle,
+      double homingEndPosition,
+      double minAngle,
+      double maxAngle,
       Consumer<InterpolatingDoubleTreeMap> distanceToAngleTolerance,
       Consumer<InterpolatingDoubleTreeMap> speakerShotAngles,
       Consumer<InterpolatingDoubleTreeMap> floorShotAngles) {}

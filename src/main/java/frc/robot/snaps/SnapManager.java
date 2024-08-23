@@ -5,7 +5,6 @@
 package frc.robot.snaps;
 
 import dev.doglog.DogLog;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -13,49 +12,39 @@ import frc.robot.fms.FmsSubsystem;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
-import java.util.function.Supplier;
+import java.util.function.DoubleSupplier;
 
 public class SnapManager extends LifecycleSubsystem {
-  public static Rotation2d getSourceAngle() {
-    return FmsSubsystem.isRedAlliance()
-        ? Rotation2d.fromDegrees(60.0)
-        : Rotation2d.fromDegrees(180.0 - 60.0);
+  public static double getSourceAngle() {
+    return FmsSubsystem.isRedAlliance() ? 60.0 : (180.0 - 60.0);
   }
 
-  public static Rotation2d getStageLeftAngle() {
-    return FmsSubsystem.isRedAlliance()
-        ? Rotation2d.fromDegrees(-60)
-        : Rotation2d.fromDegrees(-60 + 180);
+  public static double getStageLeftAngle() {
+    return FmsSubsystem.isRedAlliance() ? -60 : (-60 + 180);
   }
 
-  public static Rotation2d getStageRightAngle() {
-    return FmsSubsystem.isRedAlliance()
-        ? Rotation2d.fromDegrees(60.0)
-        : Rotation2d.fromDegrees(60.0 + 180.0);
+  public static double getStageRightAngle() {
+    return FmsSubsystem.isRedAlliance() ? 60.0 : (60.0 + 180.0);
   }
 
-  public static Rotation2d getAmpAngle() {
-    return FmsSubsystem.isRedAlliance()
-        ? Rotation2d.fromDegrees(-90)
-        : Rotation2d.fromDegrees(-90.0);
+  public static double getAmpAngle() {
+    return FmsSubsystem.isRedAlliance() ? -90 : (-90.0);
   }
 
-  public static Rotation2d getStageBackChain() {
-    return FmsSubsystem.isRedAlliance() ? Rotation2d.fromDegrees(180) : Rotation2d.fromDegrees(0);
+  public static double getStageBackChain() {
+    return FmsSubsystem.isRedAlliance() ? 180 : (0);
   }
 
-  public static Rotation2d getPodiumAngle() {
-    return FmsSubsystem.isRedAlliance() ? Rotation2d.fromDegrees(0) : Rotation2d.fromDegrees(180.0);
+  public static double getPodiumAngle() {
+    return FmsSubsystem.isRedAlliance() ? 0 : (180.0);
   }
 
-  public static Rotation2d getPresetAmpAngle() {
-    return FmsSubsystem.isRedAlliance()
-        ? Rotation2d.fromDegrees(315)
-        : Rotation2d.fromDegrees(315 + 180.0);
+  public static double getPresetAmpAngle() {
+    return FmsSubsystem.isRedAlliance() ? 315 : (315 + 180.0);
   }
 
   private final SwerveSubsystem swerve;
-  private Rotation2d angle = new Rotation2d();
+  private double angle = 0;
   private boolean enabled;
   private final CommandXboxController controller;
 
@@ -67,7 +56,7 @@ public class SnapManager extends LifecycleSubsystem {
     new Trigger(() -> Math.abs(controller.getRightX()) > 0.075).onTrue(getDisableCommand());
   }
 
-  public void setAngle(Rotation2d angle) {
+  public void setAngle(double angle) {
     this.angle = angle;
   }
 
@@ -82,16 +71,16 @@ public class SnapManager extends LifecycleSubsystem {
   @Override
   public void robotPeriodic() {
     DogLog.log("SnapManager/Enabled", enabled);
-    DogLog.log("SnapManager/GoalAngle", angle.getDegrees());
+    DogLog.log("SnapManager/GoalAngle", angle);
 
     if (enabled) {
       swerve.setSnapToAngle(angle);
     }
   }
 
-  public Command getCommand(Supplier<Rotation2d> angle) {
+  public Command getCommand(DoubleSupplier angle) {
     return run(() -> {
-          setAngle(angle.get());
+          setAngle(angle.getAsDouble());
           setEnabled(true);
         })
         .withName("SnapCommand");

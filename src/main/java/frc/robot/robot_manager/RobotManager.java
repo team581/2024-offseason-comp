@@ -5,7 +5,6 @@
 package frc.robot.robot_manager;
 
 import dev.doglog.DogLog;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -84,8 +83,8 @@ public class RobotManager extends LifecycleSubsystem {
     DistanceAngle floorSpotVisionTargets = vision.getDistanceAngleFloorShot();
     double speakerDistance = speakerDistanceAngle.distance();
     double floorSpotDistance = floorSpotVisionTargets.distance();
-    Rotation2d wristAngleForSpeaker = wrist.getAngleFromDistanceToSpeaker(speakerDistance);
-    Rotation2d wristAngleForFloorSpot = wrist.getAngleFromDistanceToFloorSpot(floorSpotDistance);
+    double wristAngleForSpeaker = wrist.getAngleFromDistanceToSpeaker(speakerDistance);
+    double wristAngleForFloorSpot = wrist.getAngleFromDistanceToFloorSpot(floorSpotDistance);
     shooter.setSpeakerDistance(speakerDistance);
     shooter.setFloorSpotDistance(floorSpotDistance);
 
@@ -348,7 +347,7 @@ public class RobotManager extends LifecycleSubsystem {
           var shooterAtGoal = shooter.atGoal(ShooterMode.FLOOR_SHOT);
           var headingAtGoal = imu.atAngleForFloorSpot(floorSpotVisionTargets.targetAngle());
           var swerveAtGoal = swerve.movingSlowEnoughForFloorShot();
-          var angularVelocityAtGoal = Math.abs(imu.getRobotAngularVelocity().getDegrees()) < 360.0;
+          var angularVelocityAtGoal = Math.abs(imu.getRobotAngularVelocity()) < 360.0;
           DogLog.log("RobotManager/FloorShot/WristAtGoal", wristAtGoal);
           DogLog.log("RobotManager/FloorShot/ShooterAtGoal", shooterAtGoal);
           DogLog.log("RobotManager/FloorShot/HeadingAtGoal", headingAtGoal);
