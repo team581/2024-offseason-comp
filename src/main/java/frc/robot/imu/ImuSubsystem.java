@@ -60,7 +60,7 @@ public class ImuSubsystem extends LifecycleSubsystem {
   }
 
   public double getRobotHeading() {
-    return imu.getYaw().getValue();
+    return MathUtil.inputModulus(imu.getYaw().getValue(), -180, 180);
   }
 
   public double getRobotHeading(double timestamp) {
