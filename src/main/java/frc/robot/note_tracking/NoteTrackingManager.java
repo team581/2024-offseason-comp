@@ -266,7 +266,14 @@ public class NoteTrackingManager extends LifecycleSubsystem {
                   var nearestNote = getNearestNotePoseRelative(searchPose.get(), thresholdMeters);
 
                   if (nearestNote.isPresent()) {
-                    snaps.setAngle(nearestNote.get().notePose().getRotation().getDegrees());
+                    DistanceAngle noteDistanceAngle =
+                    VisionSubsystem.distanceAngleToTarget(
+                        new Pose2d(nearestNote.get().notePose().getTranslation(), new Rotation2d()), getPose());
+                Rotation2d rotation =
+                    new Rotation2d(Units.degreesToRadians(noteDistanceAngle.targetAngle()) + Math.PI);
+
+
+                    snaps.setAngle(rotation.getDegrees());
                     snaps.setEnabled(true);
                     DogLog.log("Debug/IntakingOriginal", Timer.getFPGATimestamp());
 
