@@ -247,13 +247,10 @@ public class Robot extends TimedRobot {
         .y()
         .onTrue(actions.waitSubwooferShotCommand())
         .onFalse(actions.stowCommand());
-    operatorController
+
+        operatorController
         .leftTrigger()
         .onTrue(autoManager.testCommand())
-        .onFalse(actions.stowCommand());
-        operatorController
-        .povRight()
-        .onTrue(autoManager.testCommand1())
         .onFalse(actions.stowCommand());
     operatorController
         .rightTrigger()
