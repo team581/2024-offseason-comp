@@ -8,6 +8,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -62,6 +63,19 @@ public class AutoManager extends LifecycleSubsystem {
       new Pose2d(5.33, 7.26, Rotation2d.fromDegrees(167.95));
   private Pose2d DROPPED_NOTE_SEARCH = new Pose2d(13.49, 7.40, Rotation2d.fromDegrees(170.5));
 
+  private static final BoundingBox RED_SCORING_BOX =
+      new BoundingBox(
+          new Translation2d(11.12, 7.85),
+          new Translation2d(15.4, 7.61),
+          new Translation2d(11.75, 4.96),
+          new Translation2d(15.78, 3.19));
+  private static final BoundingBox BLUE_SCORING_BOX =
+      new BoundingBox(
+          new Translation2d(1.1, 7.57),
+          new Translation2d(5.08, 7.72),
+          new Translation2d(1.11, 3.49),
+          new Translation2d(4.97, 4.67));
+
   public AutoManager(
       RobotCommands actions,
       NoteTrackingManager noteTrackingManager,
@@ -72,6 +86,18 @@ public class AutoManager extends LifecycleSubsystem {
     this.noteTrackingManager = noteTrackingManager;
     this.robotManager = robotManager;
     this.localization = localization;
+  }
+
+  private BoundingBox getScoringBox() {
+    if (FmsSubsystem.isRedAlliance()) {
+      return RED_SCORING_BOX;
+    } else {
+      return BLUE_SCORING_BOX;
+    }
+  }
+
+  private boolean robotInBox() {
+    return getScoringBox().contains(localization.getPose().getTranslation());
   }
 
   private List<Pose2d> getScoringDestinations() {
@@ -135,7 +161,9 @@ public class AutoManager extends LifecycleSubsystem {
 
   private Command scoreCommand() {
     return Commands.defer(
-            () -> AutoBuilder.pathfindToPose(getClosestScoringDestination(), DEFAULT_CONSTRAINTS),
+            () ->
+                AutoBuilder.pathfindToPose(getClosestScoringDestination(), DEFAULT_CONSTRAINTS)
+                    .unless(() -> robotInBox()),
             Set.of(robotManager.swerve))
         .withTimeout(3)
         .andThen(actions.speakerShotCommand().until(() -> !robotManager.getState().hasNote))
