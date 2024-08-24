@@ -169,6 +169,7 @@ public class AutoManager extends LifecycleSubsystem {
               // Then, once we have a note, do the drop
               .andThen(dropCommand())
               .withTimeout(6);
+      case DROP_PRELOAD -> dropCommand();
       case SCORE ->
           intakeAnyStepNotes(step)
               // Then, once we have a note, do the score
@@ -207,10 +208,12 @@ public class AutoManager extends LifecycleSubsystem {
             }),
         doManyAutoSteps(
             List.of(
+                AutoNoteStep.dropPreload(),
                 AutoNoteStep.score(2, 3),
                 AutoNoteStep.score(3, 4),
                 AutoNoteStep.score(4, 5),
-                AutoNoteStep.score(5, 6))));
+                AutoNoteStep.score(5, 6),
+                AutoNoteStep.score(6))));
   }
 
   public Command testCommand() {
