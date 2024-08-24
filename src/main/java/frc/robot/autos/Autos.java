@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.auto_manager.AutoManager;
 import frc.robot.config.RobotConfig;
 import frc.robot.localization.LocalizationSubsystem;
+import frc.robot.note_tracking.NoteTrackingManager;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
 import frc.robot.swerve.SwerveSubsystem;
@@ -58,19 +59,22 @@ public class Autos extends LifecycleSubsystem {
   private final RobotManager robotManager;
   private final AutoCommands autoCommands;
   private final AutoManager autoManager;
+  private final NoteTrackingManager noteTrackingManager;
 
   public Autos(
       SwerveSubsystem swerve,
       LocalizationSubsystem localization,
       RobotCommands actions,
       RobotManager robotManager,
-      AutoManager autoManager) {
+      AutoManager autoManager,
+      NoteTrackingManager noteTrackingManager) {
     super(SubsystemPriority.AUTOS);
     this.swerve = swerve;
     this.robotManager = robotManager;
     this.autoManager = autoManager;
+    this.noteTrackingManager = noteTrackingManager;
 
-    autoCommands = new AutoCommands(actions, robotManager, autoManager);
+    autoCommands = new AutoCommands(actions, robotManager, autoManager, noteTrackingManager);
 
     // Configure AutoBuilder last
     AutoBuilder.configureHolonomic(

@@ -6,13 +6,21 @@ package frc.robot.autos;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
+
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.auto_manager.AutoManager;
+import frc.robot.auto_manager.AutoNoteStaged;
+import frc.robot.auto_manager.AutoNoteStep;
 import frc.robot.fms.FmsSubsystem;
+import frc.robot.note_tracking.NoteMapElement;
+import frc.robot.note_tracking.NoteTrackingManager;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
 import frc.robot.robot_manager.RobotState;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class AutoCommands {
@@ -28,11 +36,14 @@ public class AutoCommands {
   private final RobotCommands actions;
   private final RobotManager robotManager;
   private final AutoManager autoManager;
+  private final NoteTrackingManager noteTrackingManager;
 
-  public AutoCommands(RobotCommands actions, RobotManager robotManager, AutoManager autoManager) {
+
+  public AutoCommands(RobotCommands actions, RobotManager robotManager, AutoManager autoManager, NoteTrackingManager noteTrackingManager) {
     this.actions = actions;
     this.robotManager = robotManager;
     this.autoManager = autoManager;
+    this.noteTrackingManager = noteTrackingManager;
   }
 
   public Command doNothingCommand() {
@@ -245,8 +256,23 @@ public class AutoCommands {
                     .andThen(speakerShotWithTimeout())));
   }
 
-  public Command noteMapCommand() {
-    return autoManager.doManyAutoSteps(List.of());
+  public Command doManyAutoSteps(List<AutoNoteStep> steps) {
+    return Commands.sequence(steps.stream().map(autoManager::doAutoStep).toArray(Command[]::new));
+  }
+
+   public Command noteMapCommand() {
+    return Commands.sequence(
+        Commands.runOnce(
+            () -> {
+              var now = Timer.getFPGATimestamp();
+              noteTrackingManager.resetNoteMap(
+                  new ArrayList<>(
+                      List.of(
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(4)),
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(5)),
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(6)))));
+            }),
+        doManyAutoSteps(List.of(AutoNoteStep.score(3, 2), AutoNoteStep.score(4))));
   }
 
   public Command testAuto() {

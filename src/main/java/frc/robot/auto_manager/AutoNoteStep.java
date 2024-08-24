@@ -21,7 +21,7 @@ public record AutoNoteStep(AutoNoteAction action, List<Supplier<Optional<Pose2d>
         AutoNoteAction.DROP, list.stream().map(AutoNoteStep::noteIdToPose).toList());
   }
 
-  static AutoNoteStep score(Integer... noteIds) {
+  public static AutoNoteStep score(Integer... noteIds) {
     List<Integer> list = List.of(noteIds);
 
     return new AutoNoteStep(

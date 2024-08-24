@@ -181,7 +181,7 @@ public class AutoManager extends LifecycleSubsystem {
         .withTimeout(2.5);
   }
 
-  private Command doAutoStep(AutoNoteStep step) {
+  public Command doAutoStep(AutoNoteStep step) {
     return switch (step.action()) {
       case CLEANUP -> cleanupCommand();
       case DROP ->
