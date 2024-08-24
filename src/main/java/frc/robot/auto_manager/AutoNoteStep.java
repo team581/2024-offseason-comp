@@ -14,7 +14,7 @@ public record AutoNoteStep(AutoNoteAction action, List<Supplier<Optional<Pose2d>
     return new AutoNoteStep(AutoNoteAction.CLEANUP, List.of());
   }
 
-  static AutoNoteStep drop(Integer... noteIds) {
+  public static AutoNoteStep drop(Integer... noteIds) {
     List<Integer> list = List.of(noteIds);
 
     return new AutoNoteStep(
