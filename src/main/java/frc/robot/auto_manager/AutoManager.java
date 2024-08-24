@@ -135,7 +135,7 @@ public class AutoManager extends LifecycleSubsystem {
     // if we're close to midline
 
 
-        return cleanupNote().repeatedly().onlyWhile(noteTrackingManager::mapContainsNote);
+        return cleanupNote().repeatedly();
   }
 
   private Command scoreCommand() {
