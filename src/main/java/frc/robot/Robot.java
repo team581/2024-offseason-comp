@@ -251,6 +251,10 @@ public class Robot extends TimedRobot {
         .leftTrigger()
         .onTrue(autoManager.testCommand())
         .onFalse(actions.stowCommand());
+        operatorController
+        .povRight()
+        .onTrue(autoManager.testCommand1())
+        .onFalse(actions.stowCommand());
     operatorController
         .rightTrigger()
         .onTrue(actions.waitForSpeakerShotCommand())
