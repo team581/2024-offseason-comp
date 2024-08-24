@@ -49,7 +49,7 @@ public class AutoManager extends LifecycleSubsystem {
           // new Pose2d(12.19, 4.98, Rotation2d.fromDegrees(8.28)),
           // new Pose2d(13.67, 3.31, Rotation2d.fromDegrees(38.97)));
 
-  new Pose2d(12.30,7.08,Rotation2d.fromDegrees(-20.5)));
+          new Pose2d(12.30, 7.08, Rotation2d.fromDegrees(-20.5)));
 
   public static final List<Pose2d> BLUE_DESTINATIONS =
       List.of(
@@ -131,8 +131,9 @@ public class AutoManager extends LifecycleSubsystem {
                     () ->
                         AutoBuilder.pathfindToPose(
                             getClosestScoringDestination(), DEFAULT_CONSTRAINTS))
-                .andThen(actions.speakerShotCommand())
-                .unless(() -> !robotManager.getState().hasNote));
+                .andThen(
+                    actions.speakerShotCommand().until(() -> !robotManager.getState().hasNote)))
+        .unless(() -> !robotManager.getState().hasNote);
   }
 
   private Command cleanupCommand() {
@@ -158,8 +159,8 @@ public class AutoManager extends LifecycleSubsystem {
             () -> AutoBuilder.pathfindToPose(getClosestScoringDestination(), DEFAULT_CONSTRAINTS),
             Set.of(robotManager.swerve))
         .withTimeout(3)
-        .andThen(actions.speakerShotCommand())
-        .onlyWhile(() -> robotManager.getState().hasNote);
+        .andThen(actions.speakerShotCommand().until(() -> !robotManager.getState().hasNote))
+        .onlyIf(() -> robotManager.getState().hasNote);
   }
 
   private Command dropCommand() {
@@ -220,10 +221,11 @@ public class AutoManager extends LifecycleSubsystem {
               noteTrackingManager.resetNoteMap(
                   new ArrayList<>(
                       List.of(
-                          new NoteMapElement(now + 5, AutoNoteStaged.noteIdToPose(3)),
-                          new NoteMapElement(now + 5, AutoNoteStaged.noteIdToPose(4)),
-                          new NoteMapElement(now + 5, AutoNoteStaged.noteIdToPose(5)))));
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(3)),
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(4)),
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(5)))));
             }),
-        doManyAutoSteps(List.of(AutoNoteStep.score(3, 4), AutoNoteStep.score(4,5), AutoNoteStep.score(5))));
+        doManyAutoSteps(
+            List.of(AutoNoteStep.score(3, 4), AutoNoteStep.score(4, 5), AutoNoteStep.score(5))));
   }
 }
