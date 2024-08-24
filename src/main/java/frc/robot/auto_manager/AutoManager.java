@@ -45,11 +45,11 @@ public class AutoManager extends LifecycleSubsystem {
   public static final Pose2d MIDLINE_CLEANUP_POSE = new Pose2d(8.271, 4.106, new Rotation2d(0));
   public static final List<Pose2d> RED_DESTINATIONS =
       List.of(
-          // new Pose2d(12.46, 6.35, Rotation2d.fromDegrees(-11.05)),
-          // new Pose2d(12.19, 4.98, Rotation2d.fromDegrees(8.28)),
-          // new Pose2d(13.67, 3.31, Rotation2d.fromDegrees(38.97)));
+          new Pose2d(12.46, 6.35, Rotation2d.fromDegrees(-11.05)),
+          new Pose2d(12.19, 4.98, Rotation2d.fromDegrees(8.28)),
+          new Pose2d(13.67, 3.31, Rotation2d.fromDegrees(38.97)),
 
-          new Pose2d(12.30, 7.08, Rotation2d.fromDegrees(-20.5)));
+          new Pose2d(13.65, 5.553, new Rotation2d(0)));
 
   public static final List<Pose2d> BLUE_DESTINATIONS =
       List.of(
@@ -124,18 +124,14 @@ public class AutoManager extends LifecycleSubsystem {
   private Command cleanupNote() {
     // find and score a note
 
-    return noteTrackingManager
-        .intakeNearestMapNote(10.0)
-        .andThen(
-            scoreCommand());
+    return noteTrackingManager.intakeNearestMapNote(10.0).andThen(scoreCommand());
   }
 
   private Command cleanupCommand() {
 
     // if we're close to midline
 
-
-        return cleanupNote().repeatedly();
+    return cleanupNote().repeatedly();
   }
 
   private Command scoreCommand() {
@@ -205,34 +201,20 @@ public class AutoManager extends LifecycleSubsystem {
               noteTrackingManager.resetNoteMap(
                   new ArrayList<>(
                       List.of(
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(2)),
                           new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(3)),
                           new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(4)),
                           new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(5)))));
             }),
         doManyAutoSteps(
-            List.of(AutoNoteStep.score(3, 4), AutoNoteStep.score(4, 5), AutoNoteStep.score(5, 6))));
-  }
-
-  public Command testCommand2() {
-    return Commands.sequence(
-        Commands.runOnce(
-            () -> {
-              var now = Timer.getFPGATimestamp();
-              noteTrackingManager.resetNoteMap(
-                  new ArrayList<>(
-                      List.of(
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(4)),
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(6)),
-
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(5)))));
-            }),
-        doManyAutoSteps(
-            List.of(AutoNoteStep.score(4, 5), AutoNoteStep.score(5, 6), AutoNoteStep.score(6))));
+            List.of(
+                AutoNoteStep.score(2, 3),
+                AutoNoteStep.score(3, 4),
+                AutoNoteStep.score(4, 5),
+                AutoNoteStep.score(5, 6))));
   }
 
   public Command testCommand() {
-    return Commands.sequence(
-        doManyAutoSteps(
-            List.of(AutoNoteStep.cleanup())));
+    return Commands.sequence(doManyAutoSteps(List.of(AutoNoteStep.cleanup())));
   }
 }

@@ -267,11 +267,13 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
                   if (nearestNote.isPresent()) {
                     DistanceAngle noteDistanceAngle =
-                    VisionSubsystem.distanceAngleToTarget(
-                        new Pose2d(nearestNote.get().notePose().getTranslation(), new Rotation2d()), getPose());
-                Rotation2d rotation =
-                    new Rotation2d(Units.degreesToRadians(noteDistanceAngle.targetAngle()) + Math.PI);
-
+                        VisionSubsystem.distanceAngleToTarget(
+                            new Pose2d(
+                                nearestNote.get().notePose().getTranslation(), new Rotation2d()),
+                            getPose());
+                    Rotation2d rotation =
+                        new Rotation2d(
+                            Units.degreesToRadians(noteDistanceAngle.targetAngle()) + Math.PI);
 
                     snaps.setAngle(rotation.getDegrees());
                     snaps.setEnabled(true);
