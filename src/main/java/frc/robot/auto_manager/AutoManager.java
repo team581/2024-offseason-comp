@@ -125,33 +125,17 @@ public class AutoManager extends LifecycleSubsystem {
     // find and score a note
 
     return noteTrackingManager
-        .intakeNearestMapNote(2.0)
+        .intakeNearestMapNote(10.0)
         .andThen(
-            Commands.deferredProxy(
-                    () ->
-                        AutoBuilder.pathfindToPose(
-                            getClosestScoringDestination(), DEFAULT_CONSTRAINTS))
-                .andThen(
-                    actions.speakerShotCommand().until(() -> !robotManager.getState().hasNote)))
-        .unless(() -> !robotManager.getState().hasNote);
+            scoreCommand());
   }
 
   private Command cleanupCommand() {
-    var robotPose = localization.getPose();
-    var speakerCleanupPose = getSpeakerCleanupPose();
-    // if we're close to speaker
-    if (robotPose.getTranslation().getDistance(speakerCleanupPose.getTranslation()) < 3.0) {
-
-      return AutoBuilder.pathfindToPose(speakerCleanupPose, DEFAULT_CONSTRAINTS)
-          .until(noteTrackingManager::mapContainsNote)
-          .andThen(cleanupNote().repeatedly().onlyWhile(noteTrackingManager::mapContainsNote));
-    }
 
     // if we're close to midline
 
-    return AutoBuilder.pathfindToPose(MIDLINE_CLEANUP_POSE, DEFAULT_CONSTRAINTS)
-        .until(noteTrackingManager::mapContainsNote)
-        .andThen(cleanupNote().repeatedly().onlyWhile(noteTrackingManager::mapContainsNote));
+
+        return cleanupNote().repeatedly().onlyWhile(noteTrackingManager::mapContainsNote);
   }
 
   private Command scoreCommand() {
@@ -213,7 +197,7 @@ public class AutoManager extends LifecycleSubsystem {
     return Commands.none();
   }
 
-  public Command testCommand() {
+  public Command testCommand1() {
     return Commands.sequence(
         Commands.runOnce(
             () -> {
@@ -226,6 +210,29 @@ public class AutoManager extends LifecycleSubsystem {
                           new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(5)))));
             }),
         doManyAutoSteps(
-            List.of(AutoNoteStep.score(3, 4), AutoNoteStep.score(4, 5), AutoNoteStep.score(5))));
+            List.of(AutoNoteStep.score(3, 4), AutoNoteStep.score(4, 5), AutoNoteStep.score(5, 6))));
+  }
+
+  public Command testCommand2() {
+    return Commands.sequence(
+        Commands.runOnce(
+            () -> {
+              var now = Timer.getFPGATimestamp();
+              noteTrackingManager.resetNoteMap(
+                  new ArrayList<>(
+                      List.of(
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(4)),
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(6)),
+
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(5)))));
+            }),
+        doManyAutoSteps(
+            List.of(AutoNoteStep.score(4, 5), AutoNoteStep.score(5, 6), AutoNoteStep.score(6))));
+  }
+
+  public Command testCommand() {
+    return Commands.sequence(
+        doManyAutoSteps(
+            List.of(AutoNoteStep.cleanup())));
   }
 }
