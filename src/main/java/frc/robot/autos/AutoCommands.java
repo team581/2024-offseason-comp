@@ -6,7 +6,6 @@ package frc.robot.autos;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
-
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -19,7 +18,6 @@ import frc.robot.note_tracking.NoteTrackingManager;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
 import frc.robot.robot_manager.RobotState;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,8 +36,11 @@ public class AutoCommands {
   private final AutoManager autoManager;
   private final NoteTrackingManager noteTrackingManager;
 
-
-  public AutoCommands(RobotCommands actions, RobotManager robotManager, AutoManager autoManager, NoteTrackingManager noteTrackingManager) {
+  public AutoCommands(
+      RobotCommands actions,
+      RobotManager robotManager,
+      AutoManager autoManager,
+      NoteTrackingManager noteTrackingManager) {
     this.actions = actions;
     this.robotManager = robotManager;
     this.autoManager = autoManager;
@@ -260,7 +261,7 @@ public class AutoCommands {
     return Commands.sequence(steps.stream().map(autoManager::doAutoStep).toArray(Command[]::new));
   }
 
-   public Command noteMapCommand() {
+  public Command noteMapCommand() {
     return Commands.sequence(
         Commands.runOnce(
             () -> {
@@ -272,7 +273,8 @@ public class AutoCommands {
                           new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(5)),
                           new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(6)))));
             }),
-        doManyAutoSteps(List.of(AutoNoteStep.drop(4), AutoNoteStep.score(4, 5), AutoNoteStep.score(6))));
+        doManyAutoSteps(
+            List.of(AutoNoteStep.drop(4), AutoNoteStep.score(4, 5), AutoNoteStep.score(6))));
   }
 
   public Command testAuto() {

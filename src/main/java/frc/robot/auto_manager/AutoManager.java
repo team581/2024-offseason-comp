@@ -48,7 +48,6 @@ public class AutoManager extends LifecycleSubsystem {
           new Pose2d(12.46, 6.35, Rotation2d.fromDegrees(-11.05)),
           new Pose2d(12.19, 4.98, Rotation2d.fromDegrees(8.28)),
           new Pose2d(13.67, 3.31, Rotation2d.fromDegrees(38.97)),
-
           new Pose2d(13.65, 5.553, new Rotation2d(0)));
 
   public static final List<Pose2d> BLUE_DESTINATIONS =
