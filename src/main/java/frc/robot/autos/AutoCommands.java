@@ -274,7 +274,11 @@ public class AutoCommands {
                           new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(6)))));
             }),
         doManyAutoSteps(
-            List.of(AutoNoteStep.drop(4), AutoNoteStep.score(4, 5), AutoNoteStep.score(6))));
+            List.of(
+                AutoNoteStep.dropPreload(),
+                AutoNoteStep.score(4, 5),
+                AutoNoteStep.score(5, 6),
+                AutoNoteStep.score(6))));
   }
 
   public Command testAuto() {
