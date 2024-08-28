@@ -8,7 +8,6 @@ import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
-import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.config.RobotConfig;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
@@ -22,7 +21,6 @@ public class ShooterSubsystem extends LifecycleSubsystem {
   private double speakerDistance = 0;
   private double floorSpotDistance = 0;
   private double goalRPM = 0;
-  private double usedTolerance = ShooterRPMs.TOLERANCE;
 
   private final InterpolatingDoubleTreeMap speakerDistanceToRPM = new InterpolatingDoubleTreeMap();
   private final InterpolatingDoubleTreeMap floorSpotDistanceToRPM =
@@ -75,11 +73,7 @@ public class ShooterSubsystem extends LifecycleSubsystem {
         goalRPM = ShooterRPMs.SHOOTER_AMP;
         break;
       case IDLE:
-        if (DriverStation.isAutonomous()) {
-          goalRPM = speakerDistanceToRPM.get(speakerDistance);
-        } else {
-          goalRPM = ShooterRPMs.IDLE;
-        }
+        goalRPM = ShooterRPMs.IDLE;
         break;
       case FULLY_STOPPED:
         goalRPM = ShooterRPMs.FULLY_STOPPED;
@@ -96,7 +90,7 @@ public class ShooterSubsystem extends LifecycleSubsystem {
     DogLog.log("Shooter/RightMotor/RPM", getRPM(rightMotor));
     DogLog.log("Shooter/AtGoal", atGoal(goalMode));
 
-    if (goalMode == ShooterMode.FULLY_STOPPED) {
+    if (goalRPM == 0) {
       leftMotor.disable();
       rightMotor.disable();
     } else {
