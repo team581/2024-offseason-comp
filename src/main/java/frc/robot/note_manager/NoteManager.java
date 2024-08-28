@@ -300,7 +300,7 @@ public class NoteManager extends LifecycleSubsystem {
       case QUEUER_TO_CONVEYOR_FINAL:
         intake.setState(IntakeState.TO_QUEUER);
         conveyor.setState(ConveyorState.INTAKE_TO_SELF);
-        queuer.setState(QueuerState.IDLE);
+        queuer.setState(QueuerState.QUEUER_TO_CONVEYOR_FINAL);
         redirect.setState(RedirectState.QUEUER_TO_CONVEYOR); // -6
         break;
       case CONVEYOR_TO_QUEUER:

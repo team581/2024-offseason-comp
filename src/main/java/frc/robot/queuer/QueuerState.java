@@ -6,6 +6,7 @@ package frc.robot.queuer;
 
 public enum QueuerState {
   IDLE,
+  QUEUER_TO_CONVEYOR_FINAL,
   INTAKING,
   PASS_TO_SHOOTER,
 
