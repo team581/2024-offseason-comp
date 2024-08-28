@@ -24,7 +24,6 @@ import frc.robot.robot_manager.RobotManager;
 import frc.robot.robot_manager.RobotState;
 import frc.robot.snaps.SnapManager;
 import frc.robot.swerve.SwerveSubsystem;
-import frc.robot.util.Stopwatch;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
 import frc.robot.vision.DistanceAngle;
@@ -327,9 +326,8 @@ public class NoteTrackingManager extends LifecycleSubsystem {
         "NoteTracking/NoteMap",
         noteMap.stream().map(NoteMapElement::notePose).toArray(Pose2d[]::new));
     updateBox();
-    Stopwatch.getInstance().start("Debug/NoteMapTime");
+
     updateMap();
-    Stopwatch.getInstance().stop("Debug/NoteMapTime");
 
     // log closest note to bobot
     var maybeClosest = getNearestNotePoseRelative(getPose(), 99987.0);

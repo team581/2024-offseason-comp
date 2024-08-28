@@ -19,7 +19,6 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.config.RobotConfig;
@@ -335,12 +334,8 @@ public class SwerveSubsystem extends LifecycleSubsystem {
 
           if (!maybeTarget.isPresent()) {
             setFieldRelativeSpeeds(new ChassisSpeeds(), closedLoop);
-            DogLog.log("Debug/DriveToPoseNoTarget", Timer.getFPGATimestamp());
             return;
           }
-
-          DogLog.log("Debug/DriveToPoseHasTarget", Timer.getFPGATimestamp());
-
           var target = maybeTarget.get();
 
           var pose = currentPose.get();
