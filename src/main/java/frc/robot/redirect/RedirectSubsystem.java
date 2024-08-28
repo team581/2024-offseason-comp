@@ -27,8 +27,10 @@ public class RedirectSubsystem extends LifecycleSubsystem {
       case IDLE:
         motor.disable();
         break;
-      case QUEUER_TO_CONVEYOR:
       case INTAKE_TO_QUEUER:
+      motor.setVoltage(2);
+      break;
+      case QUEUER_TO_CONVEYOR:
       case QUEUER_TO_SHOOTER:
         motor.setVoltage(10);
         break;
