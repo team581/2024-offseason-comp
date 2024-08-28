@@ -195,7 +195,18 @@ public class NoteManager extends LifecycleSubsystem {
         break;
       case QUEUER_TO_CONVEYOR:
         if (conveyor.hasNote()) {
+          // Handoff done, conveyor has the note
           state = NoteState.IDLE_IN_CONVEYOR;
+        }
+        if (intake.hasNote()) {
+          // Note has crossed the intake sensor, do the next step in the handoff
+          state = NoteState.QUEUER_TO_CONVEYOR_FINAL;
+        }
+        break;
+      case QUEUER_TO_CONVEYOR_FINAL:
+        if (!intake.hasNote()) {
+          // Intake no longer has the note, go back to regular handoff state
+          state = NoteState.QUEUER_TO_CONVEYOR;
         }
         break;
       default:
@@ -284,6 +295,12 @@ public class NoteManager extends LifecycleSubsystem {
         intake.setState(IntakeState.TO_QUEUER);
         conveyor.setState(ConveyorState.INTAKE_TO_SELF);
         queuer.setState(QueuerState.PASS_TO_INTAKE);
+        redirect.setState(RedirectState.QUEUER_TO_CONVEYOR); // -6
+        break;
+      case QUEUER_TO_CONVEYOR_FINAL:
+        intake.setState(IntakeState.TO_QUEUER);
+        conveyor.setState(ConveyorState.INTAKE_TO_SELF);
+        queuer.setState(QueuerState.IDLE);
         redirect.setState(RedirectState.QUEUER_TO_CONVEYOR); // -6
         break;
       case CONVEYOR_TO_QUEUER:
