@@ -14,12 +14,12 @@ public class VisionUtil {
           new Pose2d(15.279, 5.522, new Rotation2d(0)),
           new Pose2d(15.289, 5.587, new Rotation2d(0)),
           "Subwoofer");
-          private static final VisionInterpolationData WING_LINE_AMP =
-              new VisionInterpolationData(
-                  new Pose2d(11.232, 7.78, new Rotation2d(0)),
-                  new Pose2d(11.4, 7.865, new Rotation2d(0)),
-                  "AMP_SIDE_STAGE");
-                  
+  private static final VisionInterpolationData WING_LINE_AMP =
+      new VisionInterpolationData(
+          new Pose2d(11.232, 7.78, new Rotation2d(0)),
+          new Pose2d(11.4, 7.865, new Rotation2d(0)),
+          "AMP_SIDE_STAGE");
+
   private static final VisionInterpolationData STAGE_FRONT =
       new VisionInterpolationData(
           new Pose2d(12.85, 4.71, new Rotation2d(0)),
