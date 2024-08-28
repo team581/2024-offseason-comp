@@ -298,7 +298,7 @@ class CompConfig {
                 tyToNoteDistance.put(11.85, Units.inchesToMeters(17.75 + 7 + 60.1));
                 tyToNoteDistance.put(15.25, Units.inchesToMeters(17.75 + 7 + 88.9));
               }),
-          new PerfToggles(true, true));
+          new PerfToggles(false, false));
 
   private CompConfig() {}
 }
