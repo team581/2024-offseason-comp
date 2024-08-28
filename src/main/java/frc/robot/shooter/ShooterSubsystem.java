@@ -45,10 +45,8 @@ public class ShooterSubsystem extends LifecycleSubsystem {
   public void robotPeriodic() {
     if (goalMode == ShooterMode.SHOOTER_AMP) {
       usingNoteSpin = false;
-      usedTolerance = ShooterRPMs.AMP_TOLERANCE;
     } else {
       usingNoteSpin = true;
-      usedTolerance = ShooterRPMs.TOLERANCE;
     }
     switch (goalMode) {
       case SPEAKER_SHOT:
