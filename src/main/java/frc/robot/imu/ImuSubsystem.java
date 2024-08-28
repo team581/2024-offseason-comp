@@ -60,7 +60,7 @@ public class ImuSubsystem extends LifecycleSubsystem {
   }
 
   public double getRobotHeading() {
-    return MathUtil.inputModulus(imu.getYaw().getValue(), -180, 180);
+    return MathUtil.inputModulus(imu.getYaw().getValueAsDouble(), -180, 180);
   }
 
   public double getRobotHeading(double timestamp) {
@@ -71,19 +71,19 @@ public class ImuSubsystem extends LifecycleSubsystem {
   }
 
   public double getPitch() {
-    return imu.getPitch().getValue();
+    return imu.getPitch().getValueAsDouble();
   }
 
   public double getPitchRate() {
-    return imu.getAngularVelocityYWorld().getValue();
+    return imu.getAngularVelocityYWorld().getValueAsDouble();
   }
 
   public double getRoll() {
-    return imu.getRoll().getValue();
+    return imu.getRoll().getValueAsDouble();
   }
 
   public double getRollRate() {
-    return imu.getAngularVelocityXWorld().getValue();
+    return imu.getAngularVelocityXWorld().getValueAsDouble();
   }
 
   public double getRobotAngularVelocity() {
