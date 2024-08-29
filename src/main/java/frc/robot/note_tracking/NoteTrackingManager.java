@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
@@ -45,6 +46,8 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private final RobotManager robot;
   private final SnapManager snaps;
   private static final String LIMELIGHT_NAME = "limelight-note";
+  private static final NetworkTableEntry LL_TCORNXY =
+      NetworkTableInstance.getDefault().getTable(LIMELIGHT_NAME).getEntry("tcornxy");
   private final InterpolatingDoubleTreeMap tyToDistance = new InterpolatingDoubleTreeMap();
   private ArrayList<NoteMapElement> noteMap = new ArrayList<>();
   private BoundingBox cameraFieldBox;
@@ -74,19 +77,11 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   }
 
   private void updateBox() {
-    Pose2d robotPose = getPose();
-    var tLB =
-        new Pose2d(1, 0.5, new Rotation2d())
-            .rotateBy(Rotation2d.fromDegrees(robotPose.getRotation().getDegrees()));
-    var tRB =
-        new Pose2d(1, -0.5, new Rotation2d())
-            .rotateBy(Rotation2d.fromDegrees(robotPose.getRotation().getDegrees()));
-    var bLB =
-        new Pose2d(0.3, 0.3, new Rotation2d())
-            .rotateBy(Rotation2d.fromDegrees(robotPose.getRotation().getDegrees()));
-    var bRB =
-        new Pose2d(0.3, -0.3, new Rotation2d())
-            .rotateBy(Rotation2d.fromDegrees(robotPose.getRotation().getDegrees()));
+    Pose2d robotPose = localization.getPose();
+    var tLB = new Pose2d(1, 0.5, robotPose.getRotation());
+    var tRB = new Pose2d(1, -0.5, robotPose.getRotation());
+    var bLB = new Pose2d(0.3, 0.3, robotPose.getRotation());
+    var bRB = new Pose2d(0.3, -0.3, robotPose.getRotation());
 
     var topLeft = new Translation2d(robotPose.getX() + tLB.getX(), robotPose.getY() + tLB.getY());
     var topRight = new Translation2d(robotPose.getX() + tRB.getX(), robotPose.getY() + tRB.getY());
@@ -108,25 +103,19 @@ public class NoteTrackingManager extends LifecycleSubsystem {
    * optional.empty if no notes are tracked or notes exceed the threshold.
    */
   public Optional<NoteMapElement> getNearestNotePoseRelative(
-      Pose2d searchLocation, double thresholdMeters) {
+      Translation2d searchLocation, double thresholdMeters) {
 
     var maybeElement =
         noteMap.stream()
             .filter(
                 element -> {
-                  return element
-                          .notePose()
-                          .getTranslation()
-                          .getDistance(searchLocation.getTranslation())
-                      < thresholdMeters;
+                  return element.noteTranslation().getDistance(searchLocation) < thresholdMeters;
                 })
             .min(
                 (a, b) ->
                     Double.compare(
-                        a.notePose().getTranslation().getDistance(searchLocation.getTranslation()),
-                        b.notePose()
-                            .getTranslation()
-                            .getDistance(searchLocation.getTranslation())));
+                        a.noteTranslation().getDistance(searchLocation),
+                        b.noteTranslation().getDistance(searchLocation)));
 
     if (!maybeElement.isPresent()) {
       return Optional.empty();
@@ -181,11 +170,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
   private List<Pose2d> getRawNotePoses() {
     List<Pose2d> notePoses = new ArrayList<>();
-    double[] corners =
-        NetworkTableInstance.getDefault()
-            .getTable(LIMELIGHT_NAME)
-            .getEntry("tcornxy")
-            .getDoubleArray(new double[8]);
+    double[] corners = LL_TCORNXY.getDoubleArray(new double[0]);
     // Loop through 4 points
 
     // Delete 3 point note data
@@ -193,14 +178,12 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     if (corners.length >= 8 && corners[0] != 0.0 && corners.length % 8 == 0) {
 
       for (int i = 0; i < corners.length; i = i + 8) {
-        var centerX = (corners[i] + corners[i + 2]) / 2;
-        var centerY = (corners[i + 1] + corners[i + 5]) / 2;
+        var centerX = (corners[i] + corners[i + 2]) / 2.0;
+        var centerY = (corners[i + 1] + corners[i + 5]) / 2.0;
 
-        var angleX = (((centerX / CAMERA_IMAGE_WIDTH) * FOV_HORIZONTAL) - HORIZONTAL_LEFT_VIEW);
-        var angleY = -1 * (((centerY / CAMERA_IMAGE_HEIGHT) * FOV_VERTICAL) - VERTICAL_TOP_VIEW);
-
-        DogLog.log("NoteTracking/angley", angleY);
-        DogLog.log("NoteTracking/anglex", angleX);
+        double angleX = (((centerX / CAMERA_IMAGE_WIDTH) * FOV_HORIZONTAL) - HORIZONTAL_LEFT_VIEW);
+        double angleY =
+            -1.0 * (((centerY / CAMERA_IMAGE_HEIGHT) * FOV_VERTICAL) - VERTICAL_TOP_VIEW);
 
         var maybeNotePose = noteTxTyToPose(angleX, angleY);
 
@@ -252,11 +235,11 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     noteMap.remove(note);
   }
 
-  public Command intakeNoteAtPose(Pose2d searchPose, double thresholdMeters) {
+  public Command intakeNoteAtPose(Translation2d searchPose, double thresholdMeters) {
     return intakeNoteAtPose(() -> searchPose, thresholdMeters);
   }
 
-  public Command intakeNoteAtPose(Supplier<Pose2d> searchPose, double thresholdMeters) {
+  public Command intakeNoteAtPose(Supplier<Translation2d> searchPose, double thresholdMeters) {
     return actions
         .intakeCommand()
         .alongWith(
@@ -267,26 +250,24 @@ public class NoteTrackingManager extends LifecycleSubsystem {
                   if (nearestNote.isPresent()) {
                     DistanceAngle noteDistanceAngle =
                         VisionSubsystem.distanceAngleToTarget(
-                            new Pose2d(
-                                nearestNote.get().notePose().getTranslation(), new Rotation2d()),
-                            getPose());
+                            new Pose2d(nearestNote.get().noteTranslation(), new Rotation2d()),
+                            localization.getPose());
                     Rotation2d rotation =
                         new Rotation2d(
                             Units.degreesToRadians(noteDistanceAngle.targetAngle()) + Math.PI);
+                    var notePose = new Pose2d(nearestNote.get().noteTranslation(), rotation);
 
                     snaps.setAngle(rotation.getDegrees());
                     snaps.setEnabled(true);
-                    DogLog.log("Debug/IntakingOriginal", Timer.getFPGATimestamp());
 
-                    return Optional.of(nearestNote.get().notePose());
+                    return Optional.of(notePose);
 
                   } else {
                     snaps.setEnabled(false);
-                    DogLog.log("Debug/IntakingCancelled", true);
                     return Optional.empty();
                   }
                 },
-                this::getPose,
+                localization::getPose,
                 false))
         .until(
             () ->
@@ -309,11 +290,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   }
 
   public Command intakeNearestMapNote(double thresholdMeters) {
-    return intakeNoteAtPose(this::getPose, thresholdMeters);
-  }
-
-  private Pose2d getPose() {
-    return localization.getPose();
+    return intakeNoteAtPose(() -> localization.getPose().getTranslation(), thresholdMeters);
   }
 
   @Override
@@ -324,24 +301,23 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
     DogLog.log(
         "NoteTracking/NoteMap",
-        noteMap.stream().map(NoteMapElement::notePose).toArray(Pose2d[]::new));
+        noteMap.stream().map(NoteMapElement::noteTranslation).toArray(Pose2d[]::new));
     updateBox();
 
     updateMap();
 
-    // log closest note to bobot
-    var maybeClosest = getNearestNotePoseRelative(getPose(), 99987.0);
+    var maybeClosest = getNearestNotePoseRelative(localization.getPose().getTranslation(), 99987.0);
     if (maybeClosest.isPresent()) {
 
-      DogLog.log("NoteTracking/ClosestNote", maybeClosest.get().notePose());
+      DogLog.log("NoteTracking/ClosestNote", maybeClosest.get().noteTranslation());
     }
   }
 
   public boolean mapContainsNote() {
-    return noteMap.size() > 0.0;
+    return !noteMap.isEmpty();
   }
 
-  public void addNoteToMap(Pose2d pose) {
+  public void addNoteToMap(Translation2d pose) {
     noteMap.add(new NoteMapElement(Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME, pose));
   }
 
@@ -365,23 +341,22 @@ public class NoteTrackingManager extends LifecycleSubsystem {
           noteMap.stream()
               .filter(
                   rememberedNote -> {
-                    return rememberedNote
-                            .notePose()
-                            .getTranslation()
-                            .getDistance(visionNote.getTranslation())
+                    return rememberedNote.noteTranslation().getDistance(visionNote.getTranslation())
                         < 1.0;
                   })
               .min(
                   (a, b) ->
                       Double.compare(
-                          a.notePose().getTranslation().getDistance(visionNote.getTranslation()),
-                          b.notePose().getTranslation().getDistance(visionNote.getTranslation())));
+                          a.noteTranslation().getDistance(visionNote.getTranslation()),
+                          b.noteTranslation().getDistance(visionNote.getTranslation())));
 
       if (match.isPresent()) {
         noteMap.remove(match.get());
       }
 
-      noteMap.add(new NoteMapElement(Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME, visionNote));
+      noteMap.add(
+          new NoteMapElement(
+              Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME, visionNote.getTranslation()));
     }
   }
 }

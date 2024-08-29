@@ -269,9 +269,9 @@ public class AutoCommands {
               noteTrackingManager.resetNoteMap(
                   new ArrayList<>(
                       List.of(
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(4)),
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(5)),
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(6)))));
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4)),
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(5)),
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(6)))));
             }),
         doManyAutoSteps(
             List.of(

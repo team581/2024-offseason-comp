@@ -4,7 +4,7 @@
 
 package frc.robot.auto_manager;
 
-import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -17,11 +17,11 @@ public class AutoNoteDropped {
     nextDroppedNoteId = 0;
   }
 
-  public static void addDroppedNote(Pose2d pose) {
-    droppedNoteIdToPose.put(nextDroppedNoteId++, pose);
+  public static void addDroppedNote(Translation2d translation) {
+    droppedNoteIdToPose.put(nextDroppedNoteId++, translation);
   }
 
-  private static Map<Integer, Pose2d> droppedNoteIdToPose = new HashMap<>();
+  private static Map<Integer, Translation2d> droppedNoteIdToPose = new HashMap<>();
 
   private final int droppedNoteId;
 
@@ -29,7 +29,7 @@ public class AutoNoteDropped {
     this.droppedNoteId = droppedNoteId;
   }
 
-  public Optional<Pose2d> getPose() {
+  public Optional<Translation2d> getPose() {
     if (droppedNoteIdToPose.containsKey(droppedNoteId)) {
       return Optional.of(droppedNoteIdToPose.get(droppedNoteId));
     }

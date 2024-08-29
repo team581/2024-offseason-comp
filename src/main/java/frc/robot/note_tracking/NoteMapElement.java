@@ -4,6 +4,6 @@
 
 package frc.robot.note_tracking;
 
-import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 
-public record NoteMapElement(double expiresAt, Pose2d notePose) {}
+public record NoteMapElement(double expiresAt, Translation2d noteTranslation) {}

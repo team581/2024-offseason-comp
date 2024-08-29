@@ -4,12 +4,12 @@
 
 package frc.robot.auto_manager;
 
-import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public record AutoNoteStep(AutoNoteAction action, List<Supplier<Optional<Pose2d>>> notes) {
+public record AutoNoteStep(AutoNoteAction action, List<Supplier<Optional<Translation2d>>> notes) {
   static AutoNoteStep cleanup() {
     return new AutoNoteStep(AutoNoteAction.CLEANUP, List.of());
   }
@@ -32,7 +32,7 @@ public record AutoNoteStep(AutoNoteAction action, List<Supplier<Optional<Pose2d>
         AutoNoteAction.SCORE, list.stream().map(AutoNoteStep::noteIdToPose).toList());
   }
 
-  private static Supplier<Optional<Pose2d>> noteIdToPose(int id) {
+  private static Supplier<Optional<Translation2d>> noteIdToPose(int id) {
     if (id >= 10) {
       // Dropped note ID
       return new AutoNoteDropped(id - 10)::getPose;
@@ -41,7 +41,7 @@ public record AutoNoteStep(AutoNoteAction action, List<Supplier<Optional<Pose2d>
     return new AutoNoteStaged(id)::getPose;
   }
 
-  public AutoNoteStep(AutoNoteAction action, Supplier<Optional<Pose2d>>... notes) {
+  public AutoNoteStep(AutoNoteAction action, Supplier<Optional<Translation2d>>... notes) {
     this(action, List.of(notes));
   }
 }

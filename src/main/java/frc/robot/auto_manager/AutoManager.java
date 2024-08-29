@@ -61,7 +61,7 @@ public class AutoManager extends LifecycleSubsystem {
       new Pose2d(11.25, 7.26, Rotation2d.fromDegrees(16.18));
   public static final Pose2d BLUE_DROPPING_DESTINATION =
       new Pose2d(5.33, 7.26, Rotation2d.fromDegrees(167.95));
-  private Pose2d DROPPED_NOTE_SEARCH = new Pose2d(13.49, 7.40, Rotation2d.fromDegrees(170.5));
+  private static final Translation2d DROPPED_NOTE_SEARCH = new Translation2d(13.49, 7.40);
 
   private static final BoundingBox RED_SCORING_BOX =
       new BoundingBox(
@@ -213,8 +213,8 @@ public class AutoManager extends LifecycleSubsystem {
         .until(() -> robotManager.getState().hasNote);
   }
 
-  private Command intakeNoteAtPose(Supplier<Optional<Pose2d>> pose) {
-    Optional<Pose2d> maybeSearchArea = pose.get();
+  private Command intakeNoteAtPose(Supplier<Optional<Translation2d>> pose) {
+    Optional<Translation2d> maybeSearchArea = pose.get();
     if (maybeSearchArea.isPresent()) {
       return noteTrackingManager.intakeNoteAtPose(maybeSearchArea::get, 1.5);
     }
@@ -229,10 +229,10 @@ public class AutoManager extends LifecycleSubsystem {
               noteTrackingManager.resetNoteMap(
                   new ArrayList<>(
                       List.of(
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(2)),
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(3)),
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(4)),
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToPose(5)))));
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(2)),
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(3)),
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4)),
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(5)))));
             }),
         doManyAutoSteps(
             List.of(
