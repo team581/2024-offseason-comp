@@ -118,7 +118,7 @@ public class ShooterSubsystem extends LifecycleSubsystem {
   }
 
   private double getRPM(TalonFX motor) {
-    return motor.getVelocity().getValue() * 60.0;
+    return motor.getVelocity().getValueAsDouble() * 60.0;
   }
 
   public void setGoalMode(ShooterMode newMode) {

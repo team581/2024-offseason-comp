@@ -90,7 +90,7 @@ public class WristSubsystem extends LifecycleSubsystem {
         break;
     }
 
-    DogLog.log("Wrist/Position", Units.rotationsToDegrees(motor.getPosition().getValue()));
+    DogLog.log("Wrist/Position", Units.rotationsToDegrees(motor.getPosition().getValueAsDouble()));
     DogLog.log("Wrist/HomingState", homingState);
     DogLog.log("Wrist/GoalAngle", goalAngle);
   }
