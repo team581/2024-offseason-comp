@@ -18,7 +18,7 @@ public class VisionUtil {
       new VisionInterpolationData(
           new Pose2d(11.232, 7.78, new Rotation2d(0)),
           new Pose2d(11.4, 7.865, new Rotation2d(0)),
-          "AMP_SIDE_STAGE");
+          "WING_LINE_AMP");
 
   private static final VisionInterpolationData STAGE_FRONT =
       new VisionInterpolationData(
