@@ -261,7 +261,7 @@ public class AutoCommands {
     return Commands.sequence(steps.stream().map(autoManager::doAutoStep).toArray(Command[]::new));
   }
 
-  public Command noteMapCommand() {
+  public Command noteMap456Command() {
     return Commands.sequence(
         Commands.runOnce(
             () -> {
