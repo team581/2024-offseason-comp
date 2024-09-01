@@ -60,12 +60,10 @@ public class VisionUtil {
     double weightedX = 0;
     double weightedY = 0;
 
-
-
     for (var dataPoint : DATA_POINTS) {
       double distancePoint =
           dataPoint.visionPose().getTranslation().getDistance(visionInput.getTranslation());
-         var weight = (1 / Math.pow(distancePoint, SENSITIVITY)) / unnormalizedWeightsSum;
+      var weight = (1 / Math.pow(distancePoint, SENSITIVITY)) / unnormalizedWeightsSum;
       DogLog.log("Debug/" + dataPoint.label() + "/Weight", weight);
       var result = dataPoint.measuredPose().minus(dataPoint.visionPose()).times(weight);
       weightedX += result.getX();
