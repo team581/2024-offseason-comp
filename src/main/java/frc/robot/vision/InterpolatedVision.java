@@ -9,7 +9,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.fms.FmsSubsystem;
 import java.util.List;
 
-public class VisionUtil {
+public class InterpolatedVision {
   private static final VisionInterpolationData SUBWOOFER =
       new VisionInterpolationData(
           new Translation2d(15.2245, 5.522), new Translation2d(15.194, 5.634), "SUBWOOFER");
@@ -39,5 +39,5 @@ public class VisionUtil {
         visionInput.getRotation());
   }
 
-  private VisionUtil() {}
+  private InterpolatedVision() {}
 }

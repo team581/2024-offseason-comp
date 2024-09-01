@@ -81,7 +81,8 @@ public class VisionSubsystem extends LifecycleSubsystem {
       var rawData = maybeRawData.get();
 
       return Optional.of(
-          new VisionResult(VisionUtil.interpolatePose(rawData.pose()), rawData.timestamp()));
+          new VisionResult(
+              InterpolatedVision.interpolatePose(rawData.pose()), rawData.timestamp()));
     }
 
     // No raw data to operate on
