@@ -102,7 +102,6 @@ class Model:
 
         self.speakerpoint_1 = Point.from_tuple(nd._SPEAKER_POINT_1)
         self.speakerpoint_2 = Point.from_tuple(nd._SPEAKER_POINT_2)
-        self.speakerpoint_3 = Point.from_tuple(nd._SPEAKER_POINT_3)
         self.floorspot = Point.from_tuple(nd._FLOOR_SPOT)
 
     def get_vel(self, rpm):
@@ -177,8 +176,7 @@ def angle_search(model: Model, pm: ProjectileMotion, prune: PruneType):
         for point in points:
             dist_1 = point.dist(model.speakerpoint_1)
             dist_2 = point.dist(model.speakerpoint_2)
-            dist_3 = point.dist(model.speakerpoint_3)
-            local_min = min(local_min, (dist_1 + dist_2 + dist_3) / 3)
+            local_min = min(local_min, (dist_1 + dist_2) / 2)
         if local_min < final_min:
             final_min = local_min
             closest_angle = current_angle
