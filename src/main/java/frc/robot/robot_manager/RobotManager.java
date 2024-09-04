@@ -462,7 +462,9 @@ public class RobotManager extends LifecycleSubsystem {
         }
         break;
       case SPEAKER_SHOOT:
-        if (noteManager.getState() == NoteState.IDLE_NO_GP) {
+        if (noteManager.getState() == NoteState.IDLE_NO_GP
+            // TODO: Super hacky workaround for not being able to exit after multi speaker shot
+            || !(noteManager.intake.hasNote() && noteManager.queuer.hasNote())) {
           state = RobotState.WAITING_MULTI_SPEAKER_SHOT;
         }
         break;
@@ -969,9 +971,7 @@ public class RobotManager extends LifecycleSubsystem {
   public void stopShootingRequest() {
     if (state == RobotState.PREPARE_PODIUM_SHOT || state == RobotState.WAITING_PODIUM_SHOT) {
       waitPodiumShotRequest();
-    } else if (state == RobotState.PREPARE_FLOOR_SHOT
-        || state == RobotState.WAITING_FLOOR_SHOT
-        || state == RobotState.WAITING_MULTI_FLOOR_SHOT) {
+    } else if (state == RobotState.PREPARE_FLOOR_SHOT || state == RobotState.WAITING_FLOOR_SHOT) {
       waitFloorShotRequest();
     } else if (state == RobotState.PREPARE_SUBWOOFER_SHOT
         || state == RobotState.WAITING_SUBWOOFER_SHOT) {
