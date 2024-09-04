@@ -14,7 +14,7 @@ public class InterpolationUtil {
       List<VisionInterpolationData> dataPoints, Translation2d visionInput) {
     var unnormalizedWeightsSum =
         dataPoints.stream()
-            .mapToDouble(dataPoint -> dataPoint.visionPose().getDistance(visionInput))
+            .mapToDouble(dataPoint -> calculateUnnormalizedWeight(dataPoint.visionPose().getDistance(visionInput)))
             .sum();
 
     double weightedX = 0;
