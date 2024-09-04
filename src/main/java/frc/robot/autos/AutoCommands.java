@@ -296,10 +296,11 @@ public class AutoCommands {
         doManyAutoSteps(
             List.of(
                 AutoNoteStep.dropPreload(),
-                AutoNoteStep.score(5,6),
+                AutoNoteStep.score(5, 6),
                 AutoNoteStep.score(6, 7),
                 AutoNoteStep.score(7))));
   }
+
   public Command testAuto() {
     return Commands.sequence(
         doNothingCommand()
