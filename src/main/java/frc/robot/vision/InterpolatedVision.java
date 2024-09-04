@@ -22,8 +22,14 @@ public class InterpolatedVision {
       new VisionInterpolationData(
           new Translation2d(11.059, 6.842), new Translation2d(11.16, 6.845), "WING_LINE_MIDDLE");
 
+  private static final VisionInterpolationData FRONT_PODIUM_MIDDLE =
+      new VisionInterpolationData(
+          new Translation2d(13.799, 4.202),
+          new Translation2d(13.905, 4.361),
+          "FRONT_PODIUM_MIDDLE");
+
   private static final List<VisionInterpolationData> DATA_POINTS_RED =
-      List.of(SUBWOOFER, PODIUM_SPEAKER_INTERSECTION, WING_LINE_MIDDLE);
+      List.of(SUBWOOFER, PODIUM_SPEAKER_INTERSECTION, WING_LINE_MIDDLE, FRONT_PODIUM_MIDDLE);
 
   private static final List<VisionInterpolationData> DATA_POINTS_BLUE = List.of();
 
