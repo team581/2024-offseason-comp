@@ -225,7 +225,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
   private boolean safeToTrack() {
     var speeds = swerve.getRobotRelativeSpeeds();
-    // TODO: finish refactor for chassis speeds
+
     return speeds.vxMetersPerSecond < 2.5
         && speeds.vyMetersPerSecond < 2.5
         && speeds.omegaRadiansPerSecond < Units.degreesToRadians(3.0);
@@ -295,13 +295,19 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
   @Override
   public void robotPeriodic() {
-    if (!RobotConfig.get().perfToggles().noteMapInTeleop() && DriverStation.isTeleop()) {
+    if (DriverStation.isTeleop() && !RobotConfig.get().perfToggles().noteMapInTeleop()) {
       return;
     }
 
-    DogLog.log(
-        "NoteTracking/NoteMap",
-        noteMap.stream().map(NoteMapElement::noteTranslation).toArray(Pose2d[]::new));
+    try {
+
+      DogLog.log(
+          "NoteTracking/NoteMap",
+          noteMap.stream().map(NoteMapElement::noteTranslation).toArray(Pose2d[]::new));
+    } catch (Exception error) {
+      DogLog.logFault("NoteMapLoggingError");
+      System.err.println(error);
+    }
     updateBox();
 
     updateMap();
