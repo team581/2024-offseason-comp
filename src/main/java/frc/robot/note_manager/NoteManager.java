@@ -219,21 +219,12 @@ public class NoteManager extends LifecycleSubsystem {
     switch (state) {
       case IDLE_NO_GP:
       case IDLE_IN_CONVEYOR:
+      case IDLE_IN_QUEUER:
         intake.setState(IntakeState.IDLE);
         conveyor.setState(ConveyorState.IDLE);
         queuer.setState(QueuerState.IDLE);
         redirect.setState(RedirectState.IDLE); // 0
         break;
-      case IDLE_IN_QUEUER:
-        if (queuer.hasNote()) {
-          intake.setState(IntakeState.IDLE);
-          conveyor.setState(ConveyorState.IDLE);
-
-          queuer.setState(QueuerState.INTAKING);
-          redirect.setState(RedirectState.IDLE);
-        } // 0
-        break;
-
       case LAZY_INTAKE_TO_QUEUER:
         intake.setState(IntakeState.TO_QUEUER_SLOW);
         conveyor.setState(ConveyorState.INTAKE_TO_QUEUER);
