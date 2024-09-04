@@ -128,7 +128,7 @@ public class WristSubsystem extends LifecycleSubsystem {
   }
 
   public boolean atAngleForSpeaker(double distance) {
-    return atAngle(getAngleFromDistanceToSpeaker(distance), getToleranceFromDistance(distance));
+    return atAngle(getAngleFromDistanceToSpeaker(distance), 1);
   }
 
   public boolean atAngleForFloorSpot(double distance) {
@@ -141,10 +141,6 @@ public class WristSubsystem extends LifecycleSubsystem {
 
   public double getAngleFromDistanceToSpeaker(double distance) {
     return speakerDistanceToAngle.get(distance);
-  }
-
-  private double getToleranceFromDistance(double distance) {
-    return distance > 8 ? 0.5 : distance < 0.85 ? 5.0 : (distanceToAngleTolerance.get(distance));
   }
 
   public double getAngleFromDistanceToFloorSpot(double distance) {
