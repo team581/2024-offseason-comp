@@ -281,6 +281,25 @@ public class AutoCommands {
                 AutoNoteStep.score(6))));
   }
 
+  public Command notemap567Command() {
+    return Commands.sequence(
+        Commands.runOnce(
+            () -> {
+              var now = Timer.getFPGATimestamp();
+              noteTrackingManager.resetNoteMap(
+                  new ArrayList<>(
+                      List.of(
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(5)),
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(6)),
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(7)))));
+            }),
+        doManyAutoSteps(
+            List.of(
+                AutoNoteStep.dropPreload(),
+                AutoNoteStep.score(5,6),
+                AutoNoteStep.score(6, 7),
+                AutoNoteStep.score(7))));
+  }
   public Command testAuto() {
     return Commands.sequence(
         doNothingCommand()
