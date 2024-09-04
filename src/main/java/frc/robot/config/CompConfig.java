@@ -171,14 +171,14 @@ class CompConfig {
               speakerDistanceToAngle -> {
                 // speakerDistanceToAngle.put(1.38, 58.1);
                 speakerDistanceToAngle.put(1.38, 61.5);
-                speakerDistanceToAngle.put(2.16, 49.9);
-                speakerDistanceToAngle.put(2.5, 45.5);
+                speakerDistanceToAngle.put(2.16, 49.8);
+                speakerDistanceToAngle.put(2.5, 45.4);
                 speakerDistanceToAngle.put(3.5, 35.5);
                 speakerDistanceToAngle.put(4.5, 28.8);
                 speakerDistanceToAngle.put(5.5, 24.1);
-                speakerDistanceToAngle.put(6.5, 20.7);
-                speakerDistanceToAngle.put(7.5, 18.1);
-                speakerDistanceToAngle.put(9.0, 15.2);
+                speakerDistanceToAngle.put(6.5, 20.6);
+                speakerDistanceToAngle.put(7.5, 18.0);
+                speakerDistanceToAngle.put(9.0, 15.1);
               },
               floorSpotDistanceToAngle -> {
                 floorSpotDistanceToAngle.put(0.0, 61.5);
