@@ -50,12 +50,22 @@ public class NoteTrackingManager extends LifecycleSubsystem {
       NetworkTableInstance.getDefault().getTable(LIMELIGHT_NAME).getEntry("tcornxy");
   private final InterpolatingDoubleTreeMap tyToDistance = new InterpolatingDoubleTreeMap();
   private ArrayList<NoteMapElement> noteMap = new ArrayList<>();
-  private BoundingBox cameraFieldBox;
 
   private static final double FOV_VERTICAL = 48.823;
   private static final double FOV_HORIZONTAL = 62.074;
   private static final double HORIZONTAL_LEFT_VIEW = 27.491;
   private static final double VERTICAL_TOP_VIEW = 24.955;
+
+  private static final BoundingBox cameraFieldBox =
+      new BoundingBox(
+          // top left
+          new Translation2d(1, 0.5),
+          // top right
+          new Translation2d(1, -0.5),
+          // bottom left
+          new Translation2d(0.3, 0.3),
+          // bottom right
+          new Translation2d(0.3, -0.3));
 
   public NoteTrackingManager(
       LocalizationSubsystem localization,
@@ -72,26 +82,22 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     RobotConfig.get().vision().tyToNoteDistance().accept(tyToDistance);
   }
 
-  private boolean noteInView(Pose2d notePose) {
-    return cameraFieldBox.contains(notePose.getTranslation());
+  private boolean noteInView(Translation2d fieldRelativeNote) {
+    var note = getRobotRelativeNote(fieldRelativeNote);
+    return cameraFieldBox.contains(note);
   }
 
-  private void updateBox() {
-    Pose2d robotPose = localization.getPose();
-    var tLB = new Pose2d(1, 0.5, robotPose.getRotation());
-    var tRB = new Pose2d(1, -0.5, robotPose.getRotation());
-    var bLB = new Pose2d(0.3, 0.3, robotPose.getRotation());
-    var bRB = new Pose2d(0.3, -0.3, robotPose.getRotation());
+  private Translation2d getRobotRelativeNote(Translation2d fieldRelativeNote) {
 
-    var topLeft = new Translation2d(robotPose.getX() + tLB.getX(), robotPose.getY() + tLB.getY());
-    var topRight = new Translation2d(robotPose.getX() + tRB.getX(), robotPose.getY() + tRB.getY());
-    var bottomLeft =
-        new Translation2d(robotPose.getX() + bLB.getX(), robotPose.getY() + bLB.getY());
-    var bottomRight =
-        new Translation2d(robotPose.getX() + bRB.getX(), robotPose.getY() + bRB.getY());
+    var translatedNote = fieldRelativeNote.minus(localization.getPose().getTranslation());
 
-    cameraFieldBox = new BoundingBox(topLeft, topRight, bottomLeft, bottomRight);
+    var rotatedNote =
+        translatedNote.rotateBy(
+            new Rotation2d(-1 * (localization.getPose().getRotation().getRadians())));
+
+    return rotatedNote;
   }
+
 
   public void resetNoteMap(ArrayList<NoteMapElement> startingValues) {
     AutoNoteDropped.clearDroppedNotes();
@@ -308,7 +314,9 @@ public class NoteTrackingManager extends LifecycleSubsystem {
       DogLog.logFault("NoteMapLoggingError");
       System.err.println(error);
     }
-    updateBox();
+    DogLog.log(
+        "NoteTracking/NoteMap",
+        noteMap.stream().map(NoteMapElement::noteTranslation).toArray(Pose2d[]::new));
 
     updateMap();
 
@@ -330,17 +338,11 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private void updateMap() {
     List<Pose2d> visionNotes = getFilteredNotePoses();
 
-    // 1. Remove expired notes since that's easy
-
     noteMap.removeIf(
         element -> {
-          return element.expiresAt() < Timer.getFPGATimestamp();
+          return (element.expiresAt() < Timer.getFPGATimestamp())
+              || noteInView(element.noteTranslation());
         });
-
-    // 2. Go through vision notes, and if it matches a note already in note map, replace it with the
-    // vision note
-    //    Otherwise, if we see a note with no match in the note map, add it to the array
-    // 3. Don't do anything to the remembered notes otherwise. They stick around till expired
 
     for (var visionNote : visionNotes) {
       Optional<NoteMapElement> match =
