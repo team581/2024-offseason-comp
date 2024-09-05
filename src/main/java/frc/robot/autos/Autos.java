@@ -56,10 +56,8 @@ public class Autos extends LifecycleSubsystem {
 
   private final SwerveSubsystem swerve;
   private final AutoChooser autoChooser;
-  private final RobotManager robotManager;
   private final AutoCommands autoCommands;
   private final AutoManager autoManager;
-  private final NoteTrackingManager noteTrackingManager;
 
   public Autos(
       SwerveSubsystem swerve,
@@ -70,9 +68,7 @@ public class Autos extends LifecycleSubsystem {
       NoteTrackingManager noteTrackingManager) {
     super(SubsystemPriority.AUTOS);
     this.swerve = swerve;
-    this.robotManager = robotManager;
     this.autoManager = autoManager;
-    this.noteTrackingManager = noteTrackingManager;
 
     autoCommands = new AutoCommands(actions, robotManager, autoManager, noteTrackingManager);
 
@@ -119,6 +115,7 @@ public class Autos extends LifecycleSubsystem {
     registerCommand("zeroGyro", autoCommands.doNothingCommand());
     registerCommand("noteMap456", autoCommands.noteMap456Command());
     registerCommand("noteMap567", autoCommands.notemap567Command());
+    registerCommand("dropNote", autoManager.dropNote());
 
     PathPlannerLogging.setLogActivePathCallback(
         (activePath) -> {

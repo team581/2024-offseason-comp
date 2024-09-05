@@ -21,10 +21,6 @@ public record AutoNoteStep(AutoNoteAction action, List<Supplier<Optional<Transla
         AutoNoteAction.DROP, list.stream().map(AutoNoteStep::noteIdToPose).toList());
   }
 
-  public static AutoNoteStep dropPreload() {
-    return new AutoNoteStep(AutoNoteAction.DROP_PRELOAD, List.of());
-  }
-
   public static AutoNoteStep score(Integer... noteIds) {
     List<Integer> list = List.of(noteIds);
 

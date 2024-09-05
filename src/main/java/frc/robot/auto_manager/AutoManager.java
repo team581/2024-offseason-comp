@@ -148,18 +148,14 @@ public class AutoManager extends LifecycleSubsystem {
 
   private Command cleanupNote() {
     // find and score a note
-
-    return noteTrackingManager.intakeNearestMapNote(10.0).andThen(scoreCommand());
+    return noteTrackingManager.intakeNearestMapNote(10.0).andThen(pathfindToScoreCommand());
   }
 
   private Command cleanupCommand() {
-
-    // if we're close to midline
-
     return cleanupNote().repeatedly();
   }
 
-  private Command scoreCommand() {
+  private Command pathfindToScoreCommand() {
     return Commands.defer(
             () ->
                 AutoBuilder.pathfindToPose(getClosestScoringDestination(), DEFAULT_CONSTRAINTS)
@@ -170,21 +166,14 @@ public class AutoManager extends LifecycleSubsystem {
         .onlyIf(() -> robotManager.getState().hasNote);
   }
 
-  private Command dropCommand() {
+  private Command pathfindToDropCommand() {
     return Commands.sequence(
             // Pathfind to outtake
             Commands.defer(
                 () -> AutoBuilder.pathfindToPose(getDroppingDestination(), DEFAULT_CONSTRAINTS),
                 Set.of(robotManager.swerve)),
             // Drop the note
-            actions
-                .dropCommand()
-                .andThen(
-                    Commands.runOnce(
-                        () -> {
-                          noteTrackingManager.addNoteToMap(DROPPED_NOTE_SEARCH);
-                          AutoNoteDropped.addDroppedNote(DROPPED_NOTE_SEARCH);
-                        })))
+            dropNote())
         .onlyIf(() -> robotManager.getState().hasNote)
         .withTimeout(2.5);
   }
@@ -195,13 +184,12 @@ public class AutoManager extends LifecycleSubsystem {
       case DROP ->
           intakeAnyStepNotes(step)
               // Then, once we have a note, do the drop
-              .andThen(dropCommand())
+              .andThen(pathfindToDropCommand())
               .withTimeout(6);
-      case DROP_PRELOAD -> dropCommand();
       case SCORE ->
           intakeAnyStepNotes(step)
               // Then, once we have a note, do the score
-              .andThen(scoreCommand())
+              .andThen(pathfindToScoreCommand())
               .withTimeout(6);
     };
   }
@@ -211,6 +199,17 @@ public class AutoManager extends LifecycleSubsystem {
     return Commands.sequence(
             step.notes().stream().map(this::intakeNoteAtPose).toArray(Command[]::new))
         .until(() -> robotManager.getState().hasNote);
+  }
+
+  public Command dropNote() {
+    return Commands.sequence(actions.dropCommand())
+        .andThen(
+            Commands.runOnce(
+                () -> {
+                  var robotTranslation = localization.getPose().getTranslation();
+                  noteTrackingManager.addNoteToMap(robotTranslation);
+                  AutoNoteDropped.addDroppedNote(robotTranslation);
+                }));
   }
 
   private Command intakeNoteAtPose(Supplier<Optional<Translation2d>> pose) {
@@ -236,7 +235,6 @@ public class AutoManager extends LifecycleSubsystem {
             }),
         doManyAutoSteps(
             List.of(
-                AutoNoteStep.dropPreload(),
                 AutoNoteStep.score(2, 3),
                 AutoNoteStep.score(3, 4),
                 AutoNoteStep.score(4, 5),

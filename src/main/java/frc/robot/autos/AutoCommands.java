@@ -274,11 +274,7 @@ public class AutoCommands {
                           new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(6)))));
             }),
         doManyAutoSteps(
-            List.of(
-                AutoNoteStep.dropPreload(),
-                AutoNoteStep.score(4, 5),
-                AutoNoteStep.score(5, 6),
-                AutoNoteStep.score(6))));
+            List.of(AutoNoteStep.score(4, 5), AutoNoteStep.score(5, 6), AutoNoteStep.score(6))));
   }
 
   public Command notemap567Command() {
@@ -294,11 +290,7 @@ public class AutoCommands {
                           new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(7)))));
             }),
         doManyAutoSteps(
-            List.of(
-                AutoNoteStep.dropPreload(),
-                AutoNoteStep.score(5, 6),
-                AutoNoteStep.score(6, 7),
-                AutoNoteStep.score(7))));
+            List.of(AutoNoteStep.score(5, 6), AutoNoteStep.score(6, 7), AutoNoteStep.score(7))));
   }
 
   public Command testAuto() {
