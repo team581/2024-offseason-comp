@@ -304,8 +304,9 @@ public class NoteTrackingManager extends LifecycleSubsystem {
       return;
     }
 
-    try {
+    updateMap();
 
+    try {
       DogLog.log(
           "NoteTracking/NoteMap",
           noteMap.stream().map(NoteMapElement::noteTranslation).toArray(Pose2d[]::new));
@@ -313,8 +314,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
       DogLog.logFault("NoteMapLoggingError");
       System.err.println(error);
     }
-
-    updateMap();
 
     var maybeClosest = getNearestNotePoseRelative(localization.getPose().getTranslation(), 99987.0);
     if (maybeClosest.isPresent()) {
