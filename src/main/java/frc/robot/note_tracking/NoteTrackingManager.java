@@ -314,9 +314,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
       DogLog.logFault("NoteMapLoggingError");
       System.err.println(error);
     }
-    DogLog.log(
-        "NoteTracking/NoteMap",
-        noteMap.stream().map(NoteMapElement::noteTranslation).toArray(Pose2d[]::new));
 
     updateMap();
 
