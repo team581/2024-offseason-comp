@@ -41,7 +41,7 @@ jobs:
           distribution: "temurin"
           java-version: 17
           cache: "gradle"
-      - name: Assemble project
+      - name: Run tests
         run: ./gradlew test
   style:
     name: Check formatting
