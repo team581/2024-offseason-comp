@@ -317,7 +317,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
     var maybeClosest = getNearestNotePoseRelative(localization.getPose().getTranslation(), 99987.0);
     if (maybeClosest.isPresent()) {
-
       DogLog.log("NoteTracking/ClosestNote", maybeClosest.get().noteTranslation());
     }
   }
