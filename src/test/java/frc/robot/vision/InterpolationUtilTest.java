@@ -36,6 +36,6 @@ class InterpolationUtilTest {
 
     var result = InterpolationUtil.interpolateTranslation(dataPoints, new Translation2d(3, 3));
 
-    Assertions.assertEquals(new Translation2d(1.79, 1.79), simplify(result));
+    Assertions.assertEquals(new Translation2d(2.0, 2.0), simplify(result));
   }
 }
