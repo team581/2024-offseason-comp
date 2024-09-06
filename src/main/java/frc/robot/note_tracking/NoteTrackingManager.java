@@ -98,7 +98,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     return rotatedNote;
   }
 
-
   public void resetNoteMap(ArrayList<NoteMapElement> startingValues) {
     AutoNoteDropped.clearDroppedNotes();
     noteMap = startingValues;
