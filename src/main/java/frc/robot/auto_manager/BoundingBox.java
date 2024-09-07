@@ -27,6 +27,8 @@ public class BoundingBox {
 
   private final Bounds2D bounds;
 
+  private final List<Pose2d> TEMPORARY;
+
   public BoundingBox(
       Translation2d topLeft,
       Translation2d topRight,
@@ -41,6 +43,7 @@ public class BoundingBox {
                 translationToVector(bottomLeft))
             .build()
             .getBounds();
+    TEMPORARY = List.of(new Pose2d(topLeft, new Rotation2d()),new Pose2d(topRight, new Rotation2d()),new Pose2d(bottomLeft, new Rotation2d()),new Pose2d(bottomRight, new Rotation2d()));
   }
 
   public boolean contains(Translation2d translation) {
@@ -48,8 +51,9 @@ public class BoundingBox {
   }
 
   public List<Pose2d> getPoints() {
-    return bounds.toRegion(PRECISION).getVertices().stream()
-        .map(vertex -> new Pose2d(vectorToTranslation(vertex), new Rotation2d(0)))
-        .toList();
+    return TEMPORARY;
+    // return bounds.toRegion(PRECISION).getVertices().stream()
+    //     .map(vertex -> new Pose2d(vectorToTranslation(vertex), new Rotation2d(0)))
+    //     .toList();
   }
 }
