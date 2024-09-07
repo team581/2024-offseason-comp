@@ -132,10 +132,10 @@ public class AutoCommands {
   }
 
   public Command getMidlineNotesAmp45Command() {
-    var red4ToCenterWingShot = PathPlannerPath.fromPathFile("Red 4 to CWS");
-    var red4To5 = PathPlannerPath.fromPathFile("Red 4 to 5");
-    var redCenterWingShotTo5 = PathPlannerPath.fromPathFile("Red CWS to 5");
-    var red5ToCenterWingShot = PathPlannerPath.fromPathFile("Red 5 to CWS");
+    var red4ToCenterWingShot = PathPlannerPath.fromChoreoTrajectory("Red 4 to CWS");
+    var red4To5 = PathPlannerPath.fromChoreoTrajectory("Red 4 to 5");
+    var redCenterWingShotTo5 = PathPlannerPath.fromChoreoTrajectory("Red CWS to 5");
+    var red5ToCenterWingShot = PathPlannerPath.fromChoreoTrajectory("Red 5 to CWS");
     var red5To6 = PathPlannerPath.fromPathFile("Red 5 to 6");
 
     var blue4ToCenterWingShot = PathPlannerPath.fromPathFile("Blue 4 to CWS");
@@ -159,11 +159,11 @@ public class AutoCommands {
   }
 
   public Command getMidlineNotesAltAmpCommand() {
-    var red5To6 = PathPlannerPath.fromPathFile("Red 5 to 6");
-    var red6To4 = PathPlannerPath.fromPathFile("Red 6 to 4");
-    var red5ToCenterWingShot = PathPlannerPath.fromPathFile("Red 5 to CWS");
-    var redCenterWingShotTo6 = PathPlannerPath.fromPathFile("Red CWS to 6");
-    var red6ToCenterWingShot = PathPlannerPath.fromPathFile("Red 6 to CWS");
+    var red5To6 = PathPlannerPath.fromChoreoTrajectory("Red 5 to 6");
+    var red6To4 = PathPlannerPath.fromChoreoTrajectory("Red 6 to 4");
+    var red5ToCenterWingShot = PathPlannerPath.fromChoreoTrajectory("Red 5 to CWS");
+    var redCenterWingShotTo6 = PathPlannerPath.fromChoreoTrajectory("Red CWS to 6");
+    var red6ToCenterWingShot = PathPlannerPath.fromChoreoTrajectory("Red 6 to CWS");
 
     var blue5To6 = PathPlannerPath.fromPathFile("Blue 5 to 6");
     var blue6To4 = PathPlannerPath.fromPathFile("Blue 6 to 4");

@@ -7,6 +7,7 @@ package frc.robot.note_tracking;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.util.Units;
@@ -56,16 +57,16 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private static final double HORIZONTAL_LEFT_VIEW = 27.491;
   private static final double VERTICAL_TOP_VIEW = 24.955;
 
-  private static final BoundingBox cameraFieldBox =
+  private static final BoundingBox ROBOT_RELATIVE_FOV_BOUNDS =
       new BoundingBox(
           // top left
-          new Translation2d(1, 0.5),
+          new Translation2d(-1.950, -0.730),
           // top right
-          new Translation2d(1, -0.5),
+          new Translation2d(-1.750, 0.870),
           // bottom left
-          new Translation2d(0.3, 0.3),
+          new Translation2d(-0.725, -0.198),
           // bottom right
-          new Translation2d(0.3, -0.3));
+          new Translation2d(-0.720, 0.300));
 
   public NoteTrackingManager(
       LocalizationSubsystem localization,
@@ -83,19 +84,19 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   }
 
   private boolean noteInView(Translation2d fieldRelativeNote) {
-    var note = getRobotRelativeNote(fieldRelativeNote);
-    return cameraFieldBox.contains(note);
+    var robotRelativeNote = getRobotRelativeNote(fieldRelativeNote);
+    DogLog.log("NoteTracking/Debug/BoxContainsNote", ROBOT_RELATIVE_FOV_BOUNDS.contains(robotRelativeNote));
+    return ROBOT_RELATIVE_FOV_BOUNDS.contains(robotRelativeNote);
   }
 
   private Translation2d getRobotRelativeNote(Translation2d fieldRelativeNote) {
-
-    var translatedNote = fieldRelativeNote.minus(localization.getPose().getTranslation());
-
-    var rotatedNote =
-        translatedNote.rotateBy(
-            new Rotation2d(-1 * (localization.getPose().getRotation().getRadians())));
-
-    return rotatedNote;
+    var robotPose = localization.getPose();
+    Rotation2d negativeRobotRotation = robotPose.getRotation().unaryMinus();
+    var robotRelativeNoteTranslation =
+        fieldRelativeNote.minus(robotPose.getTranslation()).rotateBy(negativeRobotRotation);
+    // TODO: Remove this since it only works with a single visible note
+    DogLog.log("Debug/RobotRelativeNoteTranslation", robotRelativeNoteTranslation);
+    return robotRelativeNoteTranslation;
   }
 
   public void resetNoteMap(ArrayList<NoteMapElement> startingValues) {
@@ -309,16 +310,27 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     try {
       DogLog.log(
           "NoteTracking/NoteMap",
-          noteMap.stream().map(NoteMapElement::noteTranslation).toArray(Pose2d[]::new));
+          noteMap.stream()
+              .map(element -> new Pose2d(element.noteTranslation(), new Rotation2d()))
+              .toArray(Pose2d[]::new));
     } catch (Exception error) {
       DogLog.logFault("NoteMapLoggingError");
       System.err.println(error);
     }
 
+    var fieldRelativeBounds = getFieldRelativeBounds();
+    DogLog.log("NoteTracking/CameraBounds", fieldRelativeBounds.toArray(Pose2d[]::new));
+
     var maybeClosest = getNearestNotePoseRelative(localization.getPose().getTranslation(), 99987.0);
     if (maybeClosest.isPresent()) {
       DogLog.log("NoteTracking/ClosestNote", maybeClosest.get().noteTranslation());
     }
+  }
+
+  private List<Pose2d> getFieldRelativeBounds() {
+    var robotRelativeToFieldRelativeTransform = new Transform2d(new Pose2d(), localization.getPose());
+    return ROBOT_RELATIVE_FOV_BOUNDS.getPoints().stream()
+        .map(point -> point.plus(robotRelativeToFieldRelativeTransform)).toList();
   }
 
   public boolean mapContainsNote() {
@@ -338,13 +350,18 @@ public class NoteTrackingManager extends LifecycleSubsystem {
               || noteInView(element.noteTranslation());
         });
 
+    double newNoteExpiry = Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME;
+
     for (var visionNote : visionNotes) {
       Optional<NoteMapElement> match =
           noteMap.stream()
               .filter(
                   rememberedNote -> {
-                    return rememberedNote.noteTranslation().getDistance(visionNote.getTranslation())
-                        < 1.0;
+                    return rememberedNote.expiresAt() != newNoteExpiry
+                        && (rememberedNote
+                                .noteTranslation()
+                                .getDistance(visionNote.getTranslation())
+                            < 1.0);
                   })
               .min(
                   (a, b) ->
@@ -356,9 +373,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
         noteMap.remove(match.get());
       }
 
-      noteMap.add(
-          new NoteMapElement(
-              Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME, visionNote.getTranslation()));
+      noteMap.add(new NoteMapElement(newNoteExpiry, visionNote.getTranslation()));
     }
   }
 }
