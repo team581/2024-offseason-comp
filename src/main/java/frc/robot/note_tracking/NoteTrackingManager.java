@@ -334,17 +334,21 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
     noteMap.removeIf(
         element -> {
-          return (element.expiresAt() < Timer.getFPGATimestamp())
-              || noteInView(element.noteTranslation());
+          return (element.expiresAt() < Timer.getFPGATimestamp());
         });
+
+    double newNoteExpiry = Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME;
 
     for (var visionNote : visionNotes) {
       Optional<NoteMapElement> match =
           noteMap.stream()
               .filter(
                   rememberedNote -> {
-                    return rememberedNote.noteTranslation().getDistance(visionNote.getTranslation())
-                        < 1.0;
+                    return rememberedNote.expiresAt() != newNoteExpiry
+                        && (rememberedNote
+                                .noteTranslation()
+                                .getDistance(visionNote.getTranslation())
+                            < 1.0);
                   })
               .min(
                   (a, b) ->
@@ -356,9 +360,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
         noteMap.remove(match.get());
       }
 
-      noteMap.add(
-          new NoteMapElement(
-              Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME, visionNote.getTranslation()));
+      noteMap.add(new NoteMapElement(newNoteExpiry, visionNote.getTranslation()));
     }
   }
 }
