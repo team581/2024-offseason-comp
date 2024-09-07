@@ -186,13 +186,13 @@ public class AutoCommands {
   }
 
   public Command getMidlineNotesOP4Command() {
-    var red5ToCenterWingShot = PathPlannerPath.fromPathFile("Red 5 to CWS");
-    var redRightWingShotTo6 = PathPlannerPath.fromPathFile("Red RWS to 6");
-    var red6ToCenterWingShot = PathPlannerPath.fromPathFile("Red 6 to CWS");
-    var redCenterWingShotTo4 = PathPlannerPath.fromPathFile("Red CWS to 4");
-    var red5To6 = PathPlannerPath.fromPathFile("Red 5 to 6");
-    var red6To4 = PathPlannerPath.fromPathFile("Red 6 to 4");
-    var red4ToCenterWingShot = PathPlannerPath.fromPathFile("Red 4 to CWS");
+    var red5ToCenterWingShot = PathPlannerPath.fromChoreoTrajectory("Red 5 to CWS");
+    var redRightWingShotTo6 = PathPlannerPath.fromChoreoTrajectory("Red RWS to 6");
+    var red6ToCenterWingShot = PathPlannerPath.fromChoreoTrajectory("Red 6 to CWS");
+    var redCenterWingShotTo4 = PathPlannerPath.fromChoreoTrajectory("Red CWS to 4");
+    var red5To6 = PathPlannerPath.fromChoreoTrajectory("Red 5 to 6");
+    var red6To4 = PathPlannerPath.fromChoreoTrajectory("Red 6 to 4");
+    var red4ToCenterWingShot = PathPlannerPath.fromChoreoTrajectory("Red 4 to CWS");
 
     var blue5ToCenterWingShot = PathPlannerPath.fromPathFile("Blue 5 to CWS");
     var blueRightWingShotTo6 = PathPlannerPath.fromPathFile("Blue RWS to 6");
