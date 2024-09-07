@@ -51,17 +51,27 @@ class PruneType(enum.Enum):
     PRE_APEX = 2
     POST_APEX = 3
 
+def mean(numbs:list[float]):
+    out = 0
+    for num in numbs:
+        out += num
+    return out / len(numbs)
 
 def prune_points(prune_type: PruneType, points: list[Point]):
     if prune_type == PruneType.NONE:
         return points
+    
     s = 0
-    while points[s].y <= points[s + 1].y:
-        s += 1
-    if prune_type == PruneType.PRE_APEX:
-        return points[s:]
-    if prune_type == PruneType.POST_APEX:
-        return points[:s]
+    for s in range(len(points)-1):
+        if points[s] <= points[s+1]:
+            continue
+        if prune_type == PruneType.PRE_APEX:
+            return points[s:]
+        if prune_type == PruneType.POST_APEX:
+            return points[:s]
+    
+    return points
+    
 
 
 @dataclasses.dataclass
@@ -150,6 +160,24 @@ class ProjectileMotion:
 
     def get_travel_time(self, points):
         return len(points) * self.dt
+    def get_vertex(points: list[Point]):
+        p = 0
+        f = 0
+        l_max = 0
+        for i in points:
+            if (l_max < i.y):
+                l_max = i.y
+                f = p
+            p+=1
+        return points[f]
+    def get_point_y(points:list[Point],x:float) -> Point:
+        f = 0
+        p=0
+        for i in points:
+            if abs(i.x - x) < 0.06:
+                f=p
+            p+=1
+        return points[f]
 
 
 _SHOOTER_OFFSET_TO_ROBOT_CENTER = Point(
@@ -157,10 +185,9 @@ _SHOOTER_OFFSET_TO_ROBOT_CENTER = Point(
 )
 
 
-def angle_search(model: Model, pm: ProjectileMotion, prune: PruneType):
+def angle_search(model: Model, pm: ProjectileMotion, prune: PruneType, goal_points: list[Point], doheight):
     vel = model.get_vel(model.rpm)
     closest_angle = -1
-    local_min = 10000
     final_min = 10000
 
     min_angle = Vector.fromdegrees(nd._MIN_ANGLE)
@@ -173,10 +200,16 @@ def angle_search(model: Model, pm: ProjectileMotion, prune: PruneType):
         )
         points = pm.get_points(Vector(current_angle, vel), exitpoint)
         points = prune_points(prune, points)
+        if (doheight):
+            if (ProjectileMotion.get_vertex(points).y < nd._STAGE_HEIGHT):
+                current_angle += angle_change
+                continue
+        local_min = 10000
         for point in points:
-            dist_1 = point.dist(model.speakerpoint_1)
-            dist_2 = point.dist(model.speakerpoint_2)
-            local_min = min(local_min, (dist_1 + dist_2) / 2)
+            dists = []
+            for goal in goal_points:
+                dists.append(point.dist(goal))
+            local_min = min(local_min, mean(dists))
         if local_min < final_min:
             final_min = local_min
             closest_angle = current_angle
