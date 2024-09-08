@@ -60,13 +60,14 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private static final BoundingBox ROBOT_RELATIVE_FOV_BOUNDS =
       new BoundingBox(
           // top left
-          new Translation2d(-1.950, -0.730),
+          new Translation2d(-1.950, -0.5),
           // top right
-          new Translation2d(-1.750, 0.870),
+          new Translation2d(-1.750, 0.5),
           // bottom left
-          new Translation2d(-0.725, -0.198),
+          new Translation2d(-0.725, -0.1),
           // bottom right
-          new Translation2d(-0.720, 0.300));
+          new Translation2d(-0.720, 0.1));
+
 
   public NoteTrackingManager(
       LocalizationSubsystem localization,
@@ -347,7 +348,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     noteMap.removeIf(
         element -> {
           return (element.expiresAt() < Timer.getFPGATimestamp())
-              || noteInView(element.noteTranslation());
+              ||( noteInView(element.noteTranslation()) && safeToTrack());
         });
 
     double newNoteExpiry = Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME;

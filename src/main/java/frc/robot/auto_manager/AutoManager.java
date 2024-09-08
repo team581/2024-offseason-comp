@@ -159,7 +159,7 @@ public class AutoManager extends LifecycleSubsystem {
     return Commands.defer(
             () ->
                 AutoBuilder.pathfindToPose(getClosestScoringDestination(), DEFAULT_CONSTRAINTS)
-                    .unless(() -> robotInBox()),
+                   ,
             Set.of(robotManager.swerve))
         .withTimeout(3)
         .andThen(actions.speakerShotCommand().until(() -> !robotManager.getState().hasNote))
@@ -231,15 +231,14 @@ public class AutoManager extends LifecycleSubsystem {
                           new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(2)),
                           new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(3)),
                           new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4)),
+
                           new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(5)))));
             }),
         doManyAutoSteps(
             List.of(
-                AutoNoteStep.score(2, 3),
-                AutoNoteStep.score(3, 4),
-                AutoNoteStep.score(4, 5),
-                AutoNoteStep.score(5, 6),
-                AutoNoteStep.score(6))));
+                AutoNoteStep.score(2,3),
+                AutoNoteStep.score(3,4),
+                AutoNoteStep.score(4,5))));
   }
 
   public Command testCommand() {

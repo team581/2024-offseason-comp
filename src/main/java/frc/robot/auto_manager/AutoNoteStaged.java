@@ -29,17 +29,17 @@ public class AutoNoteStaged {
         } else {
           return new Translation2d(2.896, 7.001);
         }
-        // Subtract 0.5 meters from the x to put back on midline
+        // TODO: Subtract 1 meters from the x to put back on midline
       case 4:
-        return new Translation2d(8.771, 7.458);
+        return new Translation2d(9.271, 7.458);
       case 5:
-        return new Translation2d(8.771, 5.782);
+        return new Translation2d(9.271, 5.782);
       case 6:
-        return new Translation2d(8.771, 4.106);
+        return new Translation2d(9.271, 4.106);
       case 7:
-        return new Translation2d(8.771, 2.429);
+        return new Translation2d(9.271, 2.429);
       case 8:
-        return new Translation2d(8.771, 0.753);
+        return new Translation2d(9.271, 0.753);
       default:
         throw new IllegalArgumentException("Expected a note ID from between 1 and 8");
     }
