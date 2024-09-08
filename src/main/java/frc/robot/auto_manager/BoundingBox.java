@@ -43,7 +43,12 @@ public class BoundingBox {
                 translationToVector(bottomLeft))
             .build()
             .getBounds();
-    TEMPORARY = List.of(new Pose2d(topLeft, new Rotation2d()),new Pose2d(topRight, new Rotation2d()),new Pose2d(bottomLeft, new Rotation2d()),new Pose2d(bottomRight, new Rotation2d()));
+    TEMPORARY =
+        List.of(
+            new Pose2d(topLeft, new Rotation2d()),
+            new Pose2d(topRight, new Rotation2d()),
+            new Pose2d(bottomLeft, new Rotation2d()),
+            new Pose2d(bottomRight, new Rotation2d()));
   }
 
   public boolean contains(Translation2d translation) {

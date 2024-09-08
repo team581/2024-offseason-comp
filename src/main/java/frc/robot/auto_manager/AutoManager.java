@@ -6,6 +6,7 @@ package frc.robot.auto_manager;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
+import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -96,10 +97,6 @@ public class AutoManager extends LifecycleSubsystem {
     }
   }
 
-  private boolean robotInBox() {
-    return getScoringBox().contains(localization.getPose().getTranslation());
-  }
-
   private List<Pose2d> getScoringDestinations() {
     if (FmsSubsystem.isRedAlliance()) {
       return RED_DESTINATIONS;
@@ -113,6 +110,14 @@ public class AutoManager extends LifecycleSubsystem {
       return RED_DROPPING_DESTINATION;
     } else {
       return BLUE_DROPPING_DESTINATION;
+    }
+  }
+
+  private static Pose2d getSpeakerCleanupPose() {
+    if (FmsSubsystem.isRedAlliance()) {
+      return RED_SPEAKER_CLEANUP_POSE;
+    } else {
+      return BLUE_SPEAKER_CLEANUP_POSE;
     }
   }
 
@@ -133,21 +138,26 @@ public class AutoManager extends LifecycleSubsystem {
     return closest;
   }
 
-  private static Pose2d getSpeakerCleanupPose() {
-    if (FmsSubsystem.isRedAlliance()) {
-      return RED_SPEAKER_CLEANUP_POSE;
-    } else {
-      return BLUE_SPEAKER_CLEANUP_POSE;
-    }
+  private boolean robotInBox() {
+    return getScoringBox().contains(localization.getPose().getTranslation());
   }
 
-  public Command doManyAutoSteps(List<AutoNoteStep> steps) {
+  private Command intakeNoteAtPose(Supplier<Optional<Translation2d>> pose) {
+    Optional<Translation2d> maybeSearchArea = pose.get();
+    if (maybeSearchArea.isPresent()) {
+      return noteTrackingManager.intakeNoteAtPose(maybeSearchArea::get, 1.5);
+    }
+    return Commands.none();
+  }
 
-    return Commands.sequence(steps.stream().map(this::doAutoStep).toArray(Command[]::new));
+  private Command intakeAnyStepNotes(AutoNoteStep step) {
+    // For each note in the step, try intaking until we get a note
+    return Commands.sequence(
+            step.notes().stream().map(this::intakeNoteAtPose).toArray(Command[]::new))
+        .until(() -> robotManager.getState().hasNote);
   }
 
   private Command cleanupNote() {
-    // find and score a note
     return noteTrackingManager.intakeNearestMapNote(10.0).andThen(pathfindToScoreCommand());
   }
 
@@ -155,15 +165,15 @@ public class AutoManager extends LifecycleSubsystem {
     return cleanupNote().repeatedly();
   }
 
-  private Command pathfindToScoreCommand() {
-    return Commands.defer(
-            () ->
-                AutoBuilder.pathfindToPose(getClosestScoringDestination(), DEFAULT_CONSTRAINTS)
-                   ,
-            Set.of(robotManager.swerve))
-        .withTimeout(3)
-        .andThen(actions.speakerShotCommand().until(() -> !robotManager.getState().hasNote))
-        .onlyIf(() -> robotManager.getState().hasNote);
+  public Command dropNote() {
+    return Commands.sequence(actions.dropCommand())
+        .andThen(
+            Commands.runOnce(
+                () -> {
+                  var robotTranslation = localization.getPose().getTranslation();
+                  noteTrackingManager.addNoteToMap(robotTranslation);
+                  AutoNoteDropped.addDroppedNote(robotTranslation);
+                }));
   }
 
   private Command pathfindToDropCommand() {
@@ -176,6 +186,20 @@ public class AutoManager extends LifecycleSubsystem {
             dropNote())
         .onlyIf(() -> robotManager.getState().hasNote)
         .withTimeout(2.5);
+  }
+
+  private Command pathfindToScoreCommand() {
+    return Commands.defer(
+            () -> AutoBuilder.pathfindToPose(getClosestScoringDestination(), DEFAULT_CONSTRAINTS),
+            Set.of(robotManager.swerve))
+        .withTimeout(3)
+        .andThen(actions.speakerShotCommand().until(() -> !robotManager.getState().hasNote))
+        .onlyIf(
+            () -> {
+              boolean shouldScore = robotManager.getState().hasNote;
+              DogLog.log("AutoManager/ShouldScore", shouldScore);
+              return shouldScore;
+            });
   }
 
   public Command doAutoStep(AutoNoteStep step) {
@@ -194,30 +218,8 @@ public class AutoManager extends LifecycleSubsystem {
     };
   }
 
-  private Command intakeAnyStepNotes(AutoNoteStep step) {
-    // For each note in the step, try intaking until we get a note
-    return Commands.sequence(
-            step.notes().stream().map(this::intakeNoteAtPose).toArray(Command[]::new))
-        .until(() -> robotManager.getState().hasNote);
-  }
-
-  public Command dropNote() {
-    return Commands.sequence(actions.dropCommand())
-        .andThen(
-            Commands.runOnce(
-                () -> {
-                  var robotTranslation = localization.getPose().getTranslation();
-                  noteTrackingManager.addNoteToMap(robotTranslation);
-                  AutoNoteDropped.addDroppedNote(robotTranslation);
-                }));
-  }
-
-  private Command intakeNoteAtPose(Supplier<Optional<Translation2d>> pose) {
-    Optional<Translation2d> maybeSearchArea = pose.get();
-    if (maybeSearchArea.isPresent()) {
-      return noteTrackingManager.intakeNoteAtPose(maybeSearchArea::get, 1.5);
-    }
-    return Commands.none();
+  public Command doManyAutoSteps(List<AutoNoteStep> steps) {
+    return Commands.sequence(steps.stream().map(this::doAutoStep).toArray(Command[]::new));
   }
 
   public Command testCommand1() {
@@ -231,14 +233,10 @@ public class AutoManager extends LifecycleSubsystem {
                           new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(2)),
                           new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(3)),
                           new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4)),
-
                           new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(5)))));
             }),
         doManyAutoSteps(
-            List.of(
-                AutoNoteStep.score(2,3),
-                AutoNoteStep.score(3,4),
-                AutoNoteStep.score(4,5))));
+            List.of(AutoNoteStep.score(2, 3), AutoNoteStep.score(3, 4), AutoNoteStep.score(4, 5))));
   }
 
   public Command testCommand() {

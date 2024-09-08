@@ -68,7 +68,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
           // bottom right
           new Translation2d(-0.720, 0.1));
 
-
   public NoteTrackingManager(
       LocalizationSubsystem localization,
       SwerveSubsystem swerve,
@@ -86,7 +85,9 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
   private boolean noteInView(Translation2d fieldRelativeNote) {
     var robotRelativeNote = getRobotRelativeNote(fieldRelativeNote);
-    DogLog.log("NoteTracking/Debug/BoxContainsNote", ROBOT_RELATIVE_FOV_BOUNDS.contains(robotRelativeNote));
+    DogLog.log(
+        "NoteTracking/Debug/BoxContainsNote",
+        ROBOT_RELATIVE_FOV_BOUNDS.contains(robotRelativeNote));
     return ROBOT_RELATIVE_FOV_BOUNDS.contains(robotRelativeNote);
   }
 
@@ -95,8 +96,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     Rotation2d negativeRobotRotation = robotPose.getRotation().unaryMinus();
     var robotRelativeNoteTranslation =
         fieldRelativeNote.minus(robotPose.getTranslation()).rotateBy(negativeRobotRotation);
-    // TODO: Remove this since it only works with a single visible note
-    DogLog.log("Debug/RobotRelativeNoteTranslation", robotRelativeNoteTranslation);
     return robotRelativeNoteTranslation;
   }
 
@@ -329,9 +328,11 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   }
 
   private List<Pose2d> getFieldRelativeBounds() {
-    var robotRelativeToFieldRelativeTransform = new Transform2d(new Pose2d(), localization.getPose());
+    var robotRelativeToFieldRelativeTransform =
+        new Transform2d(new Pose2d(), localization.getPose());
     return ROBOT_RELATIVE_FOV_BOUNDS.getPoints().stream()
-        .map(point -> point.plus(robotRelativeToFieldRelativeTransform)).toList();
+        .map(point -> point.plus(robotRelativeToFieldRelativeTransform))
+        .toList();
   }
 
   public boolean mapContainsNote() {
@@ -348,7 +349,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     noteMap.removeIf(
         element -> {
           return (element.expiresAt() < Timer.getFPGATimestamp())
-              ||( noteInView(element.noteTranslation()) && safeToTrack());
+              || (noteInView(element.noteTranslation()) && safeToTrack());
         });
 
     double newNoteExpiry = Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME;
