@@ -332,7 +332,10 @@ public class RobotManager extends LifecycleSubsystem {
         }
         break;
       case INTAKING:
-        if (noteManager.getState() == NoteState.INTAKE_TO_QUEUER) {
+        if (noteManager.getState() == NoteState.INTAKE_TO_QUEUER &&
+
+        // Already have a note
+        noteManager.getState() == NoteState.IDLE_IN_QUEUER) {
           state = RobotState.FINISH_INTAKING;
         }
         break;
