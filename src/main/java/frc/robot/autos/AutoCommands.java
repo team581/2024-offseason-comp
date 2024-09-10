@@ -160,7 +160,7 @@ public class AutoCommands {
 
   public Command getMidlineNotesAltAmpCommand() {
     var red5To6 = PathPlannerPath.fromChoreoTrajectory("Red 5 to 6");
-    var red6To4 = PathPlannerPath.fromChoreoTrajectory("Red 6 to 4");
+    var red6To4 = PathPlannerPath.fromPathFile("Red 6 to 4");
     var red5ToCenterWingShot = PathPlannerPath.fromChoreoTrajectory("Red 5 to CWS");
     var redCenterWingShotTo6 = PathPlannerPath.fromChoreoTrajectory("Red CWS to 6");
     var red6ToCenterWingShot = PathPlannerPath.fromChoreoTrajectory("Red 6 to CWS");
