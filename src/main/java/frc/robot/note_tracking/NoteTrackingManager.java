@@ -4,6 +4,8 @@
 
 package frc.robot.note_tracking;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathConstraints;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -34,6 +36,7 @@ import frc.robot.vision.VisionSubsystem;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 public class NoteTrackingManager extends LifecycleSubsystem {
@@ -67,6 +70,9 @@ public class NoteTrackingManager extends LifecycleSubsystem {
           new Translation2d(-0.725, -0.1),
           // bottom right
           new Translation2d(-0.720, 0.1));
+
+  private static final PathConstraints DEFAULT_CONSTRAINTS =
+      new PathConstraints(5.0, 5.0, 2 * Math.PI, 4 * Math.PI);
 
   public NoteTrackingManager(
       LocalizationSubsystem localization,
@@ -246,53 +252,61 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   }
 
   public Command intakeNoteAtPose(Supplier<Translation2d> searchPose, double thresholdMeters) {
-    return actions
-        .intakeCommand()
-        .alongWith(
-            swerve.driveToPoseCommand(
-                () -> {
-                  var nearestNote = getNearestNotePoseRelative(searchPose.get(), thresholdMeters);
 
-                  if (nearestNote.isPresent()) {
-                    DistanceAngle noteDistanceAngle =
-                        VisionSubsystem.distanceAngleToTarget(
-                            new Pose2d(nearestNote.get().noteTranslation(), new Rotation2d()),
-                            localization.getPose());
-                    Rotation2d rotation =
-                        new Rotation2d(
-                            Units.degreesToRadians(noteDistanceAngle.targetAngle()) + Math.PI);
-                    var notePose = new Pose2d(nearestNote.get().noteTranslation(), rotation);
+    var nearestNote = getNearestNotePoseRelative(searchPose.get(), thresholdMeters);
 
-                    snaps.setAngle(rotation.getDegrees());
-                    snaps.setEnabled(true);
+    if (nearestNote.isPresent()) {
+      DistanceAngle noteDistanceAngle =
+          VisionSubsystem.distanceAngleToTarget(
+              new Pose2d(nearestNote.get().noteTranslation(), new Rotation2d()),
+              localization.getPose());
+      Rotation2d rotation =
+          new Rotation2d(Units.degreesToRadians(noteDistanceAngle.targetAngle()) + Math.PI);
+      var notePose = new Pose2d(nearestNote.get().noteTranslation(), rotation);
 
-                    return Optional.of(notePose);
+      return Commands.defer(
+              () ->
+                  AutoBuilder.pathfindToPose(
+                      new Pose2d(searchPose.get(), rotation), DEFAULT_CONSTRAINTS),
+              Set.of(swerve))
+          .until(
+              () ->
+                  localization.getPose().getTranslation().getDistance(notePose.getTranslation())
+                      < 1.5)
+          .andThen(
+              actions
+                  .intakeCommand()
+                  .alongWith(
+                      swerve.driveToPoseCommand(
+                          () -> {
+                            snaps.setAngle(rotation.getDegrees());
+                            snaps.setEnabled(true);
 
-                  } else {
-                    snaps.setEnabled(false);
-                    return Optional.empty();
-                  }
-                },
-                localization::getPose,
-                false))
-        .until(
-            () ->
-                robot.getState() == RobotState.IDLE_WITH_GP
-                    || getNearestNotePoseRelative(searchPose.get(), 1.5).isEmpty())
-        .andThen(
-            Commands.runOnce(
-                () -> {
-                  var intakedNote = getNearestNotePoseRelative(searchPose.get(), 0.5);
-                  if (intakedNote.isPresent()) {
-                    removeNote(intakedNote.get());
-                  }
-                }))
-        .finallyDo(
-            () -> {
-              snaps.setEnabled(false);
-            })
-        .withTimeout(4.0)
-        .withName("IntakeNearestNoteCommand");
+                            return Optional.of(notePose);
+                          },
+                          localization::getPose,
+                          false))
+                  .until(
+                      () ->
+                          robot.getState() == RobotState.IDLE_WITH_GP
+                              || getNearestNotePoseRelative(searchPose.get(), 1.5).isEmpty())
+                  .andThen(
+                      Commands.runOnce(
+                          () -> {
+                            var intakedNote = getNearestNotePoseRelative(searchPose.get(), 0.5);
+                            if (intakedNote.isPresent()) {
+                              removeNote(intakedNote.get());
+                            }
+                          }))
+                  .finallyDo(
+                      () -> {
+                        snaps.setEnabled(false);
+                      })
+                  .withTimeout(4.0))
+          .withName("IntakeNearestNoteCommand");
+    }
+    snaps.setEnabled(false);
+    return Commands.none();
   }
 
   public Command intakeNearestMapNote(double thresholdMeters) {
