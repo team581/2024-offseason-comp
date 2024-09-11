@@ -251,7 +251,7 @@ public class Robot extends TimedRobot {
 
     operatorController
         .leftTrigger()
-        .onTrue(autoManager.testCommand1())
+        .onTrue(autoManager.dropNote())
         .onFalse(actions.stowCommand());
     operatorController
         .rightTrigger()
