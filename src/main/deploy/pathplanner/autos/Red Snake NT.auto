@@ -24,6 +24,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "waitingDropRequest"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Red Snake NT.1"
