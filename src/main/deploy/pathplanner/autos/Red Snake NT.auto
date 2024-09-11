@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 15.226025581359863,
+      "x": 15.226025581359865,
       "y": 6.536499977111816
     },
-    "rotation": -6.957977453661477e-27
+    "rotation": -4.2979391783470744e-15
   },
   "command": {
     "type": "sequential",
@@ -32,7 +32,13 @@
         {
           "type": "named",
           "data": {
-            "name": "noteMap456"
+            "name": "dropNote"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "notemapD4"
           }
         }
       ]
