@@ -349,7 +349,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     noteMap.removeIf(
         element -> {
           return (element.expiresAt() < Timer.getFPGATimestamp())
-              || (noteInView(element.noteTranslation()) && safeToTrack());
+              || (noteInView(element.noteTranslation()) && safeToTrack() && RobotConfig.get().perfToggles().noteMapBoundingBox());
         });
 
     double newNoteExpiry = Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME;

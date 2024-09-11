@@ -105,7 +105,7 @@ public record RobotConfig(
       double thetaStdDev,
       Consumer<InterpolatingDoubleTreeMap> tyToNoteDistance) {}
 
-  public record PerfToggles(boolean interpolatedVision, boolean noteMapInTeleop) {}
+  public record PerfToggles(boolean interpolatedVision, boolean noteMapInTeleop, boolean noteMapBoundingBox) {}
 
   // TODO: Change this to false during events
   public static final boolean IS_DEVELOPMENT = true;
