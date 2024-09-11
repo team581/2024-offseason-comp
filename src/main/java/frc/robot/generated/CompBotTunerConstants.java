@@ -76,8 +76,10 @@ public class CompBotTunerConstants {
               new TalonFXConfiguration()
                   .withCurrentLimits(
                       new CurrentLimitsConfigs()
-                          .withSupplyCurrentLimit(100)
-                          .withStatorCurrentLimit(60)
+                          .withSupplyCurrentLimit(40)
+                          .withSupplyCurrentThreshold(70)
+                          .withSupplyTimeThreshold(1)
+                          .withStatorCurrentLimit(80)
                           .withSupplyCurrentLimitEnable(true)
                           .withStatorCurrentLimitEnable(true))
                   .withTorqueCurrent(
