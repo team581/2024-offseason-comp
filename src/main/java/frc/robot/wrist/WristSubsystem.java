@@ -26,11 +26,11 @@ public class WristSubsystem extends LifecycleSubsystem {
 
   private HomingState homingState = HomingState.PRE_MATCH_HOMING;
 
-  private static final InterpolatingDoubleTreeMap speakerDistanceToAngle =
+  private final InterpolatingDoubleTreeMap speakerDistanceToAngle =
       new InterpolatingDoubleTreeMap();
-  private static final InterpolatingDoubleTreeMap floorSpotDistanceToAngle =
+  private final InterpolatingDoubleTreeMap floorSpotDistanceToAngle =
       new InterpolatingDoubleTreeMap();
-  private static final InterpolatingDoubleTreeMap distanceToAngleTolerance =
+  private final InterpolatingDoubleTreeMap distanceToAngleTolerance =
       new InterpolatingDoubleTreeMap();
 
   private double lowestSeenAngle = Double.MAX_VALUE;

@@ -97,12 +97,21 @@ class CompConfig {
               floorSpotDistanceToRPM -> {
                 floorSpotDistanceToRPM.put(0.0, 1000.0);
                 floorSpotDistanceToRPM.put(1.0, 1000.0);
-                floorSpotDistanceToRPM.put(1.2, 1500.0);
+                floorSpotDistanceToRPM.put(1.5, 1500.0);
+                floorSpotDistanceToRPM.put(2.0, 1600.0);
+                floorSpotDistanceToRPM.put(2.5, 1700.0);
                 floorSpotDistanceToRPM.put(3.0, 1800.0);
-                floorSpotDistanceToRPM.put(5.8, 2700.0);
-                floorSpotDistanceToRPM.put(6.5, 2700.0);
-                floorSpotDistanceToRPM.put(500.0, 2700.0);
-                floorSpotDistanceToRPM.put(581.0, 3200.0);
+                floorSpotDistanceToRPM.put(3.5, 1900.0);
+                floorSpotDistanceToRPM.put(4.0, 2000.0);
+                floorSpotDistanceToRPM.put(4.5, 2100.0);
+                floorSpotDistanceToRPM.put(5.0, 2200.0);
+                floorSpotDistanceToRPM.put(5.5, 2400.0);
+                floorSpotDistanceToRPM.put(6.8, 2500.0);
+                floorSpotDistanceToRPM.put(6.80000001, 2200.0);
+                floorSpotDistanceToRPM.put(7.0, 2200.0);
+                floorSpotDistanceToRPM.put(7.5, 2250.0);
+                floorSpotDistanceToRPM.put(8.0, 2400.0);
+                floorSpotDistanceToRPM.put(8.5, 2400.0);
                 // Evil hacky way to have alternate shooter RPM for the amp area shot
               }),
           new ClimberConfig(
@@ -180,14 +189,23 @@ class CompConfig {
                 speakerDistanceToAngle.put(9.0, 15.1);
               },
               floorSpotDistanceToAngle -> {
-                floorSpotDistanceToAngle.put(0.0, 61.5);
-                floorSpotDistanceToAngle.put(1.0, 61.5);
-                floorSpotDistanceToAngle.put(1.2, 61.5);
-                floorSpotDistanceToAngle.put(3.0, 48.9);
-                floorSpotDistanceToAngle.put(5.8, 25.5);
-                floorSpotDistanceToAngle.put(6.5, 22.2);
-                floorSpotDistanceToAngle.put(500.0, 0.2);
-                floorSpotDistanceToAngle.put(581.0, 0.2);
+                floorSpotDistanceToAngle.put(0.0, 0.0);
+                floorSpotDistanceToAngle.put(1.0, 0.0);
+                floorSpotDistanceToAngle.put(1.5, 1.2);
+                floorSpotDistanceToAngle.put(2.0, 5.7);
+                floorSpotDistanceToAngle.put(2.5, 9.1);
+                floorSpotDistanceToAngle.put(3.0, 11.9);
+                floorSpotDistanceToAngle.put(3.5, 13.0);
+                floorSpotDistanceToAngle.put(4.0, 14.0);
+                floorSpotDistanceToAngle.put(4.5, 15.0);
+                floorSpotDistanceToAngle.put(5.0, 15.9);
+                floorSpotDistanceToAngle.put(5.5, 14.5);
+                floorSpotDistanceToAngle.put(6.8, 14.2);
+                floorSpotDistanceToAngle.put(6.80000001, 61.2);
+                floorSpotDistanceToAngle.put(7.0, 59.9);
+                floorSpotDistanceToAngle.put(7.5, 58.1);
+                floorSpotDistanceToAngle.put(8.0, 61.3);
+                floorSpotDistanceToAngle.put(8.5, 58.0);
               }),
           new ElevatorConfig(
               21,

@@ -89,7 +89,7 @@ public class RobotManager extends LifecycleSubsystem {
     shooter.setFloorSpotDistance(floorSpotDistance);
 
     // TODO: Remove when done tuning shots
-    DogLog.log("Debug/SpeakerDistance", speakerDistance);
+    DogLog.log("Debug/FeedDistance", floorSpotDistance);
 
     // State transitions from requests
     for (RobotFlag flag : flags.getChecked()) {

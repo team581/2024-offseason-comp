@@ -15,13 +15,23 @@ _CHAMPS_TABLE_SPEAKER = [
     uc.ShooterInfo(distance=9.0, angle=18.7305, rpm=4800.0),  # 8
 ]
 _CHAMPS_TABLE_FLOOR = [
-    # uc.ShooterInfo(distance=0.0, angle=58.1, rpm=1000.0),  # 0
-    # uc.ShooterInfo(distance=1.0, angle=47.8, rpm=1000.0),
-    # uc.ShooterInfo(distance=1.2, angle=42.0, rpm=1500.0),
-    # uc.ShooterInfo(distance=3.0, angle=33.9635, rpm=1800.0),
-    # uc.ShooterInfo(distance=5.8, angle=28.20125, rpm=2000.0),
-    # uc.ShooterInfo(distance=6.5, angle=25.84825, rpm=2150.0),
-    uc.ShooterInfo(distance=8.5, angle=25.84825, rpm=2300.0),
+    uc.ShooterInfo(distance=0.0, angle=58.1, rpm=1000.0),  # 0
+    uc.ShooterInfo(distance=1.0, angle=47.8, rpm=1000.0),
+    uc.ShooterInfo(distance=1.5, angle=42.0, rpm=1500.0),
+    uc.ShooterInfo(distance=2.0, angle=42.0, rpm=1600.0),
+    uc.ShooterInfo(distance=2.5, angle=42.0, rpm=1700.0),
+    uc.ShooterInfo(distance=3.0, angle=33.9635, rpm=1800.0),
+    uc.ShooterInfo(distance=3.5, angle=33.9635, rpm=1900.0),
+    uc.ShooterInfo(distance=4.0, angle=33.9635, rpm=2000.0),
+    uc.ShooterInfo(distance=4.5, angle=33.9635, rpm=2100.0),
+    uc.ShooterInfo(distance=5.0, angle=33.9635, rpm=2200.0),
+    uc.ShooterInfo(distance=5.5, angle=28.20125, rpm=2400.0),
+    uc.ShooterInfo(distance=6.8, angle=25.84825, rpm=2500.0),
+    uc.ShooterInfo(distance=6.80000001, angle=25.84825, rpm=2200.0),
+    uc.ShooterInfo(distance=7.0, angle=25.84825, rpm=2200.0),
+    uc.ShooterInfo(distance=7.5, angle=25.84825, rpm=2250.0),
+    uc.ShooterInfo(distance=8.0, angle=25.84825, rpm=2400.0),
+    uc.ShooterInfo(distance=8.5, angle=25.84825, rpm=2400.0),
 ]
 
 

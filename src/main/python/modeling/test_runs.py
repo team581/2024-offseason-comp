@@ -80,7 +80,7 @@ def test_anglesearch_floor():
 
         model = uc.Model(rpos, gpos, info.rpm)
         pm = uc.ProjectileMotion(nd._TIME_CHANGE, nd._USE_DRAG)
-        if info.distance > 7:
+        if info.distance > nd._DO_HEIGHT_DISTANCE:
             do_height = True
         else:
             do_height = False

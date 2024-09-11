@@ -195,15 +195,23 @@ def angle_search(model: Model, pm: ProjectileMotion, prune: PruneType, goal_poin
     angle_change = Vector.fromdegrees(nd._ANGLE_CHANGE)
     current_angle = min_angle
     while current_angle <= max_angle:
+        skip = False
         exitpoint = model.rpos.plus(Vector(current_angle, nd._SHOOTER_LENGTH).topoint()).plus(
             _SHOOTER_OFFSET_TO_ROBOT_CENTER
         )
         points = pm.get_points(Vector(current_angle, vel), exitpoint)
         points = prune_points(prune, points)
+        line_vertex = ProjectileMotion.get_vertex(points)
         if (doheight):
-            if (ProjectileMotion.get_vertex(points).y < nd._STAGE_HEIGHT):
+            if line_vertex.y <= nd._STAGE_HEIGHT or line_vertex.x - 0.07 < (model.gpos.x - model.rpos.x)/2:
                 current_angle += angle_change
                 continue
+
+        if not doheight:
+            if line_vertex.y >= nd._STAGE_WINDOW_UNDER:
+                current_angle += angle_change
+                continue
+        
         local_min = 10000
         for point in points:
             dists = []
