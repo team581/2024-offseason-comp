@@ -251,7 +251,7 @@ class CompConfig {
               2,
               0.075,
               new Debouncer(0.05, DebounceType.kBoth),
-              new Debouncer(0.25, DebounceType.kBoth),
+              new Debouncer(0.50, DebounceType.kBoth),
               new TalonFXConfiguration()
                   .withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(1))
                   .withCurrentLimits(
@@ -308,7 +308,7 @@ class CompConfig {
                 tyToNoteDistance.put(11.85, Units.inchesToMeters(17.75 + 7 + 60.1));
                 tyToNoteDistance.put(15.25, Units.inchesToMeters(17.75 + 7 + 88.9));
               }),
-          new PerfToggles(true, true));
+          new PerfToggles(true, false));
 
   private CompConfig() {}
 }
