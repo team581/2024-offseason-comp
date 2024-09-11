@@ -166,7 +166,8 @@ public class AutoManager extends LifecycleSubsystem {
   }
 
   public Command dropNote() {
-    return Commands.sequence(actions.dropCommand())
+    return actions
+        .dropCommand()
         .andThen(
             Commands.runOnce(
                 () -> {

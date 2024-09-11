@@ -6,6 +6,7 @@ package frc.robot.robot_manager;
 
 import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -46,6 +47,7 @@ public class RobotManager extends LifecycleSubsystem {
   private RobotState state = RobotState.IDLE_NO_GP;
 
   private final FlagManager<RobotFlag> flags = new FlagManager<>("RobotManager", RobotFlag.class);
+  private final Timer evilDropTimer = new Timer();
 
   public RobotManager(
       WristSubsystem wrist,
@@ -217,7 +219,12 @@ public class RobotManager extends LifecycleSubsystem {
           break;
         case DROP:
           if (!state.climbing) {
-            state = RobotState.DROPPING;
+            state = RobotState.PREPARE_DROPPING;
+          }
+          break;
+        case WAITING_DROP:
+          if (!state.climbing) {
+            state = RobotState.WAITING_DROP;
           }
           break;
         case SUBWOOFER_SHOT:
@@ -332,10 +339,11 @@ public class RobotManager extends LifecycleSubsystem {
         }
         break;
       case INTAKING:
-        if (noteManager.getState() == NoteState.INTAKE_TO_QUEUER &&
+        if (noteManager.getState() == NoteState.INTAKE_TO_QUEUER
+            ||
 
-        // Already have a note
-        noteManager.getState() == NoteState.IDLE_IN_QUEUER) {
+            // Already have a note
+            noteManager.getState() == NoteState.IDLE_IN_QUEUER) {
           state = RobotState.FINISH_INTAKING;
         }
         break;
@@ -368,6 +376,12 @@ public class RobotManager extends LifecycleSubsystem {
           }
           break;
         }
+      case PREPARE_DROPPING:
+        var shooterAtDropSpeed = shooter.atGoal(ShooterMode.DROPPING);
+        if (shooterAtDropSpeed) {
+          state = RobotState.DROPPING;
+        }
+        break;
       case PREPARE_PODIUM_SHOT:
         if (wrist.atAngle(WristPositions.PODIUM_SHOT)
             && shooter.atGoal(ShooterMode.PODIUM_SHOT)
@@ -453,7 +467,16 @@ public class RobotManager extends LifecycleSubsystem {
       case PRESET_3:
       case PRESET_MIDDLE:
       case PRESET_AMP:
+        if (noteManager.getState() == NoteState.IDLE_NO_GP) {
+          state = RobotState.IDLE_NO_GP;
+        }
+        break;
       case DROPPING:
+        if (noteManager.getState() == NoteState.IDLE_NO_GP && evilDropTimer.hasElapsed(0.5)) {
+          state = RobotState.IDLE_NO_GP;
+          evilDropTimer.reset();
+        }
+        break;
       case PRESET_LEFT:
         if (noteManager.getState() == NoteState.IDLE_NO_GP) {
           state = RobotState.IDLE_NO_GP;
@@ -558,12 +581,27 @@ public class RobotManager extends LifecycleSubsystem {
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.shooterOuttakeRequest();
         break;
+      case PREPARE_DROPPING:
+        wrist.setAngle(WristPositions.OUTTAKING_SHOOTER);
+        elevator.setGoalHeight(ElevatorPositions.STOWED);
+        shooter.setGoalMode(ShooterMode.DROPPING);
+        climber.setGoalMode(ClimberMode.STOWED);
+        noteManager.idleInQueuerRequest();
+        evilDropTimer.reset();
+        break;
       case DROPPING:
         wrist.setAngle(WristPositions.OUTTAKING_SHOOTER);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.DROPPING);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.dropRequest();
+        evilDropTimer.start();
+        break;
+      case WAITING_DROP:
+        wrist.setAngle(WristPositions.OUTTAKING_SHOOTER);
+        elevator.setGoalHeight(ElevatorPositions.STOWED);
+        shooter.setGoalMode(ShooterMode.DROPPING);
+        climber.setGoalMode(ClimberMode.STOWED);
         break;
       case PREPARE_SHOOTER_AMP:
       case WAIT_SHOOTER_AMP:
@@ -900,7 +938,15 @@ public class RobotManager extends LifecycleSubsystem {
   }
 
   public void dropRequest() {
+    // Prevent command from instantly ending if robot doesn't think it has a note
+    noteManager.evilStateOverride(NoteState.IDLE_IN_QUEUER);
     flags.check(RobotFlag.DROP);
+  }
+
+  public void waitingDropRequest() {
+    // Prevent command from instantly ending if robot doesn't think it has a note
+    noteManager.evilStateOverride(NoteState.IDLE_IN_QUEUER);
+    flags.check(RobotFlag.WAITING_DROP);
   }
 
   public void waitShooterAmpRequest() {

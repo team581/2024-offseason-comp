@@ -41,5 +41,6 @@ public enum RobotFlag {
   PRELOAD_NOTE,
   WAIT_FLOOR_SHOT,
   FLOOR_SHOT,
+  WAITING_DROP,
   DROP;
 }

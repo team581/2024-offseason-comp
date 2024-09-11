@@ -293,6 +293,19 @@ public class AutoCommands {
             List.of(AutoNoteStep.score(5, 6), AutoNoteStep.score(6, 7), AutoNoteStep.score(7))));
   }
 
+  public Command notemap4_10Command() {
+    return Commands.sequence(
+        Commands.runOnce(
+            () -> {
+              var now = Timer.getFPGATimestamp();
+              noteTrackingManager.resetNoteMap(
+                  new ArrayList<>(
+                      List.of(
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4)))));
+            }),
+        doManyAutoSteps(List.of(AutoNoteStep.score(4), AutoNoteStep.score(10))));
+  }
+
   public Command testAuto() {
     return Commands.sequence(
         doNothingCommand()
@@ -302,5 +315,12 @@ public class AutoCommands {
                     .andThen(
                         AutoBuilder.followPath(Paths.testPath)
                             .andThen(actions.speakerShotCommand()))));
+  }
+
+  public Command waitingDropRequestCommand() {
+    return Commands.runOnce(
+        () -> {
+          robotManager.waitingDropRequest();
+        });
   }
 }
