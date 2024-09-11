@@ -4,7 +4,6 @@
 
 package frc.robot.robot_manager;
 
-
 import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
@@ -223,7 +222,7 @@ public class RobotManager extends LifecycleSubsystem {
             state = RobotState.PREPARE_DROPPING;
           }
           break;
-          case WAITING_DROP:
+        case WAITING_DROP:
           if (!state.climbing) {
             state = RobotState.WAITING_DROP;
           }
@@ -340,10 +339,11 @@ public class RobotManager extends LifecycleSubsystem {
         }
         break;
       case INTAKING:
-        if (noteManager.getState() == NoteState.INTAKE_TO_QUEUER ||
+        if (noteManager.getState() == NoteState.INTAKE_TO_QUEUER
+            ||
 
-        // Already have a note
-        noteManager.getState() == NoteState.IDLE_IN_QUEUER) {
+            // Already have a note
+            noteManager.getState() == NoteState.IDLE_IN_QUEUER) {
           state = RobotState.FINISH_INTAKING;
         }
         break;
@@ -354,33 +354,33 @@ public class RobotManager extends LifecycleSubsystem {
         }
         break;
       case PREPARE_FLOOR_SHOT:
-      {
-        var wristAtGoal = wrist.atAngleForFloorSpot(floorSpotVisionTargets.distance());
-        var shooterAtGoal = shooter.atGoal(ShooterMode.FLOOR_SHOT);
-        var headingAtGoal = imu.atAngleForFloorSpot(floorSpotVisionTargets.targetAngle());
-        var swerveAtGoal = swerve.movingSlowEnoughForFloorShot();
-        var angularVelocityAtGoal = Math.abs(imu.getRobotAngularVelocity()) < 360.0;
-        DogLog.log("RobotManager/FloorShot/WristAtGoal", wristAtGoal);
-        DogLog.log("RobotManager/FloorShot/ShooterAtGoal", shooterAtGoal);
-        DogLog.log("RobotManager/FloorShot/HeadingAtGoal", headingAtGoal);
-        DogLog.log("RobotManager/FloorShot/SwerveAtGoal", swerveAtGoal);
-        DogLog.log("RobotManager/FloorShot/AngularVelocityAtGoal", angularVelocityAtGoal);
+        {
+          var wristAtGoal = wrist.atAngleForFloorSpot(floorSpotVisionTargets.distance());
+          var shooterAtGoal = shooter.atGoal(ShooterMode.FLOOR_SHOT);
+          var headingAtGoal = imu.atAngleForFloorSpot(floorSpotVisionTargets.targetAngle());
+          var swerveAtGoal = swerve.movingSlowEnoughForFloorShot();
+          var angularVelocityAtGoal = Math.abs(imu.getRobotAngularVelocity()) < 360.0;
+          DogLog.log("RobotManager/FloorShot/WristAtGoal", wristAtGoal);
+          DogLog.log("RobotManager/FloorShot/ShooterAtGoal", shooterAtGoal);
+          DogLog.log("RobotManager/FloorShot/HeadingAtGoal", headingAtGoal);
+          DogLog.log("RobotManager/FloorShot/SwerveAtGoal", swerveAtGoal);
+          DogLog.log("RobotManager/FloorShot/AngularVelocityAtGoal", angularVelocityAtGoal);
 
-        if (wristAtGoal
-            && shooterAtGoal
-            && headingAtGoal
-            // && jitterAtGoal
-            && swerveAtGoal
-            && angularVelocityAtGoal) {
-          state = RobotState.FLOOR_SHOOT;
+          if (wristAtGoal
+              && shooterAtGoal
+              && headingAtGoal
+              // && jitterAtGoal
+              && swerveAtGoal
+              && angularVelocityAtGoal) {
+            state = RobotState.FLOOR_SHOOT;
+          }
+          break;
         }
-        break;
-      }
       case PREPARE_DROPPING:
         var shooterAtDropSpeed = shooter.atGoal(ShooterMode.DROPPING);
         if (shooterAtDropSpeed) {
           state = RobotState.DROPPING;
-          }
+        }
         break;
       case PREPARE_PODIUM_SHOT:
         if (wrist.atAngle(WristPositions.PODIUM_SHOT)
@@ -467,16 +467,16 @@ public class RobotManager extends LifecycleSubsystem {
       case PRESET_3:
       case PRESET_MIDDLE:
       case PRESET_AMP:
-      if (noteManager.getState() == NoteState.IDLE_NO_GP) {
-        state = RobotState.IDLE_NO_GP;
-      }
-      break;
+        if (noteManager.getState() == NoteState.IDLE_NO_GP) {
+          state = RobotState.IDLE_NO_GP;
+        }
+        break;
       case DROPPING:
-      if (noteManager.getState() == NoteState.IDLE_NO_GP && evilDropTimer.hasElapsed(0.5)) {
-        state = RobotState.IDLE_NO_GP;
-        evilDropTimer.reset();
-      }
-      break;
+        if (noteManager.getState() == NoteState.IDLE_NO_GP && evilDropTimer.hasElapsed(0.5)) {
+          state = RobotState.IDLE_NO_GP;
+          evilDropTimer.reset();
+        }
+        break;
       case PRESET_LEFT:
         if (noteManager.getState() == NoteState.IDLE_NO_GP) {
           state = RobotState.IDLE_NO_GP;
@@ -581,7 +581,7 @@ public class RobotManager extends LifecycleSubsystem {
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.shooterOuttakeRequest();
         break;
-        case PREPARE_DROPPING:
+      case PREPARE_DROPPING:
         wrist.setAngle(WristPositions.OUTTAKING_SHOOTER);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.DROPPING);
@@ -597,7 +597,7 @@ public class RobotManager extends LifecycleSubsystem {
         noteManager.dropRequest();
         evilDropTimer.start();
         break;
-        case WAITING_DROP:
+      case WAITING_DROP:
         wrist.setAngle(WristPositions.OUTTAKING_SHOOTER);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.DROPPING);

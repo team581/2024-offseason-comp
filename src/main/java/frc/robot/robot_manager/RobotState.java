@@ -25,7 +25,7 @@ public enum RobotState {
 
   WAITING_DROP(true, false, false, new LightsState(Color.kGreen, BlinkPattern.BLINK_FAST)),
   PREPARE_DROPPING(true, false, false, new LightsState(Color.kGreen, BlinkPattern.BLINK_FAST)),
-  DROPPING(true, false,  false, new LightsState(Color.kGreen, BlinkPattern.BLINK_FAST)),
+  DROPPING(true, false, false, new LightsState(Color.kGreen, BlinkPattern.BLINK_FAST)),
 
   WAIT_SHOOTER_AMP(true, false, false, new LightsState(Color.kGreen, BlinkPattern.BLINK_FAST)),
   PREPARE_SHOOTER_AMP(true, false, false, new LightsState(Color.kGreen, BlinkPattern.BLINK_FAST)),
