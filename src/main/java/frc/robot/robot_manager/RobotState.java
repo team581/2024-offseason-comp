@@ -23,6 +23,7 @@ public enum RobotState {
   PREPARE_PASS_LOW(true, false, false, new LightsState(Color.kBlue, BlinkPattern.BLINK_FAST)),
   PASS_LOW(true, false, false, new LightsState(Color.kGreen, BlinkPattern.BLINK_FAST)),
 
+  WAITING_DROP(true, false, false, new LightsState(Color.kGreen, BlinkPattern.BLINK_FAST)),
   PREPARE_DROPPING(true, false, false, new LightsState(Color.kGreen, BlinkPattern.BLINK_FAST)),
   DROPPING(true, false,  false, new LightsState(Color.kGreen, BlinkPattern.BLINK_FAST)),
 

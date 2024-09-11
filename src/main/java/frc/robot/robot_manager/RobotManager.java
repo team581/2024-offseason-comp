@@ -223,6 +223,11 @@ public class RobotManager extends LifecycleSubsystem {
             state = RobotState.PREPARE_DROPPING;
           }
           break;
+          case WAITING_DROP:
+          if (!state.climbing) {
+            state = RobotState.WAITING_DROP;
+          }
+          break;
         case SUBWOOFER_SHOT:
           if (!state.climbing) {
             state = RobotState.PREPARE_SUBWOOFER_SHOT;
@@ -592,6 +597,12 @@ public class RobotManager extends LifecycleSubsystem {
         noteManager.dropRequest();
         evilDropTimer.start();
         break;
+        case WAITING_DROP:
+        wrist.setAngle(WristPositions.OUTTAKING_SHOOTER);
+        elevator.setGoalHeight(ElevatorPositions.STOWED);
+        shooter.setGoalMode(ShooterMode.DROPPING);
+        climber.setGoalMode(ClimberMode.STOWED);
+        break;
       case PREPARE_SHOOTER_AMP:
       case WAIT_SHOOTER_AMP:
         wrist.setAngle(WristPositions.SHOOTER_AMP);
@@ -930,6 +941,12 @@ public class RobotManager extends LifecycleSubsystem {
     // Prevent command from instantly ending if robot doesn't think it has a note
     noteManager.evilStateOverride(NoteState.IDLE_IN_QUEUER);
     flags.check(RobotFlag.DROP);
+  }
+
+  public void waitingDropRequest() {
+    // Prevent command from instantly ending if robot doesn't think it has a note
+    noteManager.evilStateOverride(NoteState.IDLE_IN_QUEUER);
+    flags.check(RobotFlag.WAITING_DROP);
   }
 
   public void waitShooterAmpRequest() {
