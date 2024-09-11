@@ -322,6 +322,7 @@ public class RobotManager extends LifecycleSubsystem {
       case WAITING_SPEAKER_SHOT:
       case WAITING_AMP_SHOT:
       case WAITING_FLOOR_SHOT:
+      case WAITING_DROP:
       case WAITING_SUBWOOFER_SHOT:
       case WAITING_PODIUM_SHOT:
       case WAIT_SHOOTER_AMP:
