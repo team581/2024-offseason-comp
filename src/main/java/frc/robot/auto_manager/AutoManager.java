@@ -149,7 +149,7 @@ public class AutoManager extends LifecycleSubsystem {
   }
 
   private Pose2d getClosestScoringDestination() {
-    Pose2d current = localization.getPose();
+    Pose2d current = localization.getUsedPose();
 
     Pose2d closest = getScoringDestinations().get(0);
     double currentDistance = Double.POSITIVE_INFINITY;
@@ -166,7 +166,7 @@ public class AutoManager extends LifecycleSubsystem {
   }
 
   private boolean robotInBox() {
-    return getScoringBox().contains(localization.getPose().getTranslation());
+    return getScoringBox().contains(localization.getUsedPose().getTranslation());
   }
 
   private Command intakeNoteAtPose(Supplier<Optional<Translation2d>> pose) {
@@ -185,7 +185,7 @@ public class AutoManager extends LifecycleSubsystem {
   }
 
   private Command searchForNoteForCleanupCommand() {
-    Translation2d robot = localization.getPose().getTranslation();
+    Translation2d robot = localization.getUsedPose().getTranslation();
     if (robot.getDistance(getClosestSpeaker().getTranslation()) < 4.0) {
 
       return Commands.sequence(
@@ -232,7 +232,7 @@ public class AutoManager extends LifecycleSubsystem {
         .andThen(
             Commands.runOnce(
                 () -> {
-                  var robotTranslation = localization.getPose().getTranslation();
+                  var robotTranslation = localization.getUsedPose().getTranslation();
                   noteTrackingManager.addNoteToMap(robotTranslation);
                   AutoNoteDropped.addDroppedNote(robotTranslation);
                 }));

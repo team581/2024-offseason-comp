@@ -92,7 +92,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   }
 
   private Translation2d getRobotRelativeNote(Translation2d fieldRelativeNote) {
-    var robotPose = localization.getPose();
+    var robotPose = localization.getUsedPose();
     Rotation2d negativeRobotRotation = robotPose.getRotation().unaryMinus();
     var robotRelativeNoteTranslation =
         fieldRelativeNote.minus(robotPose.getTranslation()).rotateBy(negativeRobotRotation);
@@ -257,7 +257,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
                     DistanceAngle noteDistanceAngle =
                         VisionSubsystem.distanceAngleToTarget(
                             new Pose2d(nearestNote.get().noteTranslation(), new Rotation2d()),
-                            localization.getPose());
+                            localization.getUsedPose());
                     Rotation2d rotation =
                         new Rotation2d(
                             Units.degreesToRadians(noteDistanceAngle.targetAngle()) + Math.PI);
@@ -273,7 +273,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
                     return Optional.empty();
                   }
                 },
-                localization::getPose,
+                localization::getUsedPose,
                 false))
         .until(
             () ->
@@ -296,7 +296,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   }
 
   public Command intakeNearestMapNote(double thresholdMeters) {
-    return intakeNoteAtPose(() -> localization.getPose().getTranslation(), thresholdMeters);
+    return intakeNoteAtPose(() -> localization.getUsedPose().getTranslation(), thresholdMeters);
   }
 
   @Override
@@ -321,7 +321,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     var fieldRelativeBounds = getFieldRelativeBounds();
     DogLog.log("NoteTracking/CameraBounds", fieldRelativeBounds.toArray(Pose2d[]::new));
 
-    var maybeClosest = getNearestNotePoseRelative(localization.getPose().getTranslation(), 99987.0);
+    var maybeClosest = getNearestNotePoseRelative(localization.getUsedPose().getTranslation(), 99987.0);
     if (maybeClosest.isPresent()) {
       DogLog.log("NoteTracking/ClosestNote", maybeClosest.get().noteTranslation());
     }
@@ -329,7 +329,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
   private List<Pose2d> getFieldRelativeBounds() {
     var robotRelativeToFieldRelativeTransform =
-        new Transform2d(new Pose2d(), localization.getPose());
+        new Transform2d(new Pose2d(), localization.getUsedPose());
     return ROBOT_RELATIVE_FOV_BOUNDS.getPoints().stream()
         .map(point -> point.plus(robotRelativeToFieldRelativeTransform))
         .toList();

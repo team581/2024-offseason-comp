@@ -74,7 +74,7 @@ public class Autos extends LifecycleSubsystem {
 
     // Configure AutoBuilder last
     AutoBuilder.configureHolonomic(
-        localization::getPose,
+        localization::getUsedPose,
         localization::resetPose,
         swerve::getRobotRelativeSpeeds,
         (robotRelativeSpeeds) -> {
