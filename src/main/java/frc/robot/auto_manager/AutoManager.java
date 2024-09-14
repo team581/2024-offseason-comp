@@ -10,7 +10,6 @@ import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -22,6 +21,7 @@ import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
+import frc.robot.vision.VisionSubsystem;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -36,14 +36,16 @@ public class AutoManager extends LifecycleSubsystem {
   private static final PathConstraints DEFAULT_CONSTRAINTS =
       new PathConstraints(5.0, 5.0, 2 * Math.PI, 4 * Math.PI);
 
-  public static final Pose2d RED_SPEAKER_CLEANUP_POSE =
-      new Pose2d(
-          Units.inchesToMeters(652.73) - 2.0,
-          Units.inchesToMeters(218.42),
-          Rotation2d.fromDegrees(180));
-  public static final Pose2d BLUE_SPEAKER_CLEANUP_POSE =
-      new Pose2d(
-          Units.inchesToMeters(0) + 2.0, Units.inchesToMeters(218.42), Rotation2d.fromDegrees(0));
+  public static final List<Pose2d> RED_SPEAKER_CLEANUP_PATH =
+      List.of(
+          new Pose2d(12.67, 6.98, Rotation2d.fromDegrees(140.75)),
+          new Pose2d(14.13, 6.10, Rotation2d.fromDegrees(-159.24)),
+          new Pose2d(14.48, 4.09, Rotation2d.fromDegrees(174.67)));
+  public static final List<Pose2d> BLUE_SPEAKER_CLEANUP_PATH =
+      List.of(
+          new Pose2d(3.62, 6.7, Rotation2d.fromDegrees(47.03)),
+          new Pose2d(2.57, 6.34, Rotation2d.fromDegrees(-7.35)),
+          new Pose2d(2.34, 4.49, Rotation2d.fromDegrees(16.93)));
   public static final Pose2d MIDLINE_CLEANUP_POSE = new Pose2d(8.271, 4.106, new Rotation2d(0));
   public static final List<Pose2d> RED_DESTINATIONS =
       List.of(
@@ -77,6 +79,15 @@ public class AutoManager extends LifecycleSubsystem {
           new Translation2d(1.11, 3.49),
           new Translation2d(4.97, 4.67));
 
+  private static final List<Pose2d> RED_MIDLINE_CLEANUP_PATH =
+      List.of(
+          new Pose2d(9.83, 2.42, Rotation2d.fromDegrees(43.18)),
+          new Pose2d(9.83, 5.69, Rotation2d.fromDegrees(-41.89)));
+  private static final List<Pose2d> BLUE_MIDLINE_CLEANUP_PATH =
+      List.of(
+          new Pose2d(6.66, 2.42, Rotation2d.fromDegrees(136.86)),
+          new Pose2d(6.66, 5.69, Rotation2d.fromDegrees(-144.39)));
+
   public AutoManager(
       RobotCommands actions,
       NoteTrackingManager noteTrackingManager,
@@ -89,7 +100,7 @@ public class AutoManager extends LifecycleSubsystem {
     this.localization = localization;
   }
 
-  private BoundingBox getScoringBox() {
+  private static BoundingBox getScoringBox() {
     if (FmsSubsystem.isRedAlliance()) {
       return RED_SCORING_BOX;
     } else {
@@ -97,7 +108,7 @@ public class AutoManager extends LifecycleSubsystem {
     }
   }
 
-  private List<Pose2d> getScoringDestinations() {
+  private static List<Pose2d> getScoringDestinations() {
     if (FmsSubsystem.isRedAlliance()) {
       return RED_DESTINATIONS;
     } else {
@@ -105,7 +116,7 @@ public class AutoManager extends LifecycleSubsystem {
     }
   }
 
-  private Pose2d getDroppingDestination() {
+  private static Pose2d getDroppingDestination() {
     if (FmsSubsystem.isRedAlliance()) {
       return RED_DROPPING_DESTINATION;
     } else {
@@ -113,11 +124,27 @@ public class AutoManager extends LifecycleSubsystem {
     }
   }
 
-  private static Pose2d getSpeakerCleanupPose() {
+  private static List<Pose2d> getSpeakerCleanupPath() {
     if (FmsSubsystem.isRedAlliance()) {
-      return RED_SPEAKER_CLEANUP_POSE;
+      return RED_SPEAKER_CLEANUP_PATH;
     } else {
-      return BLUE_SPEAKER_CLEANUP_POSE;
+      return BLUE_SPEAKER_CLEANUP_PATH;
+    }
+  }
+
+  private static List<Pose2d> getMidlineCleanupPath() {
+    if (FmsSubsystem.isRedAlliance()) {
+      return RED_MIDLINE_CLEANUP_PATH;
+    } else {
+      return BLUE_MIDLINE_CLEANUP_PATH;
+    }
+  }
+
+  private static Pose2d getClosestSpeaker() {
+    if (FmsSubsystem.isRedAlliance()) {
+      return VisionSubsystem.ORIGINAL_RED_SPEAKER;
+    } else {
+      return VisionSubsystem.ORIGINAL_BLUE_SPEAKER;
     }
   }
 
@@ -157,12 +184,46 @@ public class AutoManager extends LifecycleSubsystem {
         .until(() -> robotManager.getState().hasNote);
   }
 
-  private Command cleanupNote() {
-    return noteTrackingManager.intakeNearestMapNote(10.0).andThen(pathfindToScoreCommand());
+  private Command searchForNoteForCleanupCommand() {
+    Translation2d robot = localization.getPose().getTranslation();
+    if (robot.getDistance(getClosestSpeaker().getTranslation()) < 4.0) {
+
+      return Commands.sequence(
+              getSpeakerCleanupPath().stream()
+                  .map(
+                      pose -> {
+                        return AutoBuilder.pathfindToPose(pose, DEFAULT_CONSTRAINTS);
+                      })
+                  .toArray(Command[]::new))
+          .until(
+              () -> {
+                return noteTrackingManager.getNearestNotePoseRelative(robot, 5.0).isPresent();
+              });
+    }
+    return Commands.sequence(
+            getMidlineCleanupPath().stream()
+                .map(
+                    pose -> {
+                      return AutoBuilder.pathfindToPose(pose, DEFAULT_CONSTRAINTS);
+                    })
+                .toArray(Command[]::new))
+        .until(
+            () -> {
+              return noteTrackingManager.getNearestNotePoseRelative(robot, 5.0).isPresent();
+            });
+  }
+
+  private Command cleanupAllMapNotes() {
+    return noteTrackingManager
+        .intakeNearestMapNote(15.0)
+        .andThen(pathfindToScoreCommand())
+        .repeatedly();
   }
 
   private Command cleanupCommand() {
-    return cleanupNote().repeatedly();
+    return cleanupAllMapNotes()
+        .andThen(searchForNoteForCleanupCommand())
+        .andThen(cleanupAllMapNotes());
   }
 
   public Command dropNote() {

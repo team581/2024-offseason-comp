@@ -107,11 +107,11 @@ class CompConfig {
                 floorSpotDistanceToRPM.put(5.0, 2200.0);
                 floorSpotDistanceToRPM.put(5.5, 2400.0);
                 floorSpotDistanceToRPM.put(6.8, 2500.0);
-                floorSpotDistanceToRPM.put(6.80000001, 2200.0);
-                floorSpotDistanceToRPM.put(7.0, 2200.0);
-                floorSpotDistanceToRPM.put(7.5, 2250.0);
-                floorSpotDistanceToRPM.put(8.0, 2400.0);
-                floorSpotDistanceToRPM.put(8.5, 2400.0);
+                floorSpotDistanceToRPM.put(6.80000001, 2300.0);
+                floorSpotDistanceToRPM.put(7.0, 2300.0);
+                floorSpotDistanceToRPM.put(7.5, 2400.0);
+                floorSpotDistanceToRPM.put(8.0, 2500.0);
+                floorSpotDistanceToRPM.put(8.5, 2600.0);
                 floorSpotDistanceToRPM.put(9.0, 2500.0);
                 floorSpotDistanceToRPM.put(9.5, 2600.0);
                 floorSpotDistanceToRPM.put(10.0, 2700.0);
@@ -211,11 +211,11 @@ class CompConfig {
                 floorSpotDistanceToAngle.put(5.0, 15.9);
                 floorSpotDistanceToAngle.put(5.5, 14.5);
                 floorSpotDistanceToAngle.put(6.8, 14.2);
-                floorSpotDistanceToAngle.put(6.80000001, 61.2);
-                floorSpotDistanceToAngle.put(7.0, 59.9);
+                floorSpotDistanceToAngle.put(6.80000001, 60.7);
+                floorSpotDistanceToAngle.put(7.0, 59.6);
                 floorSpotDistanceToAngle.put(7.5, 58.1);
-                floorSpotDistanceToAngle.put(8.0, 61.3);
-                floorSpotDistanceToAngle.put(8.5, 58.0);
+                floorSpotDistanceToAngle.put(8.0, 58.0);
+                floorSpotDistanceToAngle.put(8.5, 57.8);
                 floorSpotDistanceToAngle.put(9.0, 59.5);
                 floorSpotDistanceToAngle.put(9.5, 60.4);
                 floorSpotDistanceToAngle.put(10.0, 61.3);
@@ -328,7 +328,7 @@ class CompConfig {
                 tyToNoteDistance.put(11.85, Units.inchesToMeters(17.75 + 7 + 60.1));
                 tyToNoteDistance.put(15.25, Units.inchesToMeters(17.75 + 7 + 88.9));
               }),
-          new PerfToggles(true, false));
+          new PerfToggles(true, true, false));
 
   private CompConfig() {}
 }
