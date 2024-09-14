@@ -91,6 +91,7 @@ public class LocalizationSubsystem extends LifecycleSubsystem {
     DogLog.log("Localization/OdometryPose", getOdometryPose());
     DogLog.log("Localization/EstimatedPose/UsedPose", getUsedPose());
     DogLog.log("Localization/EstimatedPose/CurrentPose", getPose());
+    DogLog.log("Localization/EstimatedPose/LookaheadPose", getLookaheadPose());
     PoseEstimate mt2Estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("");
     if (mt2Estimate != null) {
       DogLog.log("Localization/LimelightPoseRaw", mt2Estimate.pose);
