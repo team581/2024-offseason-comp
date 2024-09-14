@@ -10,6 +10,7 @@ import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.Timer;
@@ -32,6 +33,8 @@ public class LocalizationSubsystem extends LifecycleSubsystem {
   private final SwerveDriveOdometry odometry;
   private final VisionSubsystem vision;
   private double lastAddedVisionTimestamp = 0;
+  private double lookaheadTime = 0.2;
+  private boolean useLookahead = true;
 
   private final TimeInterpolatableBuffer<Pose2d> poseHistory =
       TimeInterpolatableBuffer.createBuffer(1.5);
@@ -86,22 +89,27 @@ public class LocalizationSubsystem extends LifecycleSubsystem {
     poseHistory.addSample(Timer.getFPGATimestamp(), poseEstimator.getEstimatedPosition());
 
     DogLog.log("Localization/OdometryPose", getOdometryPose());
-    DogLog.log("Localization/EstimatedPose", getPose());
+    DogLog.log("Localization/EstimatedPose/UsedPose", getUsedPose());
+    DogLog.log("Localization/EstimatedPose/CurrentPose", getPose());
     PoseEstimate mt2Estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("");
     if (mt2Estimate != null) {
       DogLog.log("Localization/LimelightPoseRaw", mt2Estimate.pose);
     }
 
-    vision.setRobotPose(getPose());
+    vision.setRobotPose(getUsedPose());
   }
 
   public Pose2d getPose() {
     return poseEstimator.getEstimatedPosition();
   }
 
+  public Pose2d getUsedPose() {
+    return getLookaheadRobot(useLookahead);
+  }
+
   // get pose at timestamp method
   public Pose2d getPose(double timestamp) {
-    return poseHistory.getSample(timestamp).orElseGet(this::getPose);
+    return poseHistory.getSample(timestamp).orElseGet(this::getUsedPose);
   }
 
   public Pose2d getOdometryPose() {
@@ -126,7 +134,7 @@ public class LocalizationSubsystem extends LifecycleSubsystem {
 
   private void resetGyro(double gyroAngle) {
     Pose2d estimatedPose =
-        new Pose2d(getPose().getTranslation(), Rotation2d.fromDegrees(gyroAngle));
+        new Pose2d(getUsedPose().getTranslation(), Rotation2d.fromDegrees(gyroAngle));
     Pose2d odometryPose =
         new Pose2d(getOdometryPose().getTranslation(), Rotation2d.fromDegrees(gyroAngle));
     resetPose(estimatedPose, odometryPose);
@@ -134,5 +142,26 @@ public class LocalizationSubsystem extends LifecycleSubsystem {
 
   public Command getZeroCommand() {
     return Commands.runOnce(() -> resetGyro(FmsSubsystem.isRedAlliance() ? 0 : 180));
+  }
+
+  public Pose2d getLookaheadRobot(boolean doLookahead) {
+    if (!doLookahead) {
+      return getPose();
+    }
+
+    ChassisSpeeds robotSpeeds = swerve.getRobotRelativeSpeeds();
+    Pose2d accel = new Pose2d(imu.getXAcceleration(), imu.getYAcceleration(), new Rotation2d(0));
+    Pose2d vel =
+        new Pose2d(
+            accel.getX() * lookaheadTime + robotSpeeds.vxMetersPerSecond,
+            accel.getY() * lookaheadTime + robotSpeeds.vyMetersPerSecond,
+            Rotation2d.fromRadians(robotSpeeds.omegaRadiansPerSecond));
+    Pose2d lookahead =
+        new Pose2d(
+            vel.getX() * lookaheadTime + getPose().getX(),
+            vel.getY() * lookaheadTime + getPose().getY(),
+            vel.getRotation().times(lookaheadTime).plus(getPose().getRotation()));
+
+    return lookahead;
   }
 }
