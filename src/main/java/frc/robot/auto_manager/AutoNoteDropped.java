@@ -4,12 +4,11 @@
 
 package frc.robot.auto_manager;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Translation2d;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-
-import dev.doglog.DogLog;
 
 public class AutoNoteDropped {
   private static int nextDroppedNoteId = 0;

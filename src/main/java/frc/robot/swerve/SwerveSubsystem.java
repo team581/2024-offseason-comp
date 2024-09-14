@@ -32,7 +32,7 @@ import java.util.function.Supplier;
 
 public class SwerveSubsystem extends LifecycleSubsystem {
   private static final double MAX_SPEED_SHOOTING = Units.feetToMeters(0.5);
-  private static final double MAX_FLOOR_SPEED_SHOOTING = Units.feetToMeters(18);
+  private static final double MAX_FLOOR_SPEED_SHOOTING = Units.feetToMeters(0.5);
   public static final double MaxSpeed = 4.75;
   private static final double MaxAngularRate = Units.rotationsToRadians(4);
   private static final Rotation2d TELEOP_MAX_ANGULAR_RATE = Rotation2d.fromRotations(2);
