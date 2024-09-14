@@ -203,7 +203,7 @@ def angle_search(model: Model, pm: ProjectileMotion, prune: PruneType, goal_poin
         points = prune_points(prune, points)
         line_vertex = ProjectileMotion.get_vertex(points)
         if (doheight):
-            if line_vertex.y <= nd._STAGE_HEIGHT or line_vertex.x - 0.07 < (model.gpos.x - model.rpos.x)/2:
+            if line_vertex.y <= nd._STAGE_HEIGHT or (line_vertex.x - 0.07 < (model.gpos.x - model.rpos.x)/2 and not model.gpos.x - model.rpos.x >= 8.5):
                 current_angle += angle_change
                 continue
 
