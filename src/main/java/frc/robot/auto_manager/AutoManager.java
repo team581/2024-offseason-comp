@@ -170,9 +170,15 @@ public class AutoManager extends LifecycleSubsystem {
   }
 
   private Command intakeNoteAtPose(Supplier<Optional<Translation2d>> pose) {
+    // TODO: THIS IS BAD AND BROKEN. STOP CHECKING IF A NOTE IS THERE WHEN THE COMMAND IS
+    // CONSTRUCTED. HAVE TO CHECK WHEN COMMAND IS SCHEDULED.
     Optional<Translation2d> maybeSearchArea = pose.get();
     if (maybeSearchArea.isPresent()) {
-      return noteTrackingManager.intakeNoteAtPose(maybeSearchArea::get, 1.5);
+      DogLog.log("Debug/IntakeSearchPose", maybeSearchArea.get());
+      return noteTrackingManager.intakeNoteAtPose(() -> pose.get(), 1.5);
+    } else {
+
+      DogLog.log("Debug/IntakeSearchPose", "null :(");
     }
     return Commands.none();
   }

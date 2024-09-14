@@ -242,16 +242,23 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   }
 
   public Command intakeNoteAtPose(Translation2d searchPose, double thresholdMeters) {
-    return intakeNoteAtPose(() -> searchPose, thresholdMeters);
+    return intakeNoteAtPose(() -> Optional.of(searchPose), thresholdMeters);
   }
 
-  public Command intakeNoteAtPose(Supplier<Translation2d> searchPose, double thresholdMeters) {
+  public Command intakeNoteAtPose(
+      Supplier<Optional<Translation2d>> maybeSearchPoseSupplier, double thresholdMeters) {
     return actions
         .intakeCommand()
         .alongWith(
             swerve.driveToPoseCommand(
                 () -> {
-                  var nearestNote = getNearestNotePoseRelative(searchPose.get(), thresholdMeters);
+                  var maybeSearchPose = maybeSearchPoseSupplier.get();
+                  if (maybeSearchPose.isEmpty()) {
+                    return Optional.empty();
+                  }
+
+                  var nearestNote =
+                      getNearestNotePoseRelative(maybeSearchPose.get(), thresholdMeters);
 
                   if (nearestNote.isPresent()) {
                     DistanceAngle noteDistanceAngle =
@@ -276,13 +283,20 @@ public class NoteTrackingManager extends LifecycleSubsystem {
                 localization::getUsedPose,
                 false))
         .until(
-            () ->
-                robot.getState() == RobotState.IDLE_WITH_GP
-                    || getNearestNotePoseRelative(searchPose.get(), 1.5).isEmpty())
+            () -> {
+              var maybeSearchPose = maybeSearchPoseSupplier.get();
+              return maybeSearchPose.isEmpty()
+                  || robot.getState() == RobotState.IDLE_WITH_GP
+                  || getNearestNotePoseRelative(maybeSearchPose.get(), 1.5).isEmpty();
+            })
         .andThen(
             Commands.runOnce(
                 () -> {
-                  var intakedNote = getNearestNotePoseRelative(searchPose.get(), 0.5);
+                  var maybeSearchPose = maybeSearchPoseSupplier.get();
+                  if (maybeSearchPose.isEmpty()) {
+                    return;
+                  }
+                  var intakedNote = getNearestNotePoseRelative(maybeSearchPose.get(), 0.5);
                   if (intakedNote.isPresent()) {
                     removeNote(intakedNote.get());
                   }
@@ -296,7 +310,8 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   }
 
   public Command intakeNearestMapNote(double thresholdMeters) {
-    return intakeNoteAtPose(() -> localization.getUsedPose().getTranslation(), thresholdMeters);
+    return intakeNoteAtPose(
+        () -> Optional.of(localization.getPose().getTranslation()), thresholdMeters);
   }
 
   @Override
