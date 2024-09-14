@@ -321,7 +321,8 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     var fieldRelativeBounds = getFieldRelativeBounds();
     DogLog.log("NoteTracking/CameraBounds", fieldRelativeBounds.toArray(Pose2d[]::new));
 
-    var maybeClosest = getNearestNotePoseRelative(localization.getUsedPose().getTranslation(), 99987.0);
+    var maybeClosest =
+        getNearestNotePoseRelative(localization.getUsedPose().getTranslation(), 99987.0);
     if (maybeClosest.isPresent()) {
       DogLog.log("NoteTracking/ClosestNote", maybeClosest.get().noteTranslation());
     }
