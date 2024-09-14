@@ -294,16 +294,17 @@ public class AutoCommands {
   }
 
   public Command notemap4_10Command() {
-    return Commands.sequence(
-        Commands.runOnce(
-            () -> {
-              var now = Timer.getFPGATimestamp();
-              noteTrackingManager.resetNoteMap(
-                  new ArrayList<>(
-                      List.of(
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4)))));
-            }),
-        doManyAutoSteps(List.of(AutoNoteStep.score(4), AutoNoteStep.score(10))));
+    return doManyAutoSteps(List.of(AutoNoteStep.score(4), AutoNoteStep.score(10)));
+  }
+
+  public Command noteMapResetCommand() {
+    return Commands.runOnce(
+        () -> {
+          var now = Timer.getFPGATimestamp();
+          noteTrackingManager.resetNoteMap(
+              new ArrayList<>(
+                  List.of(new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4)))));
+        });
   }
 
   public Command testAuto() {

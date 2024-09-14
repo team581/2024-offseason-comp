@@ -4,6 +4,7 @@
 
 package frc.robot.auto_manager;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Translation2d;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,10 +16,23 @@ public class AutoNoteDropped {
   public static void clearDroppedNotes() {
     droppedNoteIdToPose.clear();
     nextDroppedNoteId = 0;
+    DogLog.log("Debug/ClearedNoteNextId", nextDroppedNoteId);
+    DogLog.log("Debug/ClearedNoteHashMap", droppedNoteIdToPose.toString());
+    // log next dropped note id
+    // log translation
+    // log size of the map
   }
 
   public static void addDroppedNote(Translation2d translation) {
+
+    DogLog.log("Debug/AddDroppedNoteBeforeAdding", nextDroppedNoteId);
+    DogLog.log("Debug/HashMapBeforeAdding", droppedNoteIdToPose.toString());
     droppedNoteIdToPose.put(nextDroppedNoteId++, translation);
+    DogLog.log("Debug/AddDroppedNoteAfterAdding", nextDroppedNoteId);
+    DogLog.log("Debug/HashMapAfterAdding", droppedNoteIdToPose.toString());
+    // log next dropped note id
+    // log translation
+    // log size of the map
   }
 
   private static Map<Integer, Translation2d> droppedNoteIdToPose = new HashMap<>();
@@ -30,6 +44,8 @@ public class AutoNoteDropped {
   }
 
   public Optional<Translation2d> getPose() {
+    // log stuff here also if its useful
+
     if (droppedNoteIdToPose.containsKey(droppedNoteId)) {
       return Optional.of(droppedNoteIdToPose.get(droppedNoteId));
     }

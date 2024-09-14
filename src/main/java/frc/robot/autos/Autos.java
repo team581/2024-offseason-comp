@@ -118,6 +118,7 @@ public class Autos extends LifecycleSubsystem {
     registerCommand("dropNote", autoManager.dropNote());
     registerCommand("notemapD4", autoCommands.notemap4_10Command());
     registerCommand("waitingDropRequest", autoCommands.waitingDropRequestCommand());
+    registerCommand("resetNoteMap", autoCommands.noteMapResetCommand());
 
     PathPlannerLogging.setLogActivePathCallback(
         (activePath) -> {

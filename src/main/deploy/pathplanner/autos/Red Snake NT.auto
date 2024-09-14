@@ -26,6 +26,12 @@
         {
           "type": "named",
           "data": {
+            "name": "resetNoteMap"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "waitingDropRequest"
           }
         },
