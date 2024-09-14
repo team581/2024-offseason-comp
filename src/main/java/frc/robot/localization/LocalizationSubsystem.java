@@ -34,7 +34,7 @@ public class LocalizationSubsystem extends LifecycleSubsystem {
   private final VisionSubsystem vision;
   private double lastAddedVisionTimestamp = 0;
   private double lookaheadTime = 0.2;
-  private boolean useLookahead = true;
+  private boolean useLookahead = false;
 
   private final TimeInterpolatableBuffer<Pose2d> poseHistory =
       TimeInterpolatableBuffer.createBuffer(1.5);
@@ -105,6 +105,10 @@ public class LocalizationSubsystem extends LifecycleSubsystem {
 
   public Pose2d getUsedPose() {
     return getLookaheadRobot(useLookahead);
+  }
+
+  public Pose2d getLookaheadPose() {
+    return getLookaheadRobot(true);
   }
 
   // get pose at timestamp method
