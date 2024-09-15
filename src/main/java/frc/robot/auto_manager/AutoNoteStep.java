@@ -22,19 +22,20 @@ public record AutoNoteStep(AutoNoteAction action, List<Supplier<Optional<Transla
         AutoNoteAction.DROP, list.stream().map(AutoNoteStep::noteIdToPose).toList());
   }
 
-public static AutoNoteStep score(Integer... noteIds) {
-  List<Integer> list = List.of(noteIds);
+  public static AutoNoteStep score(Integer... noteIds) {
+    List<Integer> list = List.of(noteIds);
 
-  List<Supplier<Optional<Translation2d>>> noteSuppliers =
-      list.stream()
-          .map(
-              (Integer noteId) -> {
-                return (Supplier<Optional<Translation2d>>) () -> AutoNoteStep.noteIdToPose(0).get();
-          })
-          .toList();
+    List<Supplier<Optional<Translation2d>>> noteSuppliers =
+        list.stream()
+            .map(
+                (Integer noteId) -> {
+                  return (Supplier<Optional<Translation2d>>)
+                      () -> AutoNoteStep.noteIdToPose(0).get();
+                })
+            .toList();
 
-  return new AutoNoteStep(AutoNoteAction.SCORE, noteSuppliers);
-}
+    return new AutoNoteStep(AutoNoteAction.SCORE, noteSuppliers);
+  }
 
   private static Supplier<Optional<Translation2d>> noteIdToPose(int id) {
     DogLog.log("Debug/NoteIdToPose", id);
