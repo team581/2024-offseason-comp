@@ -39,7 +39,7 @@ public class CompBotTunerConstants {
 
   // The stator current at which the wheels start to slip;
   // This needs to be tuned to your individual robot
-  private static final double kSlipCurrentA = 300.0;
+  private static final double kSlipCurrentA = 40.0;
 
   // Theoretical free speed (m/s) at 12v applied output;
   // This needs to be tuned to your individual robot
@@ -79,7 +79,7 @@ public class CompBotTunerConstants {
                           .withSupplyCurrentLimit(40)
                           .withSupplyCurrentThreshold(70)
                           .withSupplyTimeThreshold(1)
-                          .withStatorCurrentLimit(80)
+                          .withStatorCurrentLimit(40)
                           .withSupplyCurrentLimitEnable(true)
                           .withStatorCurrentLimitEnable(true))
                   .withTorqueCurrent(

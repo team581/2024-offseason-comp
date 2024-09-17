@@ -212,7 +212,7 @@ public class Robot extends TimedRobot {
     driverController.x().onTrue(snaps.getCommand(() -> SnapManager.getStageLeftAngle()));
     driverController.b().onTrue(snaps.getCommand(() -> SnapManager.getStageRightAngle()));
     driverController.a().onTrue(snaps.getCommand(() -> SnapManager.getAmpAngle()));
-    driverController.povDown().onTrue(snaps.getCommand(() -> SnapManager.getStageBackChain()));
+    driverController.povUp().onTrue(snaps.getCommand(() -> SnapManager.getStageBackChain()));
 
     driverController
         .leftTrigger()

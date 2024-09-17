@@ -46,6 +46,16 @@ public class AutoNoteDropped {
   public Optional<Translation2d> getPose() {
     // log stuff here also if its useful
 
+    DogLog.log("Debug/ContainsKey", droppedNoteIdToPose.containsKey(droppedNoteId));
+    DogLog.log("Debug/ContainsKeyId", droppedNoteId);
+    var value = droppedNoteIdToPose.get(droppedNoteId);
+    if (value == null) {
+      DogLog.log("Debug/Value", "null :(");
+
+    } else {
+      DogLog.log("Debug/Value", value);
+    }
+
     if (droppedNoteIdToPose.containsKey(droppedNoteId)) {
       return Optional.of(droppedNoteIdToPose.get(droppedNoteId));
     }

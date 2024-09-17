@@ -4,6 +4,7 @@
 
 package frc.robot.auto_manager;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Translation2d;
 import java.util.List;
 import java.util.Optional;
@@ -15,29 +16,44 @@ public record AutoNoteStep(AutoNoteAction action, List<Supplier<Optional<Transla
   }
 
   public static AutoNoteStep drop(Integer... noteIds) {
-    List<Integer> list = List.of(noteIds);
-
-    return new AutoNoteStep(
-        AutoNoteAction.DROP, list.stream().map(AutoNoteStep::noteIdToPose).toList());
+    return new AutoNoteStep(AutoNoteAction.DROP, noteIdsToSearchPoseSuppliers(noteIds));
   }
 
   public static AutoNoteStep score(Integer... noteIds) {
-    List<Integer> list = List.of(noteIds);
-
-    return new AutoNoteStep(
-        AutoNoteAction.SCORE, list.stream().map(AutoNoteStep::noteIdToPose).toList());
+    return new AutoNoteStep(AutoNoteAction.SCORE, noteIdsToSearchPoseSuppliers(noteIds));
   }
 
   private static Supplier<Optional<Translation2d>> noteIdToPose(int id) {
+    DogLog.log("Debug/NoteIdToPose", id);
     if (id >= 10) {
       // Dropped note ID
-      return new AutoNoteDropped(id - 10)::getPose;
+      Supplier<Optional<Translation2d>> note = new AutoNoteDropped(id - 10)::getPose;
+      if (note.get().isPresent()) {
+        DogLog.log("Debug/NoteIDToPoseDropped", note.get().get());
+      }
+      return note;
     }
 
     return new AutoNoteStaged(id)::getPose;
   }
 
-  public AutoNoteStep(AutoNoteAction action, Supplier<Optional<Translation2d>>... notes) {
-    this(action, List.of(notes));
+  private static List<Supplier<Optional<Translation2d>>> noteIdsToSearchPoseSuppliers(
+      Integer... noteIds) {
+    List<Integer> list = List.of(noteIds);
+
+    return list.stream()
+        .map(
+            noteId -> {
+              // Explicit about types here since Java can't infer the return types
+              Supplier<Optional<Translation2d>> searchPoseSupplier =
+                  () -> AutoNoteStep.noteIdToPose(noteId).get();
+
+              return searchPoseSupplier;
+            })
+        .toList();
+  }
+
+  public AutoNoteStep(AutoNoteAction action, Supplier<Optional<Translation2d>>... noteSuppliers) {
+    this(action, List.of(noteSuppliers));
   }
 }

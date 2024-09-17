@@ -64,7 +64,6 @@ public class AutoManager extends LifecycleSubsystem {
       new Pose2d(11.25, 7.26, Rotation2d.fromDegrees(16.18));
   public static final Pose2d BLUE_DROPPING_DESTINATION =
       new Pose2d(5.33, 7.26, Rotation2d.fromDegrees(167.95));
-  private static final Translation2d DROPPED_NOTE_SEARCH = new Translation2d(13.49, 7.40);
 
   private static final BoundingBox RED_SCORING_BOX =
       new BoundingBox(
@@ -169,12 +168,8 @@ public class AutoManager extends LifecycleSubsystem {
     return getScoringBox().contains(localization.getUsedPose().getTranslation());
   }
 
-  private Command intakeNoteAtPose(Supplier<Optional<Translation2d>> pose) {
-    Optional<Translation2d> maybeSearchArea = pose.get();
-    if (maybeSearchArea.isPresent()) {
-      return noteTrackingManager.intakeNoteAtPose(maybeSearchArea::get, 1.5);
-    }
-    return Commands.none();
+  private Command intakeNoteAtPose(Supplier<Optional<Translation2d>> searchPoseSupplier) {
+    return noteTrackingManager.intakeNoteAtPose(searchPoseSupplier, 1.5);
   }
 
   private Command intakeAnyStepNotes(AutoNoteStep step) {
@@ -184,33 +179,29 @@ public class AutoManager extends LifecycleSubsystem {
         .until(() -> robotManager.getState().hasNote);
   }
 
+  /**
+   * Depending on the robot's current position, follow a path towards areas where there are probably
+   * stray notes. If we see a note, end the command so we can start running cleanup. Otherwise, it
+   * will just complete the path and sit there.
+   */
   private Command searchForNoteForCleanupCommand() {
-    Translation2d robot = localization.getUsedPose().getTranslation();
-    if (robot.getDistance(getClosestSpeaker().getTranslation()) < 4.0) {
+    // TODO: This possibly needs us to specifcy requirements or else something bad might happen
+    return Commands.defer(
+        () -> {
+          Translation2d robot = localization.getUsedPose().getTranslation();
 
-      return Commands.sequence(
-              getSpeakerCleanupPath().stream()
-                  .map(
-                      pose -> {
-                        return AutoBuilder.pathfindToPose(pose, DEFAULT_CONSTRAINTS);
-                      })
-                  .toArray(Command[]::new))
-          .until(
-              () -> {
-                return noteTrackingManager.getNearestNotePoseRelative(robot, 5.0).isPresent();
-              });
-    }
-    return Commands.sequence(
-            getMidlineCleanupPath().stream()
-                .map(
-                    pose -> {
-                      return AutoBuilder.pathfindToPose(pose, DEFAULT_CONSTRAINTS);
-                    })
-                .toArray(Command[]::new))
-        .until(
-            () -> {
-              return noteTrackingManager.getNearestNotePoseRelative(robot, 5.0).isPresent();
-            });
+          var path =
+              robot.getDistance(getClosestSpeaker().getTranslation()) < 4.0
+                  ? getSpeakerCleanupPath()
+                  : getMidlineCleanupPath();
+
+          return Commands.sequence(
+                  path.stream()
+                      .map(pose -> AutoBuilder.pathfindToPose(pose, DEFAULT_CONSTRAINTS))
+                      .toArray(Command[]::new))
+              .until(() -> noteTrackingManager.getNearestNotePoseRelative(robot, 5.0).isPresent());
+        },
+        Set.of());
   }
 
   private Command cleanupAllMapNotes() {

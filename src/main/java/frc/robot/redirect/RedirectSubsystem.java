@@ -37,6 +37,9 @@ public class RedirectSubsystem extends LifecycleSubsystem {
       case TO_OUTTAKE:
       case CONVEYOR_TO_QUEUER:
         motor.setVoltage(-10);
+        break;
+      case UNJAM:
+        motor.setVoltage(10);
       default:
         break;
     }

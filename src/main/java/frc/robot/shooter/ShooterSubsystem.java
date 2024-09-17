@@ -114,9 +114,12 @@ public class ShooterSubsystem extends LifecycleSubsystem {
       return true;
     }
 
+    var usedTolerance =
+        goalMode == ShooterMode.FLOOR_SHOT ? ShooterRPMs.FEEDING_TOLERANCE : ShooterRPMs.TOLERANCE;
+
     if (Math.abs((goalRPM * (usingNoteSpin ? ShooterRPMs.SPIN_RATIO : 1.0)) - getRPM(rightMotor))
-            < ShooterRPMs.TOLERANCE
-        && Math.abs(goalRPM - getRPM(leftMotor)) < ShooterRPMs.TOLERANCE) {
+            < usedTolerance
+        && Math.abs(goalRPM - getRPM(leftMotor)) < usedTolerance) {
       return true;
     }
 
