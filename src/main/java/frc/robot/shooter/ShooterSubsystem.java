@@ -116,10 +116,10 @@ public class ShooterSubsystem extends LifecycleSubsystem {
     }
 
     if (goalMode == ShooterMode.FLOOR_SHOT) {
-      var wantedLeftRpm = usingNoteSpin ?  goalRPM * ShooterRPMs.SPIN_RATIO :goalRPM;
-      var wantedRightRpm = goalRPM;
+      var wantedLeftRpm = goalRPM;
+    var  wantedRightRpm = usingNoteSpin ?  goalRPM * ShooterRPMs.SPIN_RATIO :goalRPM;
 
-      return MathUtil.isNear(wantedLeftRpm, getRPM(leftMotor), ShooterRPMs.FEEDING_TOLERANCE) && MathUtil.isNear(wantedRightRpm, getRPM(rightMotor), ShooterRPMs.FEEDING_TOLERANCE);
+      return MathUtil.isNear(wantedRightRpm, getRPM(leftMotor), ShooterRPMs.FEEDING_TOLERANCE) && MathUtil.isNear(wantedLeftRpm, getRPM(rightMotor), ShooterRPMs.FEEDING_TOLERANCE);
 
     }
 
