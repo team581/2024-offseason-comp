@@ -5,7 +5,7 @@
       "x": 15.198025703430176,
       "y": 5.552863121032715
     },
-    "rotation": -1.0762704379604923e-27
+    "rotation": -3.194596065644937e-25
   },
   "command": {
     "type": "sequential",
@@ -110,7 +110,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Red 5 to CWS"
+            "pathName": "Red 5 to CWS.1 2"
           }
         },
         {
@@ -128,7 +128,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Red 6 to CWS.1 2"
+            "pathName": "Red 6 to CWS.1"
           }
         },
         {
