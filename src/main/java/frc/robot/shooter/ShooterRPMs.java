@@ -19,6 +19,7 @@ public class ShooterRPMs {
 
   public static final double AMP_TOLERANCE = 100;
   public static final double TOLERANCE = 100;
+  public static final double FEEDING_TOLERANCE = 250;
   public static final double SPIN_RATIO = 3.5 / 5.0;
 
   private ShooterRPMs() {}

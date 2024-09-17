@@ -7,6 +7,7 @@ package frc.robot.shooter;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 import dev.doglog.DogLog;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.config.RobotConfig;
@@ -112,6 +113,14 @@ public class ShooterSubsystem extends LifecycleSubsystem {
 
     if (goalMode == ShooterMode.IDLE || goalMode == ShooterMode.FULLY_STOPPED) {
       return true;
+    }
+
+    if (goalMode == ShooterMode.FLOOR_SHOT) {
+      var wantedLeftRpm = usingNoteSpin ?  goalRPM * ShooterRPMs.SPIN_RATIO :goalRPM;
+      var wantedRightRpm = goalRPM;
+
+      return MathUtil.isNear(wantedLeftRpm, getRPM(leftMotor), ShooterRPMs.FEEDING_TOLERANCE) && MathUtil.isNear(wantedRightRpm, getRPM(rightMotor), ShooterRPMs.FEEDING_TOLERANCE);
+
     }
 
     if (Math.abs((goalRPM * (usingNoteSpin ? ShooterRPMs.SPIN_RATIO : 1.0)) - getRPM(rightMotor))
