@@ -16,25 +16,11 @@ public record AutoNoteStep(AutoNoteAction action, List<Supplier<Optional<Transla
   }
 
   public static AutoNoteStep drop(Integer... noteIds) {
-    List<Integer> list = List.of(noteIds);
-
-    return new AutoNoteStep(
-        AutoNoteAction.DROP, list.stream().map(AutoNoteStep::noteIdToPose).toList());
+    return new AutoNoteStep(AutoNoteAction.DROP, noteIdsToSearchPoseSuppliers(noteIds));
   }
 
   public static AutoNoteStep score(Integer... noteIds) {
-    List<Integer> list = List.of(noteIds);
-
-    List<Supplier<Optional<Translation2d>>> noteSuppliers =
-        list.stream()
-            .map(
-                (Integer noteId) -> {
-                  return (Supplier<Optional<Translation2d>>)
-                      () -> AutoNoteStep.noteIdToPose(0).get();
-                })
-            .toList();
-
-    return new AutoNoteStep(AutoNoteAction.SCORE, noteSuppliers);
+    return new AutoNoteStep(AutoNoteAction.SCORE, noteIdsToSearchPoseSuppliers(noteIds));
   }
 
   private static Supplier<Optional<Translation2d>> noteIdToPose(int id) {
@@ -51,7 +37,23 @@ public record AutoNoteStep(AutoNoteAction action, List<Supplier<Optional<Transla
     return new AutoNoteStaged(id)::getPose;
   }
 
-  public AutoNoteStep(AutoNoteAction action, Supplier<Optional<Translation2d>>... notes) {
-    this(action, List.of(notes));
+  private static List<Supplier<Optional<Translation2d>>> noteIdsToSearchPoseSuppliers(
+      Integer... noteIds) {
+    List<Integer> list = List.of(noteIds);
+
+    return list.stream()
+        .map(
+            noteId -> {
+              // Explicit about types here since Java can't infer the return types
+              Supplier<Optional<Translation2d>> searchPoseSupplier =
+                  () -> AutoNoteStep.noteIdToPose(noteId).get();
+
+              return searchPoseSupplier;
+            })
+        .toList();
+  }
+
+  public AutoNoteStep(AutoNoteAction action, Supplier<Optional<Translation2d>>... noteSuppliers) {
+    this(action, List.of(noteSuppliers));
   }
 }
