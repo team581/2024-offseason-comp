@@ -2,22 +2,9 @@
   "robotWidth": 0.89,
   "robotLength": 0.927,
   "holonomicMode": true,
-  "pathFolders": [
-    "Backup Blue 6 Piece",
-    "Backup Red 6 Piece",
-    "Blue MidlineNotesFromAmp",
-    "Blue MidlineNotesFromSource",
-    "Blue Parent Paths",
-    "Red MidlineNotesFromAmp",
-    "Red MidlineNotesFromSource",
-    "Red Parent Paths"
-  ],
+  "pathFolders": [],
   "autoFolders": [
-    "Blue Dynamic Autos in Development",
-    "Blue dynamic autos",
-    "Red Choreo Autos",
-    "Red Dynamic Autos in Development",
-    "Red dynamic autos"
+    "Red Choreo Autos"
   ],
   "defaultMaxVel": 5.2,
   "defaultMaxAccel": 5.0,
