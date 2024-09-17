@@ -9,8 +9,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.fms.FmsSubsystem;
 import java.util.List;
 
-import dev.doglog.DogLog;
-
 public class InterpolatedVision {
   private static final VisionInterpolationData RED_SUBWOOFER =
       new VisionInterpolationData(
@@ -26,12 +24,14 @@ public class InterpolatedVision {
 
   private static final VisionInterpolationData RED_FRONT_PODIUM_MIDDLE =
       new VisionInterpolationData(
-          new Translation2d(13.799, 4.202),
-          new Translation2d(13.67, 4.106),
-          "FRONT_PODIUM_MIDDLE");
+          new Translation2d(13.799, 4.202), new Translation2d(13.67, 4.106), "FRONT_PODIUM_MIDDLE");
 
   private static final List<VisionInterpolationData> DATA_POINTS_RED =
-      List.of(RED_SUBWOOFER, RED_PODIUM_SPEAKER_INTERSECTION, RED_WING_LINE_MIDDLE, RED_FRONT_PODIUM_MIDDLE);
+      List.of(
+          RED_SUBWOOFER,
+          RED_PODIUM_SPEAKER_INTERSECTION,
+          RED_WING_LINE_MIDDLE,
+          RED_FRONT_PODIUM_MIDDLE);
 
   private static final List<VisionInterpolationData> DATA_POINTS_BLUE = List.of();
 
