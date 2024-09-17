@@ -142,14 +142,15 @@ public class AutoCommands {
           var now = Timer.getFPGATimestamp();
           noteTrackingManager.resetNoteMap(
               new ArrayList<>(
-                  List.of(new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4)),
-                  new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(1)),
-                  new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(2)),
-                  new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(3)),
-                  new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(5)),
-                  new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(6)),
-                  new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(7)),
-                  new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(8)))));
+                  List.of(
+                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4)),
+                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(1)),
+                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(2)),
+                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(3)),
+                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(5)),
+                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(6)),
+                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(7)),
+                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(8)))));
         });
   }
 
