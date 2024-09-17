@@ -97,31 +97,12 @@ class CompConfig {
               floorSpotDistanceToRPM -> {
                 floorSpotDistanceToRPM.put(0.0, 1000.0);
                 floorSpotDistanceToRPM.put(1.0, 1000.0);
-                floorSpotDistanceToRPM.put(1.5, 1500.0);
-                floorSpotDistanceToRPM.put(2.0, 1600.0);
-                floorSpotDistanceToRPM.put(2.5, 1700.0);
+                floorSpotDistanceToRPM.put(1.2, 1500.0);
                 floorSpotDistanceToRPM.put(3.0, 1800.0);
-                floorSpotDistanceToRPM.put(3.5, 1900.0);
-                floorSpotDistanceToRPM.put(4.0, 2000.0);
-                floorSpotDistanceToRPM.put(4.5, 2100.0);
-                floorSpotDistanceToRPM.put(5.0, 2200.0);
-                floorSpotDistanceToRPM.put(5.5, 2400.0);
-                floorSpotDistanceToRPM.put(6.8, 2500.0);
-                floorSpotDistanceToRPM.put(6.80000001, 2300.0);
-                floorSpotDistanceToRPM.put(7.0, 2300.0);
-                floorSpotDistanceToRPM.put(7.5, 2400.0);
-                floorSpotDistanceToRPM.put(8.0, 2500.0);
-                floorSpotDistanceToRPM.put(8.5, 2600.0);
-                floorSpotDistanceToRPM.put(9.0, 2500.0);
-                floorSpotDistanceToRPM.put(9.5, 2600.0);
-                floorSpotDistanceToRPM.put(10.0, 2700.0);
-                floorSpotDistanceToRPM.put(10.5, 2750.0);
-                floorSpotDistanceToRPM.put(11.5, 2900.0);
-                floorSpotDistanceToRPM.put(12.5, 3000.0);
-                floorSpotDistanceToRPM.put(13.5, 2900.0);
-                floorSpotDistanceToRPM.put(15.5, 3100.0);
-                floorSpotDistanceToRPM.put(16.5, 3200.0);
-                floorSpotDistanceToRPM.put(17.5, 3300.0);
+                floorSpotDistanceToRPM.put(5.8, 2700.0);
+                floorSpotDistanceToRPM.put(6.5, 2700.0);
+                floorSpotDistanceToRPM.put(500.0, 2700.0);
+                floorSpotDistanceToRPM.put(581.0, 3200.0);
                 // Evil hacky way to have alternate shooter RPM for the amp area shot
               }),
           new ClimberConfig(
@@ -199,33 +180,9 @@ class CompConfig {
                 speakerDistanceToAngle.put(9.0, 15.1);
               },
               floorSpotDistanceToAngle -> {
-                floorSpotDistanceToAngle.put(0.0, 0.0);
-                floorSpotDistanceToAngle.put(1.0, 0.0);
-                floorSpotDistanceToAngle.put(1.5, 1.2);
-                floorSpotDistanceToAngle.put(2.0, 5.7);
-                floorSpotDistanceToAngle.put(2.5, 9.1);
-                floorSpotDistanceToAngle.put(3.0, 11.9);
-                floorSpotDistanceToAngle.put(3.5, 13.0);
-                floorSpotDistanceToAngle.put(4.0, 14.0);
-                floorSpotDistanceToAngle.put(4.5, 15.0);
-                floorSpotDistanceToAngle.put(5.0, 15.9);
-                floorSpotDistanceToAngle.put(5.5, 14.5);
-                floorSpotDistanceToAngle.put(6.8, 14.2);
-                floorSpotDistanceToAngle.put(6.80000001, 60.7);
-                floorSpotDistanceToAngle.put(7.0, 59.6);
-                floorSpotDistanceToAngle.put(7.5, 58.1);
-                floorSpotDistanceToAngle.put(8.0, 58.0);
-                floorSpotDistanceToAngle.put(8.5, 57.8);
-                floorSpotDistanceToAngle.put(9.0, 59.5);
-                floorSpotDistanceToAngle.put(9.5, 60.4);
-                floorSpotDistanceToAngle.put(10.0, 61.3);
-                floorSpotDistanceToAngle.put(10.5, 60.7);
-                floorSpotDistanceToAngle.put(11.5, 61.5);
-                floorSpotDistanceToAngle.put(12.5, 60.4);
-                floorSpotDistanceToAngle.put(13.5, 39.0);
-                floorSpotDistanceToAngle.put(15.5, 41.0);
-                floorSpotDistanceToAngle.put(16.5, 47.7);
-                floorSpotDistanceToAngle.put(17.5, 41.7);
+                floorSpotDistanceToAngle.put(3.4, 18.0);
+                floorSpotDistanceToAngle.put(5.8, 27.0);
+                floorSpotDistanceToAngle.put(6.5, 50.0);
               }),
           new ElevatorConfig(
               21,
