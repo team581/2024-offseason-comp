@@ -294,7 +294,7 @@ public class AutoCommands {
   }
 
   public Command notemap4_10Command() {
-    return doManyAutoSteps(List.of(AutoNoteStep.score(4), AutoNoteStep.score(10)));
+    return doManyAutoSteps(List.of(AutoNoteStep.score(4, 5), AutoNoteStep.score(10)));
   }
 
   public Command noteMapResetCommand() {
@@ -303,7 +303,14 @@ public class AutoCommands {
           var now = Timer.getFPGATimestamp();
           noteTrackingManager.resetNoteMap(
               new ArrayList<>(
-                  List.of(new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4)))));
+                  List.of(new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4)),
+                  new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(1)),
+                  new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(2)),
+                  new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(3)),
+                  new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(5)),
+                  new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(6)),
+                  new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(7)),
+                  new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(8)))));
         });
   }
 
