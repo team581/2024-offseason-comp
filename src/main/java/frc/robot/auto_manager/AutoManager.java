@@ -224,7 +224,7 @@ public class AutoManager extends LifecycleSubsystem {
         .andThen(
             Commands.runOnce(
                 () -> {
-                  var translationRobotRelative = new Translation2d(1.2, 0).rotateBy(localization.getPose().getRotation());
+                  var translationRobotRelative = new Translation2d(1, 0).rotateBy(localization.getPose().getRotation());
                   var translationFieldRelative = localization.getPose().getTranslation().plus(translationRobotRelative);
                  DogLog.log("Debug/droppednotepose", new Pose2d(translationFieldRelative, new Rotation2d()));
                                 noteTrackingManager.addNoteToMap(translationFieldRelative);
