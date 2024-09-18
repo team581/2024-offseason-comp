@@ -33,6 +33,7 @@ import frc.robot.config.RobotConfig.ShooterConfig;
 import frc.robot.config.RobotConfig.SwerveConfig;
 import frc.robot.config.RobotConfig.VisionConfig;
 import frc.robot.config.RobotConfig.WristConfig;
+import frc.robot.vision.interpolation.InterpolatedVisionDataset;
 
 class CompConfig {
   private static final ClosedLoopRampsConfigs CLOSED_LOOP_RAMP =
@@ -284,7 +285,8 @@ class CompConfig {
                 tyToNoteDistance.put(9.39, Units.inchesToMeters(17.75 + 7 + 47.1));
                 tyToNoteDistance.put(11.85, Units.inchesToMeters(17.75 + 7 + 60.1));
                 tyToNoteDistance.put(15.25, Units.inchesToMeters(17.75 + 7 + 88.9));
-              }),
+              },
+              InterpolatedVisionDataset.HOME),
           new PerfToggles(true, false, false));
 
   private CompConfig() {}

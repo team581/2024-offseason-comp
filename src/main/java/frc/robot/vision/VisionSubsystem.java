@@ -17,6 +17,7 @@ import frc.robot.fms.FmsSubsystem;
 import frc.robot.imu.ImuSubsystem;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
+import frc.robot.vision.interpolation.InterpolatedVision;
 import java.util.Optional;
 
 public class VisionSubsystem extends LifecycleSubsystem {
