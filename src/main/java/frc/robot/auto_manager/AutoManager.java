@@ -218,14 +218,17 @@ public class AutoManager extends LifecycleSubsystem {
   }
 
   public Command dropNote() {
+
     return actions
         .dropCommand()
         .andThen(
             Commands.runOnce(
                 () -> {
-                  var robotTranslation = localization.getPose().getTranslation();
-                  noteTrackingManager.addNoteToMap(robotTranslation);
-                  AutoNoteDropped.addDroppedNote(robotTranslation);
+                  var translationRobotRelative = new Translation2d(1.2, 0).rotateBy(localization.getPose().getRotation());
+                  var translationFieldRelative = localization.getPose().getTranslation().plus(translationRobotRelative);
+                 DogLog.log("Debug/droppednotepose", new Pose2d(translationFieldRelative, new Rotation2d()));
+                                noteTrackingManager.addNoteToMap(translationFieldRelative);
+                  AutoNoteDropped.addDroppedNote(translationFieldRelative);
                 }));
   }
 
