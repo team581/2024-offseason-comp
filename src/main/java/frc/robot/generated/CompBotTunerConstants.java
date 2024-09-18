@@ -77,8 +77,6 @@ public class CompBotTunerConstants {
                   .withCurrentLimits(
                       new CurrentLimitsConfigs()
                           .withSupplyCurrentLimit(40)
-                          .withSupplyCurrentThreshold(70)
-                          .withSupplyTimeThreshold(1)
                           .withStatorCurrentLimit(40)
                           .withSupplyCurrentLimitEnable(true)
                           .withStatorCurrentLimitEnable(true))
