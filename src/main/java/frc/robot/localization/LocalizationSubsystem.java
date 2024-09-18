@@ -101,6 +101,7 @@ public class LocalizationSubsystem extends LifecycleSubsystem {
   public Pose2d getPose() {
     return poseEstimator.getEstimatedPosition();
   }
+
   // get pose at timestamp method
   public Pose2d getPose(double timestamp) {
     return poseHistory.getSample(timestamp).orElseGet(this::getPose);
