@@ -92,7 +92,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   }
 
   private Translation2d getRobotRelativeNote(Translation2d fieldRelativeNote) {
-    var robotPose = localization.getUsedPose();
+    var robotPose = localization.getPose();
     Rotation2d negativeRobotRotation = robotPose.getRotation().unaryMinus();
     var robotRelativeNoteTranslation =
         fieldRelativeNote.minus(robotPose.getTranslation()).rotateBy(negativeRobotRotation);
@@ -264,7 +264,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
                     DistanceAngle noteDistanceAngle =
                         VisionSubsystem.distanceAngleToTarget(
                             new Pose2d(nearestNote.get().noteTranslation(), new Rotation2d()),
-                            localization.getUsedPose());
+                            localization.getPose());
                     Rotation2d rotation =
                         new Rotation2d(
                             Units.degreesToRadians(noteDistanceAngle.targetAngle()) + Math.PI);
@@ -280,7 +280,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
                     return Optional.empty();
                   }
                 },
-                localization::getUsedPose,
+                localization::getPose,
                 false))
         .until(
             () -> {
@@ -337,7 +337,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     DogLog.log("NoteTracking/CameraBounds", fieldRelativeBounds.toArray(Pose2d[]::new));
 
     var maybeClosest =
-        getNearestNotePoseRelative(localization.getUsedPose().getTranslation(), 99987.0);
+        getNearestNotePoseRelative(localization.getPose().getTranslation(), 99987.0);
     if (maybeClosest.isPresent()) {
       DogLog.log("NoteTracking/ClosestNote", maybeClosest.get().noteTranslation());
     }
@@ -345,7 +345,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
   private List<Pose2d> getFieldRelativeBounds() {
     var robotRelativeToFieldRelativeTransform =
-        new Transform2d(new Pose2d(), localization.getUsedPose());
+        new Transform2d(new Pose2d(), localization.getPose());
     return ROBOT_RELATIVE_FOV_BOUNDS.getPoints().stream()
         .map(point -> point.plus(robotRelativeToFieldRelativeTransform))
         .toList();

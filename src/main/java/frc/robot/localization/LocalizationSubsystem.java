@@ -89,32 +89,21 @@ public class LocalizationSubsystem extends LifecycleSubsystem {
     poseHistory.addSample(Timer.getFPGATimestamp(), poseEstimator.getEstimatedPosition());
 
     DogLog.log("Localization/OdometryPose", getOdometryPose());
-    DogLog.log("Localization/EstimatedPose/UsedPose", getUsedPose());
-    DogLog.log("Localization/EstimatedPose/CurrentPose", getPose());
-    DogLog.log("Localization/EstimatedPose/LookaheadPose", getLookaheadPose());
+    DogLog.log("Localization/EstimatedPose", getPose());
     PoseEstimate mt2Estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("");
     if (mt2Estimate != null) {
       DogLog.log("Localization/LimelightPoseRaw", mt2Estimate.pose);
     }
 
-    vision.setRobotPose(getUsedPose());
+    vision.setRobotPose(getPose());
   }
 
   public Pose2d getPose() {
     return poseEstimator.getEstimatedPosition();
   }
-
-  public Pose2d getUsedPose() {
-    return getLookaheadRobot(useLookahead);
-  }
-
-  public Pose2d getLookaheadPose() {
-    return getLookaheadRobot(true);
-  }
-
   // get pose at timestamp method
   public Pose2d getPose(double timestamp) {
-    return poseHistory.getSample(timestamp).orElseGet(this::getUsedPose);
+    return poseHistory.getSample(timestamp).orElseGet(this::getPose);
   }
 
   public Pose2d getOdometryPose() {
@@ -139,7 +128,7 @@ public class LocalizationSubsystem extends LifecycleSubsystem {
 
   private void resetGyro(double gyroAngle) {
     Pose2d estimatedPose =
-        new Pose2d(getUsedPose().getTranslation(), Rotation2d.fromDegrees(gyroAngle));
+        new Pose2d(getPose().getTranslation(), Rotation2d.fromDegrees(gyroAngle));
     Pose2d odometryPose =
         new Pose2d(getOdometryPose().getTranslation(), Rotation2d.fromDegrees(gyroAngle));
     resetPose(estimatedPose, odometryPose);
