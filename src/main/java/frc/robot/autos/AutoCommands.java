@@ -133,7 +133,8 @@ public class AutoCommands {
   }
 
   public Command notemap4_10Command() {
-    return doManyAutoSteps(List.of(AutoNoteStep.score(4, 5), AutoNoteStep.score(10)));
+    return doManyAutoSteps(
+        List.of(AutoNoteStep.score(4, 5), AutoNoteStep.score(5), AutoNoteStep.score(10)));
   }
 
   public Command noteMapResetCommand() {
