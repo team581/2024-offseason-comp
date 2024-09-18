@@ -249,7 +249,7 @@ public class Robot extends TimedRobot {
         .onTrue(actions.waitSubwooferShotCommand())
         .onFalse(actions.stowCommand());
 
-    operatorController.leftTrigger().onTrue(autoManager.dropNote()).onFalse(actions.stowCommand());
+    operatorController.leftTrigger().onTrue(autoManager.testCommand()).onFalse(actions.stowCommand());
     operatorController
         .rightTrigger()
         .onTrue(actions.waitForSpeakerShotCommand())

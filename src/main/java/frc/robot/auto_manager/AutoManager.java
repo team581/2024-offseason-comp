@@ -205,12 +205,13 @@ public class AutoManager extends LifecycleSubsystem {
     return noteTrackingManager
         .intakeNearestMapNote(15.0)
         .andThen(pathfindToScoreCommand())
-        .repeatedly();
+        .repeatedly()
+        .until(()-> !robotManager.getState().hasNote && !noteTrackingManager.mapContainsNote());
   }
 
   private Command cleanupCommand() {
-    return cleanupAllMapNotes()
-        .andThen(searchForNoteForCleanupCommand())
+
+    return cleanupAllMapNotes().andThen(searchForNoteForCleanupCommand())
         .andThen(cleanupAllMapNotes());
   }
 
