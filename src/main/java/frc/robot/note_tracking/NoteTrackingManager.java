@@ -60,9 +60,9 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private static final BoundingBox ROBOT_RELATIVE_FOV_BOUNDS =
       new BoundingBox(
           // top left
-          new Translation2d(-1.950, -0.5),
+          new Translation2d(-1.250, -0.5),
           // top right
-          new Translation2d(-1.750, 0.5),
+          new Translation2d(-1.250, 0.5),
           // bottom left
           new Translation2d(-0.725, -0.1),
           // bottom right
