@@ -30,7 +30,7 @@ public class AutoNoteStaged {
           return new Translation2d(2.896, 7.001);
         }
 
-        //TODO: SUBTRACT 1 METER FROM X TO PUT INTO NORMAL FIELD POSES
+        // TODO: SUBTRACT 1 METER FROM X TO PUT INTO NORMAL FIELD POSES
       case 4:
         return new Translation2d(9.271, 7.458);
       case 5:
