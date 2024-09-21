@@ -51,27 +51,28 @@ class PruneType(enum.Enum):
     PRE_APEX = 2
     POST_APEX = 3
 
-def mean(numbs:list[float]):
+
+def mean(numbs: list[float]):
     out = 0
     for num in numbs:
         out += num
     return out / len(numbs)
 
+
 def prune_points(prune_type: PruneType, points: list[Point]):
     if prune_type == PruneType.NONE:
         return points
-    
+
     s = 0
-    for s in range(len(points)-1):
-        if points[s] <= points[s+1]:
+    for s in range(len(points) - 1):
+        if points[s] <= points[s + 1]:
             continue
         if prune_type == PruneType.PRE_APEX:
             return points[s:]
         if prune_type == PruneType.POST_APEX:
             return points[:s]
-    
+
     return points
-    
 
 
 @dataclasses.dataclass
@@ -160,23 +161,25 @@ class ProjectileMotion:
 
     def get_travel_time(self, points):
         return len(points) * self.dt
+
     def get_vertex(points: list[Point]):
         p = 0
         f = 0
         l_max = 0
         for i in points:
-            if (l_max < i.y):
+            if l_max < i.y:
                 l_max = i.y
                 f = p
-            p+=1
+            p += 1
         return points[f]
-    def get_point_y(points:list[Point],x:float) -> Point:
+
+    def get_point_y(points: list[Point], x: float) -> Point:
         f = 0
-        p=0
+        p = 0
         for i in points:
             if abs(i.x - x) < 0.06:
-                f=p
-            p+=1
+                f = p
+            p += 1
         return points[f]
 
 
@@ -202,8 +205,10 @@ def angle_search(model: Model, pm: ProjectileMotion, prune: PruneType, goal_poin
         points = pm.get_points(Vector(current_angle, vel), exitpoint)
         points = prune_points(prune, points)
         line_vertex = ProjectileMotion.get_vertex(points)
-        if (doheight):
-            if line_vertex.y <= nd._STAGE_HEIGHT or (line_vertex.x - 0.07 < (model.gpos.x - model.rpos.x)/2 and not model.gpos.x - model.rpos.x >= 8.5):
+        if doheight:
+            if line_vertex.y <= nd._STAGE_HEIGHT or (
+                line_vertex.x - 0.07 < (model.gpos.x - model.rpos.x) / 2 and not model.gpos.x - model.rpos.x >= 8.5
+            ):
                 current_angle += angle_change
                 continue
 
@@ -211,7 +216,7 @@ def angle_search(model: Model, pm: ProjectileMotion, prune: PruneType, goal_poin
             if line_vertex.y >= nd._STAGE_WINDOW_UNDER:
                 current_angle += angle_change
                 continue
-        
+
         local_min = 10000
         for point in points:
             dists = []

@@ -58,7 +58,10 @@ def test_anglesearch_speaker():
 
         model = uc.Model(rpos, gpos, info.rpm)
         pm = uc.ProjectileMotion(nd._TIME_CHANGE, nd._USE_DRAG)
-        vector = uc.Vector(uc.angle_search(model, pm, uc.PruneType.NONE, [gpos,uc.Point.from_tuple(nd._SPEAKER_POINT_2)], False), model.get_vel(info.rpm))
+        vector = uc.Vector(
+            uc.angle_search(model, pm, uc.PruneType.NONE, [gpos, uc.Point.from_tuple(nd._SPEAKER_POINT_2)], False),
+            model.get_vel(info.rpm),
+        )
         exit2 = uc.Vector(vector.angle, nd._SHOOTER_LENGTH).topoint().plus(rpos)
         points = pm.get_points(vector, exit2)
 
@@ -85,8 +88,13 @@ def test_anglesearch_floor():
         else:
             do_height = False
         vector = uc.Vector(uc.angle_search(model, pm, uc.PruneType.NONE, [gpos], do_height), model.get_vel(info.rpm))
-        exit2 = uc.Vector(vector.angle, nd._SHOOTER_LENGTH).topoint().plus(rpos).plus(
-            uc.Point(nd._SHOOTER_X_OFFSET_RELATIVE_TO_ROBOT_CENTER,nd._SHOOTER_Y_OFFSET_RELATIVE_TO_ROBOT_CENTER)
+        exit2 = (
+            uc.Vector(vector.angle, nd._SHOOTER_LENGTH)
+            .topoint()
+            .plus(rpos)
+            .plus(
+                uc.Point(nd._SHOOTER_X_OFFSET_RELATIVE_TO_ROBOT_CENTER, nd._SHOOTER_Y_OFFSET_RELATIVE_TO_ROBOT_CENTER)
+            )
         )
         points = pm.get_points(vector, exit2)
 
@@ -94,7 +102,7 @@ def test_anglesearch_floor():
         draw_line(add_lists([[rpos, exit2], points]))
     draw_points([gpos])
     draw_axis([-0.1, 10], [-0.1, 10])
-    draw_line([uc.Point(nd._STAGE_DIST_FROM_GOAL,0),uc.Point(nd._STAGE_DIST_FROM_GOAL,nd._STAGE_HEIGHT)])
+    draw_line([uc.Point(nd._STAGE_DIST_FROM_GOAL, 0), uc.Point(nd._STAGE_DIST_FROM_GOAL, nd._STAGE_HEIGHT)])
     results()
 
 

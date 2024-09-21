@@ -61,7 +61,12 @@ def generate_speaker_distance_angle():
         pm = uc.ProjectileMotion(nd._TIME_CHANGE, nd._USE_DRAG)
 
         distance = info.distance
-        angle = round(uc.Vector.fromradians(uc.angle_search(model, pm, uc.PruneType.NONE, [gpos,uc.Point.from_tuple(nd._SPEAKER_POINT_2)], False)), 4)
+        angle = round(
+            uc.Vector.fromradians(
+                uc.angle_search(model, pm, uc.PruneType.NONE, [gpos, uc.Point.from_tuple(nd._SPEAKER_POINT_2)], False)
+            ),
+            4,
+        )
 
         print(f"speakerDistanceToAngle.put({distance}, {angle});")
 
