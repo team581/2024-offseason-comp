@@ -165,7 +165,7 @@ public class AutoManager extends LifecycleSubsystem {
   }
 
   private Command intakeNoteAtPose(Supplier<Optional<Translation2d>> searchPoseSupplier) {
-    return noteTrackingManager.intakeNoteAtPose(searchPoseSupplier, 1.5);
+    return noteTrackingManager.intakeNoteAtPose(searchPoseSupplier, 2.5);
   }
 
   private Command intakeAnyStepNotes(AutoNoteStep step) {
