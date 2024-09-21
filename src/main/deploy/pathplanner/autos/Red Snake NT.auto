@@ -2,49 +2,56 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 15.226025581359863,
-      "y": 6.536499977111816
+      "x": 15.19707489013672,
+      "y": 6.5054240226745605
     },
-    "rotation": 1.5042615227361446e-19
+    "rotation": 4.0089761950786474e-16
   },
   "command": {
     "type": "sequential",
     "data": {
       "commands": [
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "preloadNote"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "waitingDropRequest"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "homeClimber"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "resetNoteMap"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "waitingDropRequest"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "homeClimber"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "resetNoteMap"
+                }
+              }
+            ]
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Red Snake NT (1)"
+            "pathName": "Red Snake NT.1"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "dropNote"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "notemapD4"
           }
         }
       ]
