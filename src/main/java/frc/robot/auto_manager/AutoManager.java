@@ -48,7 +48,7 @@ public class AutoManager extends LifecycleSubsystem {
           new Pose2d(2.34, 4.49, Rotation2d.fromDegrees(16.93)));
   public static final Pose2d MIDLINE_CLEANUP_POSE = new Pose2d(8.271, 4.106, new Rotation2d(0));
   public static final List<Pose2d> RED_DESTINATIONS =
-      List.of(new Pose2d(11.65, 6.69, new Rotation2d(-13.81)));
+      List.of(new Pose2d(11.82, 6.49, Rotation2d.fromDegrees(-11.04)));
 
   public static final List<Pose2d> BLUE_DESTINATIONS =
       List.of(
@@ -298,7 +298,7 @@ public class AutoManager extends LifecycleSubsystem {
                           new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(5)))));
             }),
         doManyAutoSteps(
-            List.of(AutoNoteStep.score(2, 3), AutoNoteStep.score(3, 4), AutoNoteStep.score(4, 5))));
+            List.of(AutoNoteStep.score(4, 5), AutoNoteStep.score(5))));
   }
 
   public Command testCommand() {
