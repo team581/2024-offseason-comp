@@ -88,6 +88,18 @@
           "data": {
             "pathName": "Red Six Piece 2 to 4.7"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red 4 to CWS.1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red CWS to 5.1"
+          }
         }
       ]
     }
