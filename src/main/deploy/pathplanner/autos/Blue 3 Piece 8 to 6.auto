@@ -1,0 +1,67 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.4181127929687491,
+      "y": 1.5268802642822266
+    },
+    "rotation": 180.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "homeClimber"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "preloadNote"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue 3 Piece 8 to 6.1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue 3 Piece 8 to 6.2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue 3 Piece 8 to 6.3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue 3 Piece 8 to 6.4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Blue Choreo Autos",
+  "choreoAuto": true
+}

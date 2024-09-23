@@ -1,0 +1,103 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.3419742965698234,
+      "y": 5.552863121032715
+    },
+    "rotation": 180.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "homeClimber"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "preloadNote"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Six Piece 2 to 4.1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Six Piece 2 to 4.2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Six Piece 2 to 4.3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Six Piece 2 to 4.4"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Six Piece 2 to 4.5"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Six Piece 2 to 4.6"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue 3 to NT.1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "noteMap456"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Blue Choreo Autos",
+  "choreoAuto": true
+}

@@ -1,0 +1,86 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.3429251098632804,
+      "y": 6.5054240226745605
+    },
+    "rotation": 180.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "waitingDropRequest"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "homeClimber"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "resetNoteMap"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Snake Amp.1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "dropNote"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Snake Amp.2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Snake Amp.3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Snake Amp.4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Blue Choreo Autos",
+  "choreoAuto": true
+}
