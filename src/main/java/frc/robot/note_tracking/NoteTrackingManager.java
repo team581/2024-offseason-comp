@@ -377,7 +377,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
       for (NoteMapElement noteMapElement : filteredNotesInBox) {
         noteMap.remove(noteMapElement);
-        if (noteMapElement.health() >= 1) {
+        if (noteMapElement.health() > 1) {
           noteMap.add(new NoteMapElement(noteMapElement.expiresAt(), noteMapElement.noteTranslation(),
               noteMapElement.health() - 1));
         }
