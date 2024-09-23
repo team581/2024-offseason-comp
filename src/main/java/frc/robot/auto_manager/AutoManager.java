@@ -288,15 +288,14 @@ public class AutoManager extends LifecycleSubsystem {
               noteTrackingManager.resetNoteMap(
                   new ArrayList<>(
                       List.of(
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(2), 10),
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(3), 10),
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4), 10),
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(6), 10),
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(1), 10),
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(7), 10),
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(8), 10),
-                          new NoteMapElement(
-                              now + 10, AutoNoteStaged.noteIdToTranslation(5), 10))));
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(2)),
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(3)),
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4)),
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(6)),
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(1)),
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(7)),
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(8)),
+                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(5)))));
             }),
         doManyAutoSteps(List.of(AutoNoteStep.score(4, 5), AutoNoteStep.score(5))));
   }
