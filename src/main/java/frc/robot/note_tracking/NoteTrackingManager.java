@@ -108,7 +108,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
    * Get the pose of the note closest to the provided location, within a threshold. Returns
    * optional.empty if no notes are tracked or notes exceed the threshold.
    */
-  public Optional<NoteMapElement> getNearestNotePoseRelative(
+  public Optional<NoteMapElement> getNoteNearPose(
       Translation2d searchLocation, double thresholdMeters) {
 
     var maybeElement =
@@ -237,8 +237,11 @@ public class NoteTrackingManager extends LifecycleSubsystem {
         && speeds.omegaRadiansPerSecond < Units.degreesToRadians(3.0);
   }
 
-  private void removeNote(NoteMapElement note) {
-    noteMap.remove(note);
+  private void removeNote(Translation2d searchArea, double threshold) {
+    var intakedNote = getNoteNearPose(searchArea, 1.5);
+    if (intakedNote.isPresent()) {
+      noteMap.remove(intakedNote.get());
+    }
   }
 
   public Command intakeNoteAtPose(Translation2d searchPose, double thresholdMeters) {
@@ -258,7 +261,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
                   }
 
                   var nearestNote =
-                      getNearestNotePoseRelative(maybeSearchPose.get(), thresholdMeters);
+                      getNoteNearPose(maybeSearchPose.get(), thresholdMeters);
 
                   if (nearestNote.isPresent()) {
                     DistanceAngle noteDistanceAngle =
@@ -284,23 +287,54 @@ public class NoteTrackingManager extends LifecycleSubsystem {
                 false))
         .until(
             () -> {
+
               var maybeSearchPose = maybeSearchPoseSupplier.get();
-              return maybeSearchPose.isEmpty()
-                  || robot.getState() == RobotState.IDLE_WITH_GP
-                  || getNearestNotePoseRelative(maybeSearchPose.get(), 1.5).isEmpty();
-            })
-        .andThen(
-            Commands.runOnce(
-                () -> {
-                  var maybeSearchPose = maybeSearchPoseSupplier.get();
-                  if (maybeSearchPose.isEmpty()) {
-                    return;
-                  }
-                  var intakedNote = getNearestNotePoseRelative(maybeSearchPose.get(), 0.5);
+              if (maybeSearchPose.isEmpty()) {
+                // Exit because the search pose is not there
+                return true;
+              }
+              var searchPose = maybeSearchPose.get();
+              var intakedNote = getNoteNearPose(searchPose, 1.5);
+              if (robot.getState().hasNote) {
+                // Already holding note
+                // We just intaked this note, so let's remove it from note map
                   if (intakedNote.isPresent()) {
-                    removeNote(intakedNote.get());
+                    removeNote(intakedNote.get().noteTranslation(), 1.5);
                   }
-                }))
+                  return true;
+                }
+
+
+              if (getNoteNearPose(searchPose, thresholdMeters).isEmpty()) {
+                // No note tracked within the search area, it must be gone, so continue
+                return true;
+              }
+
+              if (localization.atTranslation(searchPose, 0.05)) {
+                // We have driven to where the note is, but don't have it
+                // We should have intaked the note at this point, so just continue
+
+                // Someone else probably just intaked this note, so let's remove it from note map
+                DogLog.log("NoteTracking/TimeoutAtTranslation", Timer.getFPGATimestamp());
+                if (intakedNote.isPresent()) {
+                  removeNote(intakedNote.get().noteTranslation(), 1.5);
+                }
+                return true;
+              }
+              return false;
+            })
+        // .andThen(
+        //     Commands.runOnce(
+        //         () -> {
+        //           var maybeSearchPose = maybeSearchPoseSupplier.get();
+        //           if (maybeSearchPose.isEmpty()) {
+        //             return;
+        //           }
+        //           var intakedNote = getNoteNearPose(maybeSearchPose.get(), 1.5);
+        //           if (intakedNote.isPresent()) {
+        //             removeNote(intakedNote.get());
+        //           }
+        //         }))
         .finallyDo(
             () -> {
               snaps.setEnabled(false);
@@ -336,7 +370,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     var fieldRelativeBounds = getFieldRelativeBounds();
     DogLog.log("NoteTracking/CameraBounds", fieldRelativeBounds.toArray(Pose2d[]::new));
 
-    var maybeClosest = getNearestNotePoseRelative(localization.getPose().getTranslation(), 99987.0);
+    var maybeClosest = getNoteNearPose(localization.getPose().getTranslation(), 99987.0);
     if (maybeClosest.isPresent()) {
       DogLog.log("NoteTracking/ClosestNote", maybeClosest.get().noteTranslation());
     }
@@ -365,8 +399,8 @@ public class NoteTrackingManager extends LifecycleSubsystem {
         element -> {
           return (element.expiresAt() < Timer.getFPGATimestamp())
               || (RobotConfig.get().perfToggles().noteMapBoundingBox()
-                  && safeToTrack()
-                  && noteInView(element.noteTranslation()));
+              && safeToTrack()
+              && noteInView(element.noteTranslation()));
         });
 
     double newNoteExpiry = Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME;
