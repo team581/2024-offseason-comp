@@ -96,9 +96,27 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Red CWS to 5.1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red 5 to CWS"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
           }
         }
       ]
