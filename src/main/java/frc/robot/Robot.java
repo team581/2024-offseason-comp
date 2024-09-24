@@ -102,12 +102,12 @@ public class Robot extends TimedRobot {
   private final LightsSubsystem lightsSubsystem =
       new LightsSubsystem(
           new CANdle(RobotConfig.get().lights().deviceID(), "rio"), robotManager, vision, intake);
-  private final NoteTrackingManager noteTrackingManager =
-      new NoteTrackingManager(localization, swerve, actions, robotManager);
-  private final AutoManager autoManager =
-      new AutoManager(actions, noteTrackingManager, robotManager, localization);
+  // private final NoteTrackingManager noteTrackingManager =
+  //     new NoteTrackingManager(localization, swerve, actions, robotManager);
+  // private final AutoManager autoManager =
+  //     new AutoManager(actions, noteTrackingManager, robotManager, localization);
   private final Autos autos =
-      new Autos(swerve, localization, actions, robotManager, autoManager, noteTrackingManager);
+      new Autos(swerve, localization, actions, robotManager);
 
   public Robot() {
     System.out.println("roboRIO serial number: " + RobotConfig.SERIAL_NUMBER);
@@ -249,10 +249,10 @@ public class Robot extends TimedRobot {
         .onTrue(actions.waitSubwooferShotCommand())
         .onFalse(actions.stowCommand());
 
-    operatorController
-        .leftTrigger()
-        .onTrue(autoManager.testCommand())
-        .onFalse(actions.stowCommand());
+    // operatorController
+    //     .leftTrigger()
+    //     .onTrue(autoManager.testCommand())
+    //     .onFalse(actions.stowCommand());
     operatorController
         .rightTrigger()
         .onTrue(actions.waitForSpeakerShotCommand())

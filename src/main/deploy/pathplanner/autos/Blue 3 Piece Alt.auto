@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 15.151942253112791,
-      "y": 6.983804225921631
+      "x": 0.7474069976806632,
+      "y": 4.428630828857422
     },
-    "rotation": 2.026012586301527e-27
+    "rotation": 119.42818239069679
   },
   "command": {
     "type": "sequential",
@@ -26,49 +26,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Red AS to 6 + NT.1"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Red AS to 6 + NT.2"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "outtakeShooter"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Red AS to 6 + NT.3"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Red AS to 6 + NT.4"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "outtakeShooter"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Red AS to 6 + NT.5"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Red AS to 6 + NT.6"
+            "pathName": "Blue Alt 3 Piece Source.1"
           }
         },
         {
@@ -78,14 +36,44 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Alt 3 Piece Source.2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Alt 3 Piece Source.3"
+          }
+        },
+        {
           "type": "named",
           "data": {
-            "name": "noteMap456"
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Alt 3 Piece Source.4"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Alt 3 Piece Source.5"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
           }
         }
       ]
     }
   },
-  "folder": "Red Choreo Autos",
+  "folder": "Blue Choreo Autos",
   "choreoAuto": true
 }

@@ -57,20 +57,16 @@ public class Autos extends LifecycleSubsystem {
   private final SwerveSubsystem swerve;
   private final AutoChooser autoChooser;
   private final AutoCommands autoCommands;
-  private final AutoManager autoManager;
 
   public Autos(
       SwerveSubsystem swerve,
       LocalizationSubsystem localization,
       RobotCommands actions,
-      RobotManager robotManager,
-      AutoManager autoManager,
-      NoteTrackingManager noteTrackingManager) {
+      RobotManager robotManager) {
     super(SubsystemPriority.AUTOS);
     this.swerve = swerve;
-    this.autoManager = autoManager;
 
-    autoCommands = new AutoCommands(actions, robotManager, autoManager, noteTrackingManager);
+    autoCommands = new AutoCommands(actions, robotManager);
 
     // Configure AutoBuilder last
     AutoBuilder.configureHolonomic(
@@ -108,12 +104,13 @@ public class Autos extends LifecycleSubsystem {
     registerCommand("homeClimber", actions.homeCommand());
     registerCommand("stow", actions.stowCommand());
     registerCommand("zeroGyro", autoCommands.doNothingCommand());
-    registerCommand("noteMap456", autoCommands.noteMap456Command());
-    registerCommand("noteMap567", autoCommands.notemap567Command());
-    registerCommand("dropNote", autoManager.dropNote());
-    registerCommand("notemapD4", autoCommands.notemap4_10Command());
-    registerCommand("waitingDropRequest", autoCommands.waitingDropRequestCommand());
-    registerCommand("resetNoteMap", autoCommands.noteMapResetCommand());
+
+    // registerCommand("noteMap456", autoCommands.noteMap456Command());
+    // registerCommand("noteMap567", autoCommands.notemap567Command());
+    // registerCommand("dropNote", autoManager.dropNote());
+    // registerCommand("notemapD4", autoCommands.notemap4_10Command());
+    // registerCommand("waitingDropRequest", autoCommands.waitingDropRequestCommand());
+    // registerCommand("resetNoteMap", autoCommands.noteMapResetCommand());
 
     PathPlannerLogging.setLogActivePathCallback(
         (activePath) -> {

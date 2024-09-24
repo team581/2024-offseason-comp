@@ -350,30 +350,32 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
   @Override
   public void robotPeriodic() {
-    if (DriverStation.isTeleop() && !RobotConfig.get().perfToggles().noteMapInTeleop()) {
-      return;
-    }
 
-    updateMap();
+    // if (DriverStation.isTeleop() && !RobotConfig.get().perfToggles().noteMapInTeleop()) {
+    //   return;
+    // }
 
-    try {
-      DogLog.log(
-          "NoteTracking/NoteMap",
-          noteMap.stream()
-              .map(element -> new Pose2d(element.noteTranslation(), new Rotation2d()))
-              .toArray(Pose2d[]::new));
-    } catch (Exception error) {
-      DogLog.logFault("NoteMapLoggingError");
-      System.err.println(error);
-    }
+    // updateMap();
 
-    var fieldRelativeBounds = getFieldRelativeBounds();
-    DogLog.log("NoteTracking/CameraBounds", fieldRelativeBounds.toArray(Pose2d[]::new));
+    // try {
+    //   DogLog.log(
+    //       "NoteTracking/NoteMap",
+    //       noteMap.stream()
+    //           .map(element -> new Pose2d(element.noteTranslation(), new Rotation2d()))
+    //           .toArray(Pose2d[]::new));
+    // } catch (Exception error) {
+    //   DogLog.logFault("NoteMapLoggingError");
+    //   System.err.println(error);
+    // }
 
-    var maybeClosest = getNoteNearPose(localization.getPose().getTranslation(), 99987.0);
-    if (maybeClosest.isPresent()) {
-      DogLog.log("NoteTracking/ClosestNote", maybeClosest.get().noteTranslation());
-    }
+    // var fieldRelativeBounds = getFieldRelativeBounds();
+    // DogLog.log("NoteTracking/CameraBounds", fieldRelativeBounds.toArray(Pose2d[]::new));
+
+    // var maybeClosest = getNearestNotePoseRelative(localization.getPose().getTranslation(), 99987.0);
+    // if (maybeClosest.isPresent()) {
+    //   DogLog.log("NoteTracking/ClosestNote", maybeClosest.get().noteTranslation());
+    // }
+
   }
 
   private List<Pose2d> getFieldRelativeBounds() {
@@ -389,7 +391,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   }
 
   public void addNoteToMap(Translation2d pose) {
-    noteMap.add(new NoteMapElement(Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME, pose));
+    noteMap.add(new NoteMapElement(Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME, pose, 10));
   }
 
   private void updateMap() {
@@ -397,11 +399,29 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
     noteMap.removeIf(
         element -> {
-          return (element.expiresAt() < Timer.getFPGATimestamp())
-              || (RobotConfig.get().perfToggles().noteMapBoundingBox()
-              && safeToTrack()
-              && noteInView(element.noteTranslation()));
+
+          return (element.expiresAt() < Timer.getFPGATimestamp());
+
         });
+
+    if (RobotConfig.get().perfToggles().noteMapBoundingBox() && safeToTrack()) {
+
+      var filteredNotesInBox = noteMap.stream()
+          .filter(
+              element -> {
+                return (noteInView(element.noteTranslation()));
+              })
+          .toList();
+
+      for (NoteMapElement noteMapElement : filteredNotesInBox) {
+        noteMap.remove(noteMapElement);
+        if (noteMapElement.health() > 1) {
+          noteMap.add(new NoteMapElement(noteMapElement.expiresAt(), noteMapElement.noteTranslation(),
+              noteMapElement.health() - 1));
+        }
+      }
+    }
+
 
     double newNoteExpiry = Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME;
 
