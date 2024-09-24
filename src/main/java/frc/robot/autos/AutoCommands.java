@@ -126,6 +126,11 @@ public class AutoCommands {
         List.of(AutoNoteStep.score(4, 5), AutoNoteStep.score(5, 6), AutoNoteStep.score(10)));
   }
 
+  public Command notemap8_10Command() {
+    return doManyAutoSteps(
+        List.of(AutoNoteStep.score(8, 7), AutoNoteStep.score(7, 6), AutoNoteStep.score(10)));
+  }
+
   public Command noteMapResetCommand() {
     return Commands.runOnce(
         () -> {
