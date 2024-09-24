@@ -287,7 +287,7 @@ class CompConfig {
                 tyToNoteDistance.put(15.25, Units.inchesToMeters(17.75 + 7 + 88.9));
               },
               InterpolatedVisionDataset.HOME),
-          new PerfToggles(true, true, false));
+          new PerfToggles(true, false, false));
 
   private CompConfig() {}
 }

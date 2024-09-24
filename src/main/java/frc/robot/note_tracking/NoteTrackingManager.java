@@ -316,30 +316,30 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
   @Override
   public void robotPeriodic() {
-    if (DriverStation.isTeleop() && !RobotConfig.get().perfToggles().noteMapInTeleop()) {
-      return;
-    }
+    // if (DriverStation.isTeleop() && !RobotConfig.get().perfToggles().noteMapInTeleop()) {
+    //   return;
+    // }
 
-    updateMap();
+    // updateMap();
 
-    try {
-      DogLog.log(
-          "NoteTracking/NoteMap",
-          noteMap.stream()
-              .map(element -> new Pose2d(element.noteTranslation(), new Rotation2d()))
-              .toArray(Pose2d[]::new));
-    } catch (Exception error) {
-      DogLog.logFault("NoteMapLoggingError");
-      System.err.println(error);
-    }
+    // try {
+    //   DogLog.log(
+    //       "NoteTracking/NoteMap",
+    //       noteMap.stream()
+    //           .map(element -> new Pose2d(element.noteTranslation(), new Rotation2d()))
+    //           .toArray(Pose2d[]::new));
+    // } catch (Exception error) {
+    //   DogLog.logFault("NoteMapLoggingError");
+    //   System.err.println(error);
+    // }
 
-    var fieldRelativeBounds = getFieldRelativeBounds();
-    DogLog.log("NoteTracking/CameraBounds", fieldRelativeBounds.toArray(Pose2d[]::new));
+    // var fieldRelativeBounds = getFieldRelativeBounds();
+    // DogLog.log("NoteTracking/CameraBounds", fieldRelativeBounds.toArray(Pose2d[]::new));
 
-    var maybeClosest = getNearestNotePoseRelative(localization.getPose().getTranslation(), 99987.0);
-    if (maybeClosest.isPresent()) {
-      DogLog.log("NoteTracking/ClosestNote", maybeClosest.get().noteTranslation());
-    }
+    // var maybeClosest = getNearestNotePoseRelative(localization.getPose().getTranslation(), 99987.0);
+    // if (maybeClosest.isPresent()) {
+    //   DogLog.log("NoteTracking/ClosestNote", maybeClosest.get().noteTranslation());
+    // }
   }
 
   private List<Pose2d> getFieldRelativeBounds() {

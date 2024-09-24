@@ -5,6 +5,8 @@
 package frc.robot.vision;
 
 import edu.wpi.first.math.geometry.Translation2d;
+import frc.robot.vision.interpolation.InterpolationUtil;
+import frc.robot.vision.interpolation.VisionInterpolationData;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
