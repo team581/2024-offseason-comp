@@ -4,6 +4,7 @@
   "holonomicMode": true,
   "pathFolders": [],
   "autoFolders": [
+    "Blue Choreo Autos",
     "Red Choreo Autos"
   ],
   "defaultMaxVel": 5.2,
