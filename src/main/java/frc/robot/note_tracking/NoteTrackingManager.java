@@ -13,17 +13,14 @@ import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.auto_manager.AutoNoteDropped;
 import frc.robot.auto_manager.BoundingBox;
 import frc.robot.config.RobotConfig;
 import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
-import frc.robot.robot_manager.RobotState;
 import frc.robot.snaps.SnapManager;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.util.scheduling.LifecycleSubsystem;
@@ -260,8 +257,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
                     return Optional.empty();
                   }
 
-                  var nearestNote =
-                      getNoteNearPose(maybeSearchPose.get(), thresholdMeters);
+                  var nearestNote = getNoteNearPose(maybeSearchPose.get(), thresholdMeters);
 
                   if (nearestNote.isPresent()) {
                     DistanceAngle noteDistanceAngle =
@@ -287,7 +283,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
                 false))
         .until(
             () -> {
-
               var maybeSearchPose = maybeSearchPoseSupplier.get();
               if (maybeSearchPose.isEmpty()) {
                 // Exit because the search pose is not there
@@ -298,12 +293,11 @@ public class NoteTrackingManager extends LifecycleSubsystem {
               if (robot.getState().hasNote) {
                 // Already holding note
                 // We just intaked this note, so let's remove it from note map
-                  if (intakedNote.isPresent()) {
-                    removeNote(intakedNote.get().noteTranslation(), 1.5);
-                  }
-                  return true;
+                if (intakedNote.isPresent()) {
+                  removeNote(intakedNote.get().noteTranslation(), 1.5);
                 }
-
+                return true;
+              }
 
               if (getNoteNearPose(searchPose, thresholdMeters).isEmpty()) {
                 // No note tracked within the search area, it must be gone, so continue
@@ -371,7 +365,8 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     // var fieldRelativeBounds = getFieldRelativeBounds();
     // DogLog.log("NoteTracking/CameraBounds", fieldRelativeBounds.toArray(Pose2d[]::new));
 
-    // var maybeClosest = getNearestNotePoseRelative(localization.getPose().getTranslation(), 99987.0);
+    // var maybeClosest = getNearestNotePoseRelative(localization.getPose().getTranslation(),
+    // 99987.0);
     // if (maybeClosest.isPresent()) {
     //   DogLog.log("NoteTracking/ClosestNote", maybeClosest.get().noteTranslation());
     // }
@@ -399,29 +394,30 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
     noteMap.removeIf(
         element -> {
-
           return (element.expiresAt() < Timer.getFPGATimestamp());
-
         });
 
     if (RobotConfig.get().perfToggles().noteMapBoundingBox() && safeToTrack()) {
 
-      var filteredNotesInBox = noteMap.stream()
-          .filter(
-              element -> {
-                return (noteInView(element.noteTranslation()));
-              })
-          .toList();
+      var filteredNotesInBox =
+          noteMap.stream()
+              .filter(
+                  element -> {
+                    return (noteInView(element.noteTranslation()));
+                  })
+              .toList();
 
       for (NoteMapElement noteMapElement : filteredNotesInBox) {
         noteMap.remove(noteMapElement);
         if (noteMapElement.health() > 1) {
-          noteMap.add(new NoteMapElement(noteMapElement.expiresAt(), noteMapElement.noteTranslation(),
-              noteMapElement.health() - 1));
+          noteMap.add(
+              new NoteMapElement(
+                  noteMapElement.expiresAt(),
+                  noteMapElement.noteTranslation(),
+                  noteMapElement.health() - 1));
         }
       }
     }
-
 
     double newNoteExpiry = Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME;
 

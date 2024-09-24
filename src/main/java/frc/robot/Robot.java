@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.auto_manager.AutoManager;
 import frc.robot.autos.Autos;
 import frc.robot.climber.ClimberSubsystem;
 import frc.robot.config.RobotConfig;
@@ -32,7 +31,6 @@ import frc.robot.intake.IntakeSubsystem;
 import frc.robot.lights.LightsSubsystem;
 import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.note_manager.NoteManager;
-import frc.robot.note_tracking.NoteTrackingManager;
 import frc.robot.queuer.QueuerSubsystem;
 import frc.robot.redirect.RedirectSubsystem;
 import frc.robot.robot_manager.RobotCommands;
@@ -106,8 +104,7 @@ public class Robot extends TimedRobot {
   //     new NoteTrackingManager(localization, swerve, actions, robotManager);
   // private final AutoManager autoManager =
   //     new AutoManager(actions, noteTrackingManager, robotManager, localization);
-  private final Autos autos =
-      new Autos(swerve, localization, actions, robotManager);
+  private final Autos autos = new Autos(swerve, localization, actions, robotManager);
 
   public Robot() {
     System.out.println("roboRIO serial number: " + RobotConfig.SERIAL_NUMBER);

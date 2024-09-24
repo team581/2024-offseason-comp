@@ -22,10 +22,8 @@ import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.auto_manager.AutoManager;
 import frc.robot.config.RobotConfig;
 import frc.robot.localization.LocalizationSubsystem;
-import frc.robot.note_tracking.NoteTrackingManager;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
 import frc.robot.swerve.SwerveSubsystem;
@@ -107,8 +105,7 @@ public class Autos extends LifecycleSubsystem {
 
     // registerCommand("noteMap456", autoCommands.noteMap456Command());
     // registerCommand("noteMap567", autoCommands.notemap567Command());
-    registerCommand("dropNote", actions
-    .dropCommand());
+    registerCommand("dropNote", actions.dropCommand());
     // registerCommand("notemapD4", autoCommands.notemap4_10Command());
     registerCommand("waitingDropRequest", autoCommands.waitingDropRequestCommand());
     // registerCommand("resetNoteMap", autoCommands.noteMapResetCommand());

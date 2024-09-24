@@ -6,20 +6,12 @@ package frc.robot.autos;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.auto_manager.AutoManager;
-import frc.robot.auto_manager.AutoNoteStaged;
-import frc.robot.auto_manager.AutoNoteStep;
 import frc.robot.fms.FmsSubsystem;
-import frc.robot.note_tracking.NoteMapElement;
-import frc.robot.note_tracking.NoteTrackingManager;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
 import frc.robot.robot_manager.RobotState;
-import java.util.ArrayList;
-import java.util.List;
 
 public class AutoCommands {
   private static final boolean USE_DYNAMIC_AUTOS = true;
@@ -34,9 +26,7 @@ public class AutoCommands {
   private final RobotCommands actions;
   private final RobotManager robotManager;
 
-  public AutoCommands(
-      RobotCommands actions,
-      RobotManager robotManager) {
+  public AutoCommands(RobotCommands actions, RobotManager robotManager) {
     this.actions = actions;
     this.robotManager = robotManager;
   }
@@ -90,9 +80,9 @@ public class AutoCommands {
         || robotManager.getState() == RobotState.FINISH_INTAKING;
   }
 
-
   // public Command doManyAutoSteps(List<AutoNoteStep> steps) {
-  //   return Commands.sequence(steps.stream().map(autoManager::doAutoStep).toArray(Command[]::new));
+  //   return
+  // Commands.sequence(steps.stream().map(autoManager::doAutoStep).toArray(Command[]::new));
   // }
 
   // public Command noteMap456Command() {
@@ -138,7 +128,6 @@ public class AutoCommands {
   //                     new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(8)))));
   //       });
   // }
-
 
   public Command testAuto() {
     return Commands.sequence(
