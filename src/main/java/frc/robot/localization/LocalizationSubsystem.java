@@ -9,6 +9,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
@@ -113,6 +114,10 @@ public class LocalizationSubsystem extends LifecycleSubsystem {
 
   public void resetPose(Pose2d pose) {
     resetPose(pose, pose);
+  }
+
+  public boolean atTranslation(Translation2d translation, double thresholdMeters) {
+    return (getPose().getTranslation().getDistance(translation) <= thresholdMeters);
   }
 
   public void resetPose(Pose2d estimatedPose, Pose2d odometryPose) {

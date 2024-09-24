@@ -195,7 +195,7 @@ public class AutoManager extends LifecycleSubsystem {
                   path.stream()
                       .map(pose -> AutoBuilder.pathfindToPose(pose, DEFAULT_CONSTRAINTS))
                       .toArray(Command[]::new))
-              .until(() -> noteTrackingManager.getNearestNotePoseRelative(robot, 5.0).isPresent());
+              .until(() -> noteTrackingManager.getNoteNearPose(robot, 5.0).isPresent());
         },
         Set.of());
   }
@@ -247,6 +247,7 @@ public class AutoManager extends LifecycleSubsystem {
   }
 
   private Command pathfindToScoreCommand() {
+    DogLog.log("Debug/ScoringDestination", RED_DESTINATIONS.get(0));
     return Commands.defer(
             () -> AutoBuilder.pathfindToPose(getClosestScoringDestination(), DEFAULT_CONSTRAINTS),
             Set.of(robotManager.swerve))
