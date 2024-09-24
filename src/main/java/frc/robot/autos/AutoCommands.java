@@ -33,18 +33,12 @@ public class AutoCommands {
 
   private final RobotCommands actions;
   private final RobotManager robotManager;
-  private final AutoManager autoManager;
-  private final NoteTrackingManager noteTrackingManager;
 
   public AutoCommands(
       RobotCommands actions,
-      RobotManager robotManager,
-      AutoManager autoManager,
-      NoteTrackingManager noteTrackingManager) {
+      RobotManager robotManager) {
     this.actions = actions;
     this.robotManager = robotManager;
-    this.autoManager = autoManager;
-    this.noteTrackingManager = noteTrackingManager;
   }
 
   public Command doNothingCommand() {
@@ -96,58 +90,55 @@ public class AutoCommands {
         || robotManager.getState() == RobotState.FINISH_INTAKING;
   }
 
-  public Command doManyAutoSteps(List<AutoNoteStep> steps) {
-    return Commands.sequence(steps.stream().map(autoManager::doAutoStep).toArray(Command[]::new));
-  }
 
-  public Command noteMap456Command() {
-    return doManyAutoSteps(
-        List.of(AutoNoteStep.score(4, 5), AutoNoteStep.score(5, 6), AutoNoteStep.score(6)));
-  }
+  // public Command doManyAutoSteps(List<AutoNoteStep> steps) {
+  //   return Commands.sequence(steps.stream().map(autoManager::doAutoStep).toArray(Command[]::new));
+  // }
 
-  public Command notemap567Command() {
-    return Commands.sequence(
-        Commands.runOnce(
-            () -> {
-              var now = Timer.getFPGATimestamp();
-              noteTrackingManager.resetNoteMap(
-                  new ArrayList<>(
-                      List.of(
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(5)),
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(6)),
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(7)))));
-            }),
-        doManyAutoSteps(
-            List.of(AutoNoteStep.score(5, 6), AutoNoteStep.score(6, 7), AutoNoteStep.score(7))));
-  }
+  // public Command noteMap456Command() {
+  //   return doManyAutoSteps(
+  //       List.of(AutoNoteStep.score(4, 5), AutoNoteStep.score(5, 6), AutoNoteStep.score(6)));
+  // }
 
-  public Command notemap4_10Command() {
-    return doManyAutoSteps(
-        List.of(AutoNoteStep.score(4, 5), AutoNoteStep.score(5, 6), AutoNoteStep.score(10)));
-  }
+  // public Command notemap567Command() {
+  //   return Commands.sequence(
+  //       Commands.runOnce(
+  //           () -> {
+  //             var now = Timer.getFPGATimestamp();
+  //             noteTrackingManager.resetNoteMap(
+  //                 new ArrayList<>(
+  //                     List.of(
+  //                         new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(5)),
+  //                         new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(6)),
+  //                         new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(7)))));
+  //           }),
+  //       doManyAutoSteps(
+  //           List.of(AutoNoteStep.score(5, 6), AutoNoteStep.score(6, 7), AutoNoteStep.score(7))));
+  // }
 
-  public Command notemap8_10Command() {
-    return doManyAutoSteps(
-        List.of(AutoNoteStep.score(8, 7), AutoNoteStep.score(7, 6), AutoNoteStep.score(10)));
-  }
+  // public Command notemap4_10Command() {
+  //   return doManyAutoSteps(
+  //       List.of(AutoNoteStep.score(4, 5), AutoNoteStep.score(5, 6), AutoNoteStep.score(10)));
+  // }
 
-  public Command noteMapResetCommand() {
-    return Commands.runOnce(
-        () -> {
-          var now = Timer.getFPGATimestamp();
-          noteTrackingManager.resetNoteMap(
-              new ArrayList<>(
-                  List.of(
-                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4)),
-                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(1)),
-                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(2)),
-                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(3)),
-                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(5)),
-                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(6)),
-                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(7)),
-                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(8)))));
-        });
-  }
+  // public Command noteMapResetCommand() {
+  //   return Commands.runOnce(
+  //       () -> {
+  //         var now = Timer.getFPGATimestamp();
+  //         noteTrackingManager.resetNoteMap(
+  //             new ArrayList<>(
+  //                 List.of(
+  //                     new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4)),
+  //                     new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(1)),
+  //                     new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(2)),
+  //                     new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(3)),
+  //                     new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(5)),
+  //                     new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(6)),
+  //                     new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(7)),
+  //                     new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(8)))));
+  //       });
+  // }
+
 
   public Command testAuto() {
     return Commands.sequence(
