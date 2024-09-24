@@ -355,7 +355,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   }
 
   public void addNoteToMap(Translation2d pose) {
-    noteMap.add(new NoteMapElement(Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME, pose));
+    noteMap.add(new NoteMapElement(Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME, pose, 10));
   }
 
   private void updateMap() {
@@ -363,11 +363,27 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
     noteMap.removeIf(
         element -> {
-          return (element.expiresAt() < Timer.getFPGATimestamp())
-              || (RobotConfig.get().perfToggles().noteMapBoundingBox()
-                  && safeToTrack()
-                  && noteInView(element.noteTranslation()));
+          return (element.expiresAt() < Timer.getFPGATimestamp());
         });
+
+    if (RobotConfig.get().perfToggles().noteMapBoundingBox() && safeToTrack()) {
+
+      var filteredNotesInBox = noteMap.stream()
+          .filter(
+              element -> {
+                return (noteInView(element.noteTranslation()));
+              })
+          .toList();
+
+      for (NoteMapElement noteMapElement : filteredNotesInBox) {
+        noteMap.remove(noteMapElement);
+        if (noteMapElement.health() > 1) {
+          noteMap.add(new NoteMapElement(noteMapElement.expiresAt(), noteMapElement.noteTranslation(),
+              noteMapElement.health() - 1));
+        }
+      }
+    }
+
 
     double newNoteExpiry = Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME;
 

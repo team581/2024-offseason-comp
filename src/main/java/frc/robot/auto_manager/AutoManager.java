@@ -297,8 +297,7 @@ public class AutoManager extends LifecycleSubsystem {
                           new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(8)),
                           new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(5)))));
             }),
-        doManyAutoSteps(
-            List.of(AutoNoteStep.score(4, 5), AutoNoteStep.score(5))));
+        doManyAutoSteps(List.of(AutoNoteStep.score(4, 5), AutoNoteStep.score(5))));
   }
 
   public Command testCommand() {

@@ -90,6 +90,7 @@ public class AutoCommands {
         || robotManager.getState() == RobotState.FINISH_INTAKING;
   }
 
+
   // public Command doManyAutoSteps(List<AutoNoteStep> steps) {
   //   return Commands.sequence(steps.stream().map(autoManager::doAutoStep).toArray(Command[]::new));
   // }
@@ -137,6 +138,7 @@ public class AutoCommands {
   //                     new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(8)))));
   //       });
   // }
+
 
   public Command testAuto() {
     return Commands.sequence(
