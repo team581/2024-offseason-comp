@@ -1,0 +1,62 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 16.100038528442383,
+      "y": 2.0113611221313477
+    },
+    "rotation": 0.8680503193664589
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "waitingDropRequest"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "homeClimber"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "resetNoteMap"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Source NT"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "dropNote"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "noteMapD8"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Red Choreo Autos",
+  "choreoAuto": true
+}
