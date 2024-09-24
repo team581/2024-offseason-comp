@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 15.19707489013672,
-      "y": 6.5054240226745605
+      "x": 16.103837966918945,
+      "y": 2.029167413711548
     },
-    "rotation": -7.583640155305047e-18
+    "rotation": -1.0648975647827697e-26
   },
   "command": {
     "type": "sequential",
@@ -18,13 +18,13 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "homeClimber"
+                  "name": "waitingDropRequest"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "preloadNote"
+                  "name": "homeClimber"
                 }
               }
             ]
@@ -33,19 +33,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Red Snake Amp.1"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "outtakeShooter"
+            "pathName": "Red Drop 8 to 7.1"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Red Snake Amp.2"
+            "pathName": "Red Drop 8 to 7.2"
           }
         },
         {
@@ -57,13 +51,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Red Snake Amp.3"
+            "pathName": "Red Drop 8 to 7.3"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Red Snake Amp.4"
+            "pathName": "Red Drop 8 to 7.4"
           }
         },
         {

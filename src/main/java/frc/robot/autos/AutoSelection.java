@@ -17,6 +17,8 @@ public enum AutoSelection {
   CHOREO_FOUR_PIECE_2_5("Red 4 Piece 2 to 5", ""),
   CHOREO_SOURCE_ALT("Red 3 Piece Alt", ""),
   CHOREO_NT_SOURCE("Red Source NT", ""),
+  CHOREO_SNAKE_AMP("Red Snake Amp", ""),
+  CHOREO_DROP_8_6("Red Drop 8 to 7", ""),
   TEST_PATH("testPath", "");
 
   public final String redAutoName;
