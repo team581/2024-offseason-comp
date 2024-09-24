@@ -489,10 +489,16 @@ public class RobotManager extends LifecycleSubsystem {
         }
         break;
       case SPEAKER_SHOOT:
-        if (noteManager.getState() == NoteState.IDLE_NO_GP
-            // TODO: Super hacky workaround for not being able to exit after multi speaker shot
+        if (noteManager.getState()
+                == NoteState
+                    .IDLE_NO_GP // TODO: Super hacky workaround for not being able to exit after
+            // multi speaker shot
             || !(noteManager.intake.hasNote() && noteManager.queuer.hasNote())) {
-          state = RobotState.WAITING_MULTI_SPEAKER_SHOT;
+          if (DriverStation.isAutonomous()) {
+            state = RobotState.IDLE_NO_GP;
+          } else {
+            state = RobotState.WAITING_MULTI_SPEAKER_SHOT;
+          }
         }
         break;
       case UNJAM:
@@ -625,7 +631,7 @@ public class RobotManager extends LifecycleSubsystem {
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.FLOOR_SHOT);
         climber.setGoalMode(ClimberMode.STOWED);
-        noteManager.idleInQueuerRequest();
+        noteManager.intakeRequest();
         snaps.setAngle(polarFloorShotCoordinate.targetAngle());
         snaps.setEnabled(true);
         snaps.cancelCurrentCommand();
