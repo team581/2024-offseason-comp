@@ -5,7 +5,7 @@
       "x": 1.3419742965698234,
       "y": 5.552863121032715
     },
-    "rotation": 180.0
+    "rotation": -180.0
   },
   "command": {
     "type": "sequential",
@@ -78,6 +78,12 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Six Piece 2 to 4.7"
+          }
+        },
+        {
           "type": "named",
           "data": {
             "name": "speakerShotNoTimeout"
@@ -86,7 +92,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Blue Six Piece 2 to 4.7"
+            "pathName": "Blue Six Piece 2 to 4.8"
           }
         },
         {
