@@ -8,17 +8,17 @@ public enum AutoSelection {
   DO_NOTHING("", ""),
 
   CHOREO_SIX_PIECE("Red Six Piece 2 to 4", "Blue Six Piece 2 to 4"),
-  CHOREO_SNAKE_NT("Red Snake NT", "Blue Snake NT"),
+  // CHOREO_SNAKE_NT("Red Snake NT", "Blue Snake NT"),
   CHOREO_OP("Red OP", "Blue OP"),
-  CHOREO_SEVEN_PIECE("Red 7 Piece 2 to 6", "Blue 7 Piece 2 to 6"),
+  // CHOREO_SEVEN_PIECE("Red 7 Piece 2 to 6", "Blue 7 Piece 2 to 6"),
   CHOREO_THREE_PIECE("Red 3 Piece 8 to 6", "Blue 3 Piece 8 to 6"),
   CHOREO_FOUR_PIECE_2_3("Red 4 Piece 2 to 3", "Blue 4 Piece 2 to 3"),
-  CHOREO_1_3_NT("Red 1 to 3 + NT", "Blue 1 to 3 + NT"),
+  //  CHOREO_1_3_NT("Red 1 to 3 + NT", "Blue 1 to 3 + NT"),
   CHOREO_FOUR_PIECE_2_5("Red 4 Piece 2 to 5", "Blue 4 Piece 2 to 5"),
   CHOREO_SOURCE_ALT("Red 3 Piece Alt", "Blue 3 Piece Alt"),
-  CHOREO_NT_SOURCE("Red Source NT", "Blue Source NT"),
-  CHOREO_SNAKE_AMP("Red Snake Amp", "Blue Snake Amp"),
-  CHOREO_DROP_8_6("Red Drop 8 to 7", "Blue Drop 8 to 7"),
+  // CHOREO_NT_SOURCE("Red Source NT", "Blue Source NT"),
+  // CHOREO_SNAKE_AMP("Red Snake Amp", "Blue Snake Amp"),
+  // CHOREO_DROP_8_6("Red Drop 8 to 7", "Blue Drop 8 to 7"),
   TEST_PATH("testPath", "");
 
   public final String redAutoName;
