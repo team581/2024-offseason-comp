@@ -5,7 +5,7 @@
       "x": 15.198025703430176,
       "y": 5.552863121032715
     },
-    "rotation": -1.4769004644916964e-28
+    "rotation": -1.5688949438384067e-27
   },
   "command": {
     "type": "sequential",
@@ -78,6 +78,12 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "Red Six Piece 2 to 4.7"
+          }
+        },
+        {
           "type": "named",
           "data": {
             "name": "speakerShotNoTimeout"
@@ -86,7 +92,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Red Six Piece 2 to 4.7"
+            "pathName": "Red Six Piece 2 to 4.8"
           }
         },
         {
