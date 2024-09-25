@@ -134,11 +134,7 @@ public class Autos extends LifecycleSubsystem {
   }
 
   public Command getAutoCommand() {
-    if (autoChooser.getAutoSelection() == AutoSelection.TEST_PATH) {
-      return Commands.sequence(autoCommands.testAuto());
-    } else {
-      return autoChooser.getAutoCommand();
-    }
+    return autoChooser.getAutoCommand();
   }
 
   private Optional<Rotation2d> getRotationTargetOverride() {
