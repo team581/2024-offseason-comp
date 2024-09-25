@@ -2371,6 +2371,33 @@
           "name": "intakeFloor"
         }
       }
+    },
+    {
+      "timestamp": 0,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "waitingSpeakerShot"
+        }
+      }
+    },
+    {
+      "timestamp": 6.259146268418744,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "waitingSpeakerShot"
+        }
+      }
+    },
+    {
+      "timestamp": 3.109447905338225,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "waitingSpeakerShot"
+        }
+      }
     }
   ]
 }

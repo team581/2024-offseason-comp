@@ -556,6 +556,15 @@
           "name": "intakeFloor"
         }
       }
+    },
+    {
+      "timestamp": 2.0021437789402796,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "waitingSpeakerShot"
+        }
+      }
     }
   ]
 }

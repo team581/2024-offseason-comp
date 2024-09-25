@@ -2105,9 +2105,22 @@
     {
       "timestamp": 0.6232151981372147,
       "command": {
-        "type": "named",
+        "type": "sequential",
         "data": {
-          "name": "intakeFloor"
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "intakeFloor"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "waitingSpeakerShot"
+              }
+            }
+          ]
         }
       }
     },
@@ -2126,6 +2139,24 @@
         "type": "named",
         "data": {
           "name": "intakeFloor"
+        }
+      }
+    },
+    {
+      "timestamp": 3.7102221552340713,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "waitingSpeakerShot"
+        }
+      }
+    },
+    {
+      "timestamp": 6.025544009717152,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "waitingSpeakerShot"
         }
       }
     }

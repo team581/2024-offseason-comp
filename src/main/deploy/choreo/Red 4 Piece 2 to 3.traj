@@ -2585,18 +2585,62 @@
     {
       "timestamp": 6.632831229658514,
       "command": {
-        "type": "named",
+        "type": "sequential",
         "data": {
-          "name": "intakeFloor"
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "intakeFloor"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "waitingSpeakerShot"
+              }
+            }
+          ]
         }
       }
     },
     {
       "timestamp": 8.437781659987252,
       "command": {
+        "type": "sequential",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "intakeFloor"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "waitingSpeakerShot"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "timestamp": 0,
+      "command": {
         "type": "named",
         "data": {
-          "name": "intakeFloor"
+          "name": "waitingSpeakerShot"
+        }
+      }
+    },
+    {
+      "timestamp": 3.7329000992606125,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "waitingSpeakerShot"
         }
       }
     }

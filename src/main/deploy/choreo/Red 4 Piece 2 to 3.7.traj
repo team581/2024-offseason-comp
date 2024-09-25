@@ -341,9 +341,22 @@
     {
       "timestamp": 1.1524650681697324,
       "command": {
-        "type": "named",
+        "type": "sequential",
         "data": {
-          "name": "intakeFloor"
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "intakeFloor"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "waitingSpeakerShot"
+              }
+            }
+          ]
         }
       }
     }

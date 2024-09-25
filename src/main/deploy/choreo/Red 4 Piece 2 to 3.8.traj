@@ -194,9 +194,22 @@
     {
       "timestamp": 0,
       "command": {
-        "type": "named",
+        "type": "sequential",
         "data": {
-          "name": "intakeFloor"
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "intakeFloor"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "waitingSpeakerShot"
+              }
+            }
+          ]
         }
       }
     }

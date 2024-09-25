@@ -929,9 +929,31 @@
     {
       "timestamp": 2.8999311303979014,
       "command": {
+        "type": "sequential",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "intakeFloor"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "waitingSpeakerShot"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "timestamp": 0,
+      "command": {
         "type": "named",
         "data": {
-          "name": "intakeFloor"
+          "name": "waitingSpeakerShot"
         }
       }
     }
