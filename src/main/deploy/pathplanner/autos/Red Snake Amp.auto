@@ -5,7 +5,7 @@
       "x": 15.19707489013672,
       "y": 6.5054240226745605
     },
-    "rotation": -7.583640155305047e-18
+    "rotation": -5.586065770007157e-19
   },
   "command": {
     "type": "sequential",
@@ -64,6 +64,24 @@
           "type": "path",
           "data": {
             "pathName": "Red Snake Amp.4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Snake Amp.5"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Snake Amp.6"
           }
         },
         {
