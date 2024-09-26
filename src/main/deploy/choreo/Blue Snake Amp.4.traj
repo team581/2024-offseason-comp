@@ -421,5 +421,15 @@
       "timestamp": 1.830484687703827
     }
   ],
-  "eventMarkers": []
+  "eventMarkers": [
+    {
+      "timestamp": 0,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "waitingSpeakerShot"
+        }
+      }
+    }
+  ]
 }

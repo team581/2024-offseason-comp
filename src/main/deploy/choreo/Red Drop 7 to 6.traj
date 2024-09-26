@@ -2674,6 +2674,24 @@
           "name": "intakeFloor"
         }
       }
+    },
+    {
+      "timestamp": 6.197062988438605,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "waitingSpeakerShot"
+        }
+      }
+    },
+    {
+      "timestamp": 2.6775355650457495,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "waitingSpeakerShot"
+        }
+      }
     }
   ]
 }

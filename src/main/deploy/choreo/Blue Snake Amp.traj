@@ -2332,5 +2332,24 @@
       "timestamp": 8.788671043855196
     }
   ],
-  "eventMarkers": []
+  "eventMarkers": [
+    {
+      "timestamp": 3.582592336463008,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "waitingSpeakerShot"
+        }
+      }
+    },
+    {
+      "timestamp": 7.211804482810841,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "waitingSpeakerShot"
+        }
+      }
+    }
+  ]
 }
