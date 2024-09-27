@@ -5,7 +5,7 @@
       "x": 16.107410430908203,
       "y": 2.0309534072875977
     },
-    "rotation": -1.891504649960193e-27
+    "rotation": -7.819964268429376e-27
   },
   "command": {
     "type": "sequential",
@@ -63,6 +63,18 @@
           "type": "path",
           "data": {
             "pathName": "Red 3 Piece 8 to 7 + 10.5"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red 3 Piece 8 to 7 + 10.6"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
           }
         }
       ]
