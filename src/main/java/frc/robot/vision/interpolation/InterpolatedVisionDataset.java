@@ -41,7 +41,38 @@ public enum InterpolatedVisionDataset {
               new Translation2d(13.799, 4.202),
               new Translation2d(13.67, 4.106),
               "FRONT_PODIUM_MIDDLE")),
-      List.of());
+      List.of()),
+  CHEZY_CHAMPS(
+      List.of(
+          new VisionInterpolationData(
+              new Translation2d(15.2245, 5.522), new Translation2d(999.0, 999.0), "RED_SUBWOOFER"),
+          new VisionInterpolationData(
+              new Translation2d(13.0745, 5.522),
+              new Translation2d(999.0, 999.0),
+              "RED_PODIUM_SPEAKER_INTERSECTION"),
+          new VisionInterpolationData(
+              new Translation2d(11.059, 6.842),
+              new Translation2d(999.0, 999.0),
+              "RED_WING_LINE_MIDDLE"),
+          new VisionInterpolationData(
+              new Translation2d(13.799, 4.202),
+              new Translation2d(999.0, 999.0),
+              "RED_FRONT_PODIUM_MIDDLE")),
+      List.of(
+          new VisionInterpolationData(
+              new Translation2d(15.2245, 5.522), new Translation2d(999.0, 999.0), "BLUE_SUBWOOFER"),
+          new VisionInterpolationData(
+              new Translation2d(13.0745, 5.522),
+              new Translation2d(999.0, 999.0),
+              "BLUE_PODIUM_SPEAKER_INTERSECTION"),
+          new VisionInterpolationData(
+              new Translation2d(11.059, 6.842),
+              new Translation2d(999.0, 999.0),
+              "BLUE_WING_LINE_MIDDLE"),
+          new VisionInterpolationData(
+              new Translation2d(13.799, 4.202),
+              new Translation2d(999.0, 999.0),
+              "BLUE_FRONT_PODIUM_MIDDLE")));
 
   public final List<VisionInterpolationData> redSet;
   public final List<VisionInterpolationData> blueSet;
