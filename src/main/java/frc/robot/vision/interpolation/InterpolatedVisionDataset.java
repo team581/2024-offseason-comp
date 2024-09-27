@@ -60,17 +60,17 @@ public enum InterpolatedVisionDataset {
               "RED_FRONT_PODIUM_MIDDLE")),
       List.of(
           new VisionInterpolationData(
-              new Translation2d(15.2245, 5.522), new Translation2d(999.0, 999.0), "BLUE_SUBWOOFER"),
+              new Translation2d(1.315, 5.522), new Translation2d(999.0, 999.0), "BLUE_SUBWOOFER"),
           new VisionInterpolationData(
-              new Translation2d(13.0745, 5.522),
+              new Translation2d(3.465, 5.522),
               new Translation2d(999.0, 999.0),
               "BLUE_PODIUM_SPEAKER_INTERSECTION"),
           new VisionInterpolationData(
-              new Translation2d(11.059, 6.842),
+              new Translation2d(5.481, 6.842),
               new Translation2d(999.0, 999.0),
               "BLUE_WING_LINE_MIDDLE"),
           new VisionInterpolationData(
-              new Translation2d(13.799, 4.202),
+              new Translation2d(2.741, 4.202),
               new Translation2d(999.0, 999.0),
               "BLUE_FRONT_PODIUM_MIDDLE")));
 
