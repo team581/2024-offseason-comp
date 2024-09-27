@@ -2,8 +2,8 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.4517813110351554,
-      "y": 2.039273738861084
+      "x": 0.43616203308105383,
+      "y": 2.029167413711548
     },
     "rotation": 180.0
   },
@@ -18,21 +18,15 @@
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "preloadNote"
+            "pathName": "Blue Drop 7 to 6.1"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Blue 3 Piece 8 to 6.1"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Blue 3 Piece 8 to 6.2"
+            "pathName": "Blue Drop 7 to 6.2"
           }
         },
         {
@@ -44,31 +38,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Blue 3 Piece 8 to 6.3"
+            "pathName": "Blue Drop 7 to 6.3"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Blue 3 Piece 8 to 6.4"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "speakerShotNoTimeout"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Blue 3 Piece 8 to 6.5"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Blue 3 Piece 8 to 6.6"
+            "pathName": "Blue Drop 7 to 6.4"
           }
         },
         {

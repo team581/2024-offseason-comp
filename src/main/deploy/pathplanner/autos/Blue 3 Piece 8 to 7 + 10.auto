@@ -2,8 +2,8 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.4517813110351554,
-      "y": 2.039273738861084
+      "x": 0.432589569091796,
+      "y": 2.0309534072875977
     },
     "rotation": 180.0
   },
@@ -26,13 +26,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Blue 3 Piece 8 to 6.1"
+            "pathName": "Blue 3 Piece 8 to 7 + 10.1"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Blue 3 Piece 8 to 6.2"
+            "pathName": "Blue 3 Piece 8 to 7 + 10.2"
           }
         },
         {
@@ -44,13 +44,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Blue 3 Piece 8 to 6.3"
+            "pathName": "Blue 3 Piece 8 to 7 + 10.3"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Blue 3 Piece 8 to 6.4"
+            "pathName": "Blue 3 Piece 8 to 7 + 10.4"
           }
         },
         {
@@ -62,19 +62,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Blue 3 Piece 8 to 6.5"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Blue 3 Piece 8 to 6.6"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "speakerShotNoTimeout"
+            "pathName": "Blue 3 Piece 8 to 7 + 10.5"
           }
         }
       ]
