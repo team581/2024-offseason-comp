@@ -5,7 +5,7 @@
       "x": 16.103837966918945,
       "y": 2.029167413711548
     },
-    "rotation": 3.118548542641612e-27
+    "rotation": -2.5030441846906396e-26
   },
   "command": {
     "type": "sequential",
@@ -15,12 +15,6 @@
           "type": "parallel",
           "data": {
             "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "waitingDropRequest"
-                }
-              },
               {
                 "type": "named",
                 "data": {

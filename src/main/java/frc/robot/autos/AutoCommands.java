@@ -129,17 +129,6 @@ public class AutoCommands {
   //       });
   // }
 
-  public Command testAuto() {
-    return Commands.sequence(
-        doNothingCommand()
-            .alongWith(
-                actions
-                    .homeCommand()
-                    .andThen(
-                        AutoBuilder.followPath(Paths.testPath)
-                            .andThen(actions.speakerShotCommand()))));
-  }
-
   public Command waitingDropRequestCommand() {
     return Commands.runOnce(
         () -> {
