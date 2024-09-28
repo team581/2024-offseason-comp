@@ -84,7 +84,7 @@ public class CompBotTunerConstants {
                       new TorqueCurrentConfigs()
                           .withPeakForwardTorqueCurrent(80)
                           .withPeakReverseTorqueCurrent(-80)))
-          .withSteerMotorInitialConfigs( 
+          .withSteerMotorInitialConfigs(
               new TalonFXConfiguration()
                   .withCurrentLimits(
                       new CurrentLimitsConfigs()
