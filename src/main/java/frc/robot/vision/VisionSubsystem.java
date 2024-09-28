@@ -80,10 +80,11 @@ public class VisionSubsystem extends LifecycleSubsystem {
 
     if (RobotConfig.get().perfToggles().interpolatedVision() && maybeRawData.isPresent()) {
       var rawData = maybeRawData.get();
-
+      Pose2d interpolatedPose = InterpolatedVision.interpolatePose(rawData.pose());
+      DogLog.log("Localization/InterpolatedPose", interpolatedPose);
       return Optional.of(
           new VisionResult(
-              InterpolatedVision.interpolatePose(rawData.pose()), rawData.timestamp()));
+              interpolatedPose, rawData.timestamp()));
     }
 
     // No raw data to operate on
@@ -131,7 +132,9 @@ public class VisionSubsystem extends LifecycleSubsystem {
   public DistanceAngle getDistanceAngleSpeaker() {
     Pose2d speakerPose = getSpeaker();
     DistanceAngle distanceAngleToSpeaker = distanceAngleToTarget(speakerPose, robotPose);
-    return adjustForSideShot(distanceAngleToSpeaker);
+    DistanceAngle adjustForSideShotDistanceAngle = adjustForSideShot(distanceAngleToSpeaker);
+    DogLog.log("Localization/DistanceToSpeaker", adjustForSideShotDistanceAngle.distance());
+    return adjustForSideShotDistanceAngle;
   }
 
   private DistanceAngle adjustForSideShot(DistanceAngle originalPosition) {
