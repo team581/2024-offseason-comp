@@ -264,7 +264,18 @@ class CompConfig {
                   .withOpenLoopRamps(OPEN_LOOP_RAMP)),
           new SwerveConfig(
               // new PhoenixPIDController(50, 0, 5),
-              new PhoenixPIDController(20, 0, 2), true, true, true),
+              new PhoenixPIDController(20, 0, 2),
+              true,
+              true,
+              true,
+              new CurrentLimitsConfigs()
+                  .withSupplyCurrentLimit(40)
+                  .withStatorCurrentLimit(40)
+                  .withSupplyCurrentLimitEnable(true)
+                  .withStatorCurrentLimitEnable(true),
+              new TorqueCurrentConfigs()
+                  .withPeakForwardTorqueCurrent(80)
+                  .withPeakReverseTorqueCurrent(-80)),
           new IMUConfig(
               1,
               distanceToAngleTolerance -> {

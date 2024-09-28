@@ -126,8 +126,8 @@ public class SwerveSubsystem extends LifecycleSubsystem {
       var module = drivetrain.getModule(i);
       var driveMotorConfigurator = module.getDriveMotor().getConfigurator();
 
-      driveMotorConfigurator.apply(usedSwerveConstants.DriveMotorInitialConfigs.CurrentLimits);
-      driveMotorConfigurator.apply(usedSwerveConstants.DriveMotorInitialConfigs.TorqueCurrent);
+      driveMotorConfigurator.apply(RobotConfig.get().swerve().driveMotorCurrentLimits());
+      driveMotorConfigurator.apply(RobotConfig.get().swerve().driveMotorTorqueCurrentLimits());
     }
   }
 

@@ -4,7 +4,9 @@
 
 package frc.robot.config;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.TorqueCurrentConfigs;
 import com.ctre.phoenix6.mechanisms.swerve.utility.PhoenixPIDController;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
@@ -98,7 +100,9 @@ public record RobotConfig(
       PhoenixPIDController snapController,
       boolean invertRotation,
       boolean invertX,
-      boolean invertY) {}
+      boolean invertY,
+      CurrentLimitsConfigs driveMotorCurrentLimits,
+      TorqueCurrentConfigs driveMotorTorqueCurrentLimits) {}
 
   public record VisionConfig(
       int translationHistoryArraySize,
