@@ -23,6 +23,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.config.RobotConfig;
 import frc.robot.fms.FmsSubsystem;
+import frc.robot.generated.CompBotTunerConstants;
+import frc.robot.generated.PracticeBotTunerConstants;
 import frc.robot.util.ControllerHelpers;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
@@ -111,6 +113,22 @@ public class SwerveSubsystem extends LifecycleSubsystem {
     driveToAngle.HeadingController.setTolerance(0.02);
 
     omegaPid.enableContinuousInput(-Math.PI, Math.PI);
+
+    // The CTR SwerveModule class will overwrite your torque current limits and the stator current
+    // limit with the configured slip current. This logic allows us to exercise more precise control
+    // over what current limits are used for each control mode.
+    var usedSwerveConstants =
+        RobotConfig.IS_PRACTICE_BOT
+            ? PracticeBotTunerConstants.ConstantCreator
+            : CompBotTunerConstants.ConstantCreator;
+
+    for (int i = 0; i < 4; i++) {
+      var module = drivetrain.getModule(i);
+      var driveMotorConfigurator = module.getDriveMotor().getConfigurator();
+
+      driveMotorConfigurator.apply(usedSwerveConstants.DriveMotorInitialConfigs.CurrentLimits);
+      driveMotorConfigurator.apply(usedSwerveConstants.DriveMotorInitialConfigs.TorqueCurrent);
+    }
   }
 
   public List<SwerveModulePosition> getModulePositions() {

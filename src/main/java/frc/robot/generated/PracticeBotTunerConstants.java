@@ -70,7 +70,7 @@ public class PracticeBotTunerConstants {
   public static final SwerveDrivetrainConstants DrivetrainConstants =
       new SwerveDrivetrainConstants().withPigeon2Id(kPigeonId).withCANbusName(kCANbusName);
 
-  private static final SwerveModuleConstantsFactory ConstantCreator =
+  public static final SwerveModuleConstantsFactory ConstantCreator =
       new SwerveModuleConstantsFactory()
           .withDriveMotorInitialConfigs(
               new TalonFXConfiguration()
