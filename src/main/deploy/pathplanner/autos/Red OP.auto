@@ -42,6 +42,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Red OP Path.3"
@@ -57,12 +63,6 @@
           "type": "path",
           "data": {
             "pathName": "Red OP Path.4"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "speakerShotNoTimeout"
           }
         },
         {
