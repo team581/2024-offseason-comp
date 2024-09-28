@@ -32,9 +32,9 @@ public class VisionSubsystem extends LifecycleSubsystem {
       new Pose2d(Units.inchesToMeters(0), Units.inchesToMeters(218.42), Rotation2d.fromDegrees(0));
 
   public static final Pose2d RED_FLOOR_SPOT_SUBWOOFER =
-      new Pose2d(15.5, 7.9, Rotation2d.fromDegrees(180));
+      new Pose2d(15.9, 7.9, Rotation2d.fromDegrees(180));
   public static final Pose2d BLUE_FLOOR_SPOT_SUBWOOFER =
-      new Pose2d(1, 7.9, Rotation2d.fromDegrees(0));
+      new Pose2d(0.6, 7.9, Rotation2d.fromDegrees(0));
 
   public static final Pose2d RED_FLOOR_SPOT_AMP_AREA =
       new Pose2d(9.5, 7, Rotation2d.fromDegrees(180));
