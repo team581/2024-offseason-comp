@@ -39,7 +39,7 @@ public class CompBotTunerConstants {
 
   // The stator current at which the wheels start to slip;
   // This needs to be tuned to your individual robot
-  private static final double kSlipCurrentA = 40.0;
+  private static final double kSlipCurrentA = 80.0;
 
   // Theoretical free speed (m/s) at 12v applied output;
   // This needs to be tuned to your individual robot
@@ -76,15 +76,15 @@ public class CompBotTunerConstants {
               new TalonFXConfiguration()
                   .withCurrentLimits(
                       new CurrentLimitsConfigs()
-                          .withSupplyCurrentLimit(40)
-                          .withStatorCurrentLimit(40)
+                          .withSupplyCurrentLimit(50)
+                          .withStatorCurrentLimit(50)
                           .withSupplyCurrentLimitEnable(true)
                           .withStatorCurrentLimitEnable(true))
                   .withTorqueCurrent(
                       new TorqueCurrentConfigs()
                           .withPeakForwardTorqueCurrent(80)
                           .withPeakReverseTorqueCurrent(-80)))
-          .withSteerMotorInitialConfigs(
+          .withSteerMotorInitialConfigs( 
               new TalonFXConfiguration()
                   .withCurrentLimits(
                       new CurrentLimitsConfigs()
