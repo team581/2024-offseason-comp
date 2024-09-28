@@ -82,9 +82,7 @@ public class VisionSubsystem extends LifecycleSubsystem {
       var rawData = maybeRawData.get();
       Pose2d interpolatedPose = InterpolatedVision.interpolatePose(rawData.pose());
       DogLog.log("Localization/InterpolatedPose", interpolatedPose);
-      return Optional.of(
-          new VisionResult(
-              interpolatedPose, rawData.timestamp()));
+      return Optional.of(new VisionResult(interpolatedPose, rawData.timestamp()));
     }
 
     // No raw data to operate on
