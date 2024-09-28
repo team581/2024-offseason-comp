@@ -64291,7 +64291,7 @@
                     "target": 5,
                     "trajTargetIndex": 5,
                     "targetTimestamp": 6.463496485285847,
-                    "offset": 0.5,
+                    "offset": 1,
                     "command": {
                         "type": "named",
                         "data": {
@@ -64304,7 +64304,7 @@
                     "target": 2,
                     "trajTargetIndex": 2,
                     "targetTimestamp": 2.5743537473927067,
-                    "offset": 0.5,
+                    "offset": 1,
                     "command": {
                         "type": "named",
                         "data": {
@@ -64339,7 +64339,7 @@
                     }
                 }
             ],
-            "isTrajectoryStale": true
+            "isTrajectoryStale": false
         },
         "Blue 3 Piece 8 to 7 + 10": {
             "waypoints": [
@@ -68414,7 +68414,7 @@
                     "target": 5,
                     "trajTargetIndex": 5,
                     "targetTimestamp": 6.463496485285848,
-                    "offset": 0.5,
+                    "offset": 1,
                     "command": {
                         "type": "named",
                         "data": {
@@ -68427,7 +68427,7 @@
                     "target": 2,
                     "trajTargetIndex": 2,
                     "targetTimestamp": 2.574353747392707,
-                    "offset": 0.5,
+                    "offset": 1,
                     "command": {
                         "type": "named",
                         "data": {
