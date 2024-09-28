@@ -270,6 +270,11 @@ public class RobotManager extends LifecycleSubsystem {
             state = RobotState.UNJAM;
           }
           break;
+        case SHOOTER_STOP_UNJAM:
+          if (!state.climbing) {
+            state = RobotState.SHOOTER_STOPPED_UNJAM;
+          }
+          break;
         case PRESET_3:
           if (!state.climbing) {
             state = RobotState.PRESET_3;
@@ -502,6 +507,7 @@ public class RobotManager extends LifecycleSubsystem {
         }
         break;
       case UNJAM:
+      case SHOOTER_STOPPED_UNJAM:
       case CLIMB_1_LINEUP_OUTER:
       case CLIMB_2_LINEUP_INNER:
       case CLIMB_3_LINEUP_FINAL:
@@ -737,6 +743,13 @@ public class RobotManager extends LifecycleSubsystem {
         wrist.setAngle(WristPositions.STOWED);
         elevator.setGoalHeight(ElevatorPositions.ANTI_JAM);
         shooter.setGoalMode(ShooterMode.OUTTAKE);
+        climber.setGoalMode(ClimberMode.STOWED);
+        noteManager.unjamRequest();
+        break;
+      case SHOOTER_STOPPED_UNJAM:
+        wrist.setAngle(WristPositions.SUBWOOFER_SHOT);
+        elevator.setGoalHeight(ElevatorPositions.ANTI_JAM);
+        shooter.setGoalMode(ShooterMode.FULLY_STOPPED);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.unjamRequest();
         break;
@@ -1022,6 +1035,10 @@ public class RobotManager extends LifecycleSubsystem {
 
   public void unjamRequest() {
     flags.check(RobotFlag.UNJAM);
+  }
+
+  public void shooterStoppedUnjamRequest() {
+    flags.check(RobotFlag.SHOOTER_STOP_UNJAM);
   }
 
   public void stopShootingRequest() {

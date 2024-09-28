@@ -253,4 +253,9 @@ public class RobotCommands {
   public Command unjamCommand() {
     return Commands.runOnce(() -> robot.unjamRequest(), requirements).withName("UnjamCommand");
   }
+
+  public Command shooterStoppedUnjamCommand() {
+    return Commands.runOnce(() -> robot.shooterStoppedUnjamRequest(), requirements)
+        .withName("ShooterStoppedUnjamCommand");
+  }
 }

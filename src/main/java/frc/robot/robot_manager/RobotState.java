@@ -83,6 +83,7 @@ public enum RobotState {
   AMP_SHOT(true, false, true, new LightsState(null, BlinkPattern.BLINK_FAST)),
 
   UNJAM(true, false, false, new LightsState(null, BlinkPattern.SOLID)),
+  SHOOTER_STOPPED_UNJAM(true, false, false, new LightsState(null, BlinkPattern.SOLID)),
 
   /** Hooks move to top of the robot so we can start to grab the chain. */
   // We say this isn't climbing so that we can go into intake mode
