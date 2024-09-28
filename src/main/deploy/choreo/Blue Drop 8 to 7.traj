@@ -2800,6 +2800,24 @@
           "name": "intakeFloor"
         }
       }
+    },
+    {
+      "timestamp": 2.0195356044807595,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "waitingSpeakerShot"
+        }
+      }
+    },
+    {
+      "timestamp": 7.034300825033324,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "waitingSpeakerShot"
+        }
+      }
     }
   ]
 }

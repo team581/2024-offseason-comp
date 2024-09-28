@@ -5715,7 +5715,7 @@
                     "target": 5,
                     "trajTargetIndex": 5,
                     "targetTimestamp": 3.9102127514423457,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -5728,7 +5728,7 @@
                     "target": 8,
                     "trajTargetIndex": 8,
                     "targetTimestamp": 7.0791975037822255,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -6201,7 +6201,7 @@
                     "target": 0,
                     "trajTargetIndex": 0,
                     "targetTimestamp": 0,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -7497,7 +7497,7 @@
                     "target": 0,
                     "trajTargetIndex": 0,
                     "targetTimestamp": 0,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -9206,7 +9206,7 @@
                     "target": 0,
                     "trajTargetIndex": 0,
                     "targetTimestamp": 0,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -12961,7 +12961,7 @@
                     "target": 1,
                     "trajTargetIndex": 1,
                     "targetTimestamp": 2.495031549607659,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -12974,7 +12974,7 @@
                     "target": 4,
                     "trajTargetIndex": 4,
                     "targetTimestamp": 6.248737350053278,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -12987,7 +12987,7 @@
                     "target": 8,
                     "trajTargetIndex": 8,
                     "targetTimestamp": 10.18764575572964,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -16174,7 +16174,7 @@
                     "target": 0,
                     "trajTargetIndex": 0,
                     "targetTimestamp": 0,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -16187,7 +16187,7 @@
                     "target": 5,
                     "trajTargetIndex": 5,
                     "targetTimestamp": 3.983607681484519,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -19938,7 +19938,7 @@
                     "target": 5,
                     "trajTargetIndex": 5,
                     "targetTimestamp": 3.9654995971394977,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -19951,7 +19951,7 @@
                     "target": 7,
                     "trajTargetIndex": 7,
                     "targetTimestamp": 6.440673847403687,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -25501,7 +25501,7 @@
                     "target": 5,
                     "trajTargetIndex": 5,
                     "targetTimestamp": 6.625889821257394,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -25514,7 +25514,7 @@
                     "target": 2,
                     "trajTargetIndex": 2,
                     "targetTimestamp": 3.284049458521249,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -29269,7 +29269,7 @@
                     "target": 1,
                     "trajTargetIndex": 1,
                     "targetTimestamp": 2.495031549607661,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -29282,7 +29282,7 @@
                     "target": 4,
                     "trajTargetIndex": 4,
                     "targetTimestamp": 6.24873735005328,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -29295,7 +29295,7 @@
                     "target": 8,
                     "trajTargetIndex": 8,
                     "targetTimestamp": 10.187645755729642,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -32941,7 +32941,7 @@
                     "target": 5,
                     "trajTargetIndex": 5,
                     "targetTimestamp": 3.9673515039796485,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -35527,7 +35527,7 @@
                     "target": 5,
                     "trajTargetIndex": 5,
                     "targetTimestamp": 3.9654995971394973,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -35540,7 +35540,7 @@
                     "target": 7,
                     "trajTargetIndex": 7,
                     "targetTimestamp": 6.440673847403686,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -36188,7 +36188,7 @@
                     "target": 0,
                     "trajTargetIndex": 0,
                     "targetTimestamp": 0,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -37046,7 +37046,7 @@
                     "target": 0,
                     "trajTargetIndex": 0,
                     "targetTimestamp": 0,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -39810,7 +39810,7 @@
                     "target": 5,
                     "trajTargetIndex": 5,
                     "targetTimestamp": 6.625889821257394,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -39823,7 +39823,7 @@
                     "target": 2,
                     "trajTargetIndex": 2,
                     "targetTimestamp": 3.284049458521249,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -44334,7 +44334,7 @@
                     "target": 5,
                     "trajTargetIndex": 5,
                     "targetTimestamp": 3.910212751442307,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -44347,7 +44347,7 @@
                     "target": 8,
                     "trajTargetIndex": 8,
                     "targetTimestamp": 7.079197503782137,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -54042,7 +54042,7 @@
                     "target": 7,
                     "trajTargetIndex": 7,
                     "targetTimestamp": 6.25478402414006,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -54055,7 +54055,7 @@
                     "target": 3,
                     "trajTargetIndex": 3,
                     "targetTimestamp": 2.562090427125088,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -57147,6 +57147,32 @@
                             "name": "intakeFloor"
                         }
                     }
+                },
+                {
+                    "name": "prep speaker shot",
+                    "target": 3,
+                    "trajTargetIndex": 3,
+                    "targetTimestamp": 2.0195356044807595,
+                    "offset": 0,
+                    "command": {
+                        "type": "named",
+                        "data": {
+                            "name": "waitingSpeakerShot"
+                        }
+                    }
+                },
+                {
+                    "name": "prep speaker shot",
+                    "target": 8,
+                    "trajTargetIndex": 8,
+                    "targetTimestamp": 6.534300825033324,
+                    "offset": 0.5,
+                    "command": {
+                        "type": "named",
+                        "data": {
+                            "name": "waitingSpeakerShot"
+                        }
+                    }
                 }
             ],
             "isTrajectoryStale": false
@@ -58165,7 +58191,7 @@
                     "target": 0,
                     "trajTargetIndex": 0,
                     "targetTimestamp": 0,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -62144,7 +62170,7 @@
                     "target": 5,
                     "trajTargetIndex": 5,
                     "targetTimestamp": 6.262026097727954,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -62157,7 +62183,7 @@
                     "target": 2,
                     "trajTargetIndex": 2,
                     "targetTimestamp": 2.508320297282335,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -66162,7 +66188,7 @@
                     "target": 5,
                     "trajTargetIndex": 5,
                     "targetTimestamp": 6.262026097727953,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -66175,7 +66201,7 @@
                     "target": 2,
                     "trajTargetIndex": 2,
                     "targetTimestamp": 2.5083202972823346,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -69091,7 +69117,7 @@
                     "target": 7,
                     "trajTargetIndex": 7,
                     "targetTimestamp": 6.254784024140066,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {
@@ -69104,7 +69130,7 @@
                     "target": 3,
                     "trajTargetIndex": 3,
                     "targetTimestamp": 2.562090427125089,
-                    "offset": 0,
+                    "offset": 0.5,
                     "command": {
                         "type": "named",
                         "data": {

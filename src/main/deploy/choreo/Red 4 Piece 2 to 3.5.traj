@@ -1012,7 +1012,7 @@
       }
     },
     {
-      "timestamp": 0,
+      "timestamp": 0.5000000000000004,
       "command": {
         "type": "named",
         "data": {
