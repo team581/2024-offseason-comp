@@ -85,6 +85,7 @@ class CompConfig {
                   .withClosedLoopRamps(CLOSED_LOOP_RAMP)
                   .withOpenLoopRamps(OPEN_LOOP_RAMP),
               speakerDistanceToRPM -> {
+                // TODO: bump up all RPMs under 4800 if fresh v2 notes are still missing the speaker
                 speakerDistanceToRPM.put(1.38, 3000.0);
                 speakerDistanceToRPM.put(2.16, 3000.0);
                 speakerDistanceToRPM.put(2.5, 4000.0);
@@ -297,7 +298,7 @@ class CompConfig {
                 tyToNoteDistance.put(11.85, Units.inchesToMeters(17.75 + 7 + 60.1));
                 tyToNoteDistance.put(15.25, Units.inchesToMeters(17.75 + 7 + 88.9));
               },
-              InterpolatedVisionDataset.CHEZY_CHAMPS),
+              InterpolatedVisionDataset.BELLARMINE),
           new PerfToggles(true, false, false));
 
   private CompConfig() {}
