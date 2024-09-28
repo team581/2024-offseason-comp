@@ -66,12 +66,6 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "Red OP Path.5"
-          }
-        },
-        {
           "type": "named",
           "data": {
             "name": "speakerShotNoTimeout"

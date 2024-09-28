@@ -5,7 +5,7 @@
       "x": 0.7292499923706046,
       "y": 6.713456153869629
     },
-    "rotation": 239.30031078017709
+    "rotation": -120.69968921982293
   },
   "command": {
     "type": "sequential",
@@ -57,18 +57,6 @@
           "type": "path",
           "data": {
             "pathName": "Blue OP Path.4"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "speakerShotNoTimeout"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Blue OP Path.5"
           }
         },
         {
