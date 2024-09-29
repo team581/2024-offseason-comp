@@ -70,18 +70,6 @@
           "data": {
             "name": "speakerShotNoTimeout"
           }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Blue OP Path.5"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "speakerShotNoTimeout"
-          }
         }
       ]
     }
