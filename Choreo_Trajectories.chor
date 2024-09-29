@@ -5799,19 +5799,6 @@
                             "name": "waitingSpeakerShot"
                         }
                     }
-                },
-                {
-                    "name": "prep speaker shot",
-                    "target": 2,
-                    "trajTargetIndex": 2,
-                    "targetTimestamp": 1.684570797081357,
-                    "offset": 0,
-                    "command": {
-                        "type": "named",
-                        "data": {
-                            "name": "waitingSpeakerShot"
-                        }
-                    }
                 }
             ],
             "isTrajectoryStale": false
@@ -45526,19 +45513,6 @@
                     "trajTargetIndex": 7,
                     "targetTimestamp": 7.588055456800108,
                     "offset": 0.5,
-                    "command": {
-                        "type": "named",
-                        "data": {
-                            "name": "waitingSpeakerShot"
-                        }
-                    }
-                },
-                {
-                    "name": "prep speaker shot",
-                    "target": 2,
-                    "trajTargetIndex": 2,
-                    "targetTimestamp": 1.6845707970881982,
-                    "offset": 0,
                     "command": {
                         "type": "named",
                         "data": {

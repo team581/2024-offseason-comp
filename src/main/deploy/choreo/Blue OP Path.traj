@@ -2701,15 +2701,6 @@
           "name": "waitingSpeakerShot"
         }
       }
-    },
-    {
-      "timestamp": 1.6845707970881982,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "waitingSpeakerShot"
-        }
-      }
     }
   ]
 }
