@@ -1,0 +1,85 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.32578758239746,
+      "y": 6.532422065734863
+    },
+    "rotation": 180.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "homeClimber"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "preloadNote"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Amp 3 Piece 8 to 7 + 10.1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Amp 3 Piece 8 to 7 + 10.2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Amp 3 Piece 8 to 7 + 10.3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Amp 3 Piece 8 to 7 + 10.4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Amp 3 Piece 8 to 7 + 10.5"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Amp 3 Piece 8 to 7 + 10.6"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Blue Choreo Autos",
+  "choreoAuto": true
+}

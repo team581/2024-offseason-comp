@@ -1,0 +1,85 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 15.21421241760254,
+      "y": 6.532422065734863
+    },
+    "rotation": -9.18267224869485e-27
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "homeClimber"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "preloadNote"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Amp 3 Piece 8 to 7 + 10.1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Amp 3 Piece 8 to 7 + 10.2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Amp 3 Piece 8 to 7 + 10.3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Amp 3 Piece 8 to 7 + 10.4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Amp 3 Piece 8 to 7 + 10.5"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Amp 3 Piece 8 to 7 + 10.6"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShotNoTimeout"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "Red Choreo Autos",
+  "choreoAuto": true
+}
