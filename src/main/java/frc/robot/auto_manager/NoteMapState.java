@@ -5,5 +5,14 @@
 package frc.robot.auto_manager;
 
 public enum NoteMapState {
-  IDLE;
+  IDLE,
+  PATHFIND_TO_INTAKE,
+  PID_INTAKE,
+  PATHFIND_TO_DROP,
+  PATHFIND_TO_SCORE,
+  DROP,
+  SCORE,
+  CLEANUP,
+  SEARCH_MIDLINE,
+  SEARCH_SPEAKER;
 }
