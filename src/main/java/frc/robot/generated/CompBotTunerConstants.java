@@ -83,8 +83,7 @@ public class CompBotTunerConstants {
                           .withSupplyCurrentLimitEnable(true)
                           .withStatorCurrentLimitEnable(true))
                   // DO NOT use the existing object, the CTR Swerve Generator will mutate values in
-                  // DO NOT use the existing object, the CTR Swerve Generator will mutate values in
-                  // it
+                  // it. Check RobotConfig for the actual used current limits.
                   .withTorqueCurrent(
                       new TorqueCurrentConfigs()
                           .withPeakForwardTorqueCurrent(80)
