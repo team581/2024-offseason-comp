@@ -19,8 +19,8 @@ import frc.robot.note_tracking.NoteMapElement;
 import frc.robot.note_tracking.NoteTrackingManager;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
-import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
+import frc.robot.util.state_machines.StateMachine;
 import frc.robot.vision.VisionSubsystem;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +28,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
-public class AutoManager extends LifecycleSubsystem {
+public class AutoManager extends StateMachine<NoteMapState> {
   private final RobotCommands actions;
   private final NoteTrackingManager noteTrackingManager;
   private final RobotManager robotManager;
@@ -90,7 +90,7 @@ public class AutoManager extends LifecycleSubsystem {
       NoteTrackingManager noteTrackingManager,
       RobotManager robotManager,
       LocalizationSubsystem localization) {
-    super(SubsystemPriority.AUTOS);
+    super(SubsystemPriority.AUTOS, NoteMapState.IDLE);
     this.actions = actions;
     this.noteTrackingManager = noteTrackingManager;
     this.robotManager = robotManager;
@@ -305,5 +305,22 @@ public class AutoManager extends LifecycleSubsystem {
 
   public Command testCommand() {
     return Commands.sequence(doManyAutoSteps(List.of(AutoNoteStep.cleanup())));
+  }
+
+  // state machine zone below
+
+  @Override
+  protected void collectInputs() {
+    // TODO: Collect inputs if needed
+  }
+
+  @Override
+  protected void afterTransition(NoteMapState newState) {
+    // TODO: Do state actions here
+  }
+
+  @Override
+  protected NoteMapState getNextState(NoteMapState currentState) {
+    return currentState;
   }
 }
