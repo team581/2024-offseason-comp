@@ -460,7 +460,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
         }
 
         yield NoteMapState.IDLE;
-    }
+      }
       case CLEANUP ->
           localization.getPose().getTranslation().getDistance(getClosestSpeaker().getTranslation())
                   < 4.0
