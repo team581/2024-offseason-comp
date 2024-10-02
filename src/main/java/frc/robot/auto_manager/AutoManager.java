@@ -13,7 +13,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.fms.FmsSubsystem;
 import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.note_tracking.NoteMapElement;
@@ -29,7 +28,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
-import java.util.Stack;
 import java.util.function.Supplier;
 
 public class AutoManager extends StateMachine<NoteMapState> {
@@ -91,6 +89,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
           new Pose2d(6.66, 2.42, Rotation2d.fromDegrees(136.86)),
           new Pose2d(6.66, 5.69, Rotation2d.fromDegrees(-144.39)));
   private static final double INTAKE_PATHFIND_THRESHOLD_METERS = 1.0;
+
   public AutoManager(
       RobotCommands actions,
       NoteTrackingManager noteTrackingManager,
@@ -326,7 +325,8 @@ public class AutoManager extends StateMachine<NoteMapState> {
 
   @Override
   protected void collectInputs() {
-    // TODO: make this actually get a search pose from the step, so we can later give it to the commands which use it to find an actual note
+    // TODO: make this actually get a search pose from the step, so we can later give it to the
+    // commands which use it to find an actual note
     maybeSearchPose = Optional.empty();
   }
 
@@ -365,87 +365,131 @@ public class AutoManager extends StateMachine<NoteMapState> {
       case PATHFIND_TO_DROP -> {
         noteMapCommand.cancel();
         noteMapCommand = AutoBuilder.pathfindToPose(getDroppingDestination(), DEFAULT_CONSTRAINTS);
-      noteMapCommand.schedule();
+        noteMapCommand.schedule();
       }
       case PATHFIND_TO_SCORE -> {
         noteMapCommand.cancel();
-        noteMapCommand = AutoBuilder.pathfindToPose(getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
-      noteMapCommand.schedule();
+        noteMapCommand =
+            AutoBuilder.pathfindToPose(getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
+        noteMapCommand.schedule();
       }
     }
   }
 
   @Override
   protected NoteMapState getNextState(NoteMapState currentState) {
-    return switch(currentState) {
+    return switch (currentState) {
       case IDLE -> currentState;
-    case PATHFIND_TO_INTAKE -> {
-      // If the tracked note goes away go to idle
-      if (maybeSearchPose.isEmpty()) {
-        yield NoteMapState.IDLE;
-      }
-
-      // If the note is still there and we are close enough go to PID intake mode
-      if (maybeSearchPose.isPresent() && maybeSearchPose.get().noteTranslation().getDistance(localization.getPose().getTranslation())<INTAKE_PATHFIND_THRESHOLD_METERS) {
-        yield NoteMapState.PID_INTAKE;
-      }
-
-      // If we already have note go and score/drop
-      if(robotManager.getState().hasNote) {
-        if (currentStep.isPresent() && currentStep.get().action() == AutoNoteAction.DROP) {
-          yield NoteMapState.PATHFIND_TO_DROP;
+      case PATHFIND_TO_INTAKE -> {
+        // If the tracked note goes away go to idle
+        if (maybeSearchPose.isEmpty()) {
+          yield NoteMapState.IDLE;
         }
-        yield NoteMapState.PATHFIND_TO_SCORE;
-      }
-      yield currentState;
-    }
-    case PID_INTAKE -> {
-      // If the note on map doesn't exist, give up (go to next step)
-      if (maybeSearchPose.isEmpty()) {
-        yield NoteMapState.IDLE;
-      }
 
-      // If we already have a note, go to score/drop
-      if(robotManager.getState().hasNote) {
-        if (currentStep.isPresent() && currentStep.get().action() == AutoNoteAction.DROP) {
-          yield NoteMapState.PATHFIND_TO_DROP;
+        // If the note is still there and we are close enough go to PID intake mode
+        if (maybeSearchPose.isPresent()
+            && maybeSearchPose
+                    .get()
+                    .noteTranslation()
+                    .getDistance(localization.getPose().getTranslation())
+                < INTAKE_PATHFIND_THRESHOLD_METERS) {
+          yield NoteMapState.PID_INTAKE;
         }
-        yield NoteMapState.PATHFIND_TO_SCORE;
-      }
-      yield currentState;
-    }
-    case PATHFIND_TO_DROP -> {
-      //If robot doesn't have a note, give up (go to next step)
-      if (!robotManager.getState().hasNote) {
-        yield NoteMapState.IDLE;
-      }
 
-      //if we finished pathfinding, drop note
-      if (localization.atTranslation(getDroppingDestination().getTranslation(), 0.2)) {
-        yield NoteMapState.DROP;
+        // If we already have note go and score/drop
+        if (robotManager.getState().hasNote) {
+          if (currentStep.isPresent() && currentStep.get().action() == AutoNoteAction.DROP) {
+            yield NoteMapState.PATHFIND_TO_DROP;
+          }
+          yield NoteMapState.PATHFIND_TO_SCORE;
+        }
+        yield currentState;
       }
-      yield currentState;
+      case PID_INTAKE -> {
+        // If the note on map doesn't exist, give up (go to next step)
+        if (maybeSearchPose.isEmpty()) {
+          yield NoteMapState.IDLE;
+        }
 
-    }
-    case PATHFIND_TO_SCORE -> {
-      //If robot doesn't have a note, give up (go to next step)
-      if (!robotManager.getState().hasNote) {
-        yield NoteMapState.IDLE;
+        // If we already have a note, go to score/drop
+        if (robotManager.getState().hasNote) {
+          if (currentStep.isPresent() && currentStep.get().action() == AutoNoteAction.DROP) {
+            yield NoteMapState.PATHFIND_TO_DROP;
+          }
+          yield NoteMapState.PATHFIND_TO_SCORE;
+        }
+        yield currentState;
       }
+      case PATHFIND_TO_DROP -> {
+        // If robot doesn't have a note, give up (go to next step)
+        if (!robotManager.getState().hasNote) {
+          yield NoteMapState.IDLE;
+        }
 
-      //If we're already at location to score, score the note
-      // TODO: maybe use the scoring destination that we used when we decided where to go, not right now
-      if (localization.atTranslation(getClosestScoringDestination().getTranslation(), 0.2)) {
-        yield NoteMapState.SCORE;
+        // if we finished pathfinding, drop note
+        if (localization.atTranslation(getDroppingDestination().getTranslation(), 0.2)) {
+          yield NoteMapState.DROP;
+        }
+        yield currentState;
       }
-      yield currentState;
+      case PATHFIND_TO_SCORE -> {
+        // If robot doesn't have a note, give up (go to next step)
+        if (!robotManager.getState().hasNote) {
+          yield NoteMapState.IDLE;
+        }
 
-    }
+        // If we're already at location to score, score the note
+        // TODO: maybe use the scoring destination that we used when we decided where to go, not
+        // right now
+        if (localization.atTranslation(getClosestScoringDestination().getTranslation(), 0.2)) {
+          yield NoteMapState.SCORE;
+        }
+        yield currentState;
+      }
       case DROP -> robotManager.getState().hasNote ? currentState : NoteMapState.IDLE;
-           case SCORE -> robotManager.getState().hasNote ? currentState : NoteMapState.IDLE;
-case CLEANUP -> currentState;
-case SEARCH_MIDLINE -> currentState;
-case SEARCH_SPEAKER -> currentState;
+      case SCORE -> {
+        if (currentStep.isPresent() && currentStep.get().action().equals(AutoNoteAction.CLEANUP)) {
+          if (robotManager.getState().hasNote) {
+            yield currentState;
+          }
+
+          yield NoteMapState.CLEANUP;
+        }
+        if (robotManager.getState().hasNote) {
+          yield currentState;
+        }
+
+        yield NoteMapState.IDLE;
+    }
+      case CLEANUP ->
+          localization.getPose().getTranslation().getDistance(getClosestSpeaker().getTranslation())
+                  < 4.0
+              ? NoteMapState.SEARCH_SPEAKER
+              : NoteMapState.SEARCH_MIDLINE;
+      case SEARCH_MIDLINE -> {
+        if (noteTrackingManager.mapContainsNote() && !robotManager.getState().hasNote) {
+          yield NoteMapState.PATHFIND_TO_INTAKE;
+        }
+        if (robotManager.getState().hasNote) {
+          yield NoteMapState.PATHFIND_TO_SCORE;
+        }
+        if (localization.atTranslation(getMidlineCleanupPath().get(1).getTranslation(), 0.2)) {
+          yield NoteMapState.IDLE;
+        }
+        yield currentState;
+      }
+      case SEARCH_SPEAKER -> {
+        if (noteTrackingManager.mapContainsNote() && !robotManager.getState().hasNote) {
+          yield NoteMapState.PATHFIND_TO_INTAKE;
+        }
+        if (robotManager.getState().hasNote) {
+          yield NoteMapState.PATHFIND_TO_SCORE;
+        }
+        if (localization.atTranslation(getMidlineCleanupPath().get(1).getTranslation(), 0.2)) {
+          yield NoteMapState.IDLE;
+        }
+        yield currentState;
+      }
     };
   }
 }
