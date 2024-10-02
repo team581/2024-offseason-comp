@@ -90,7 +90,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
       List.of(
           new Pose2d(6.66, 2.42, Rotation2d.fromDegrees(136.86)),
           new Pose2d(6.66, 5.69, Rotation2d.fromDegrees(-144.39)));
-
+  private static final double INTAKE_PATHFIND_THRESHOLD_METERS = 1.0;
   public AutoManager(
       RobotCommands actions,
       NoteTrackingManager noteTrackingManager,
@@ -382,12 +382,12 @@ public class AutoManager extends StateMachine<NoteMapState> {
       case IDLE -> currentState;
     case PATHFIND_TO_INTAKE -> {
       // If the tracked note goes away go to idle
-      if (no note) {
+      if (maybeSearchPose.isEmpty()) {
         yield NoteMapState.IDLE;
       }
 
       // If the note is still there and we are close enough go to PID intake mode
-      if (closeEnough) {
+      if (maybeSearchPose.isPresent() && maybeSearchPose.get().noteTranslation().getDistance(localization.getPose().getTranslation())<INTAKE_PATHFIND_THRESHOLD_METERS) {
         yield NoteMapState.PID_INTAKE;
       }
 
@@ -402,7 +402,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
     }
     case PID_INTAKE -> {
       // If the note on map doesn't exist, give up (go to next step)
-      if (no note) {
+      if (maybeSearchPose.isEmpty()) {
         yield NoteMapState.IDLE;
       }
 
@@ -442,7 +442,11 @@ public class AutoManager extends StateMachine<NoteMapState> {
       yield currentState;
 
     }
-    case DROP -> robotManager.getState().hasNote ?currentState:   NoteMapState.IDLE ;
+      case DROP -> robotManager.getState().hasNote ? currentState : NoteMapState.IDLE;
+           case SCORE -> robotManager.getState().hasNote ? currentState : NoteMapState.IDLE;
+case CLEANUP -> currentState;
+case SEARCH_MIDLINE -> currentState;
+case SEARCH_SPEAKER -> currentState;
     };
   }
 }
