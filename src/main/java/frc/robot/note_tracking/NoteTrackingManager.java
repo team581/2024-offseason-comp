@@ -365,8 +365,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
     var fieldRelativeBounds = getFieldRelativeBounds();
     DogLog.log("NoteTracking/CameraBounds", fieldRelativeBounds.toArray(Pose2d[]::new));
-
-
   }
 
   private List<Pose2d> getFieldRelativeBounds() {
