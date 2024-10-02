@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.fms.FmsSubsystem;
 import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.note_tracking.NoteMapElement;
@@ -23,9 +24,12 @@ import frc.robot.util.scheduling.SubsystemPriority;
 import frc.robot.util.state_machines.StateMachine;
 import frc.robot.vision.VisionSubsystem;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
+import java.util.Stack;
 import java.util.function.Supplier;
 
 public class AutoManager extends StateMachine<NoteMapState> {
@@ -35,6 +39,8 @@ public class AutoManager extends StateMachine<NoteMapState> {
   private final LocalizationSubsystem localization;
   private static final PathConstraints DEFAULT_CONSTRAINTS =
       new PathConstraints(5.0, 5.0, 2 * Math.PI, 4 * Math.PI);
+
+  private NoteMapState state = NoteMapState.IDLE;
 
   public static final List<Pose2d> RED_SPEAKER_CLEANUP_PATH =
       List.of(
@@ -309,18 +315,134 @@ public class AutoManager extends StateMachine<NoteMapState> {
 
   // state machine zone below
 
+  private Optional<NoteMapElement> maybeSearchPose = Optional.empty();
+  private Queue<AutoNoteStep> steps = new LinkedList<>();
+  private Optional<AutoNoteStep> currentStep = Optional.empty();
+
+  public void setSteps(LinkedList<AutoNoteStep> newSteps) {
+    steps = newSteps;
+    setStateFromRequest(NoteMapState.IDLE);
+  }
+
   @Override
   protected void collectInputs() {
     // TODO: Collect inputs if needed
+    maybeSearchPose = Optional.empty(); // do some processing idk
   }
+
+  private Command noteMapCommand = Commands.none();
 
   @Override
   protected void afterTransition(NoteMapState newState) {
     // TODO: Do state actions here
+
+    switch (state) {
+      case IDLE -> {
+        robotManager.stowRequest();
+        if (steps.isEmpty()) {
+          // Nothing new to do, keep idling
+        } else {
+          currentStep = Optional.of(steps.poll());
+        }
+      }
+      case DROP -> {
+        noteMapCommand.cancel();
+        robotManager.dropRequest();
+      }
+      case SCORE -> {
+        noteMapCommand.cancel();
+        robotManager.speakerShotRequest();
+      }
+      case PATHFIND_TO_INTAKE -> {
+        noteMapCommand.cancel();
+        noteMapCommand = AutoBuilder.pathfindToPose(new Pose2d(), DEFAULT_CONSTRAINTS);
+        noteMapCommand.schedule();
+      }
+      case PID_INTAKE -> {
+        noteMapCommand.cancel();
+        noteMapCommand = noteTrackingManager.intakeNoteAtPose(new Translation2d(), 99.99);
+        noteMapCommand.schedule();
+      }
+      case PATHFIND_TO_DROP -> {
+        noteMapCommand.cancel();
+        noteMapCommand = AutoBuilder.pathfindToPose(getDroppingDestination(), DEFAULT_CONSTRAINTS);
+      noteMapCommand.schedule();
+      }
+      case PATHFIND_TO_SCORE -> {
+        noteMapCommand.cancel();
+        noteMapCommand = AutoBuilder.pathfindToPose(getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
+      noteMapCommand.schedule();
+      }
+    }
   }
 
   @Override
   protected NoteMapState getNextState(NoteMapState currentState) {
-    return currentState;
+    return switch(currentState) {
+      case IDLE -> currentState;
+    case PATHFIND_TO_INTAKE -> {
+      // If the tracked note goes away go to idle
+      if (no note) {
+        yield NoteMapState.IDLE;
+      }
+
+      // If the note is still there and we are close enough go to PID intake mode
+      if (closeEnough) {
+        yield NoteMapState.PID_INTAKE;
+      }
+
+      // If we already have note go and score/drop
+      if(robotManager.getState().hasNote) {
+        if (currentStep.isPresent() && currentStep.get().action() == AutoNoteAction.DROP) {
+          yield NoteMapState.PATHFIND_TO_DROP;
+        }
+        yield NoteMapState.PATHFIND_TO_SCORE;
+      }
+      yield currentState;
+    }
+    case PID_INTAKE -> {
+      // If the note on map doesn't exist, give up (go to next step)
+      if (no note) {
+        yield NoteMapState.IDLE;
+      }
+
+      // If we already have a note, go to score/drop
+      if(robotManager.getState().hasNote) {
+        if (currentStep.isPresent() && currentStep.get().action() == AutoNoteAction.DROP) {
+          yield NoteMapState.PATHFIND_TO_DROP;
+        }
+        yield NoteMapState.PATHFIND_TO_SCORE;
+      }
+      yield currentState;
+    }
+    case PATHFIND_TO_DROP -> {
+      //If robot doesn't have a note, give up (go to next step)
+      if (!robotManager.getState().hasNote) {
+        yield NoteMapState.IDLE;
+      }
+
+      //if we finished pathfinding, drop note
+      if (localization.atTranslation(getDroppingDestination().getTranslation(), 0.2)) {
+        yield NoteMapState.DROP;
+      }
+      yield currentState;
+
+    }
+    case PATHFIND_TO_SCORE -> {
+      //If robot doesn't have a note, give up (go to next step)
+      if (!robotManager.getState().hasNote) {
+        yield NoteMapState.IDLE;
+      }
+
+      //If we're already at location to score, score the note
+      // TODO: maybe use the scoring destination that we used when we decided where to go, not right now
+      if (localization.atTranslation(getClosestScoringDestination().getTranslation(), 0.2)) {
+        yield NoteMapState.SCORE;
+      }
+      yield currentState;
+
+    }
+    case DROP -> robotManager.getState().hasNote ?currentState:   NoteMapState.IDLE ;
+    };
   }
 }
