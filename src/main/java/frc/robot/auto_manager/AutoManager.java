@@ -326,15 +326,14 @@ public class AutoManager extends StateMachine<NoteMapState> {
 
   @Override
   protected void collectInputs() {
-    // TODO: Collect inputs if needed
-    maybeSearchPose = Optional.empty(); // do some processing idk
+    // TODO: make this actually get a search pose from the step, so we can later give it to the commands which use it to find an actual note
+    maybeSearchPose = Optional.empty();
   }
 
   private Command noteMapCommand = Commands.none();
 
   @Override
   protected void afterTransition(NoteMapState newState) {
-    // TODO: Do state actions here
 
     switch (state) {
       case IDLE -> {
