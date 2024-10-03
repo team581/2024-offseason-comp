@@ -6,29 +6,22 @@ package frc.robot.auto_manager;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
-import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.fms.FmsSubsystem;
 import frc.robot.localization.LocalizationSubsystem;
-import frc.robot.note_tracking.NoteMapElement;
 import frc.robot.note_tracking.NoteTrackingManager;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
 import frc.robot.util.scheduling.SubsystemPriority;
 import frc.robot.util.state_machines.StateMachine;
 import frc.robot.vision.VisionSubsystem;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
-import java.util.Set;
-import java.util.function.Supplier;
 
 public class AutoManager extends StateMachine<NoteMapState> {
   private final RobotCommands actions;
@@ -38,69 +31,8 @@ public class AutoManager extends StateMachine<NoteMapState> {
   private static final PathConstraints DEFAULT_CONSTRAINTS =
       new PathConstraints(5.0, 5.0, 2 * Math.PI, 4 * Math.PI);
   private static final double TARGET_NOTE_THRESHOLD_METERS = 2.0;
-  private NoteMapState state = NoteMapState.IDLE;
-
-  public static final List<Pose2d> RED_SPEAKER_CLEANUP_PATH =
-      List.of(
-          new Pose2d(12.67, 6.98, Rotation2d.fromDegrees(140.75)),
-          new Pose2d(14.13, 6.10, Rotation2d.fromDegrees(-159.24)),
-          new Pose2d(14.48, 4.09, Rotation2d.fromDegrees(174.67)));
-  public static final List<Pose2d> BLUE_SPEAKER_CLEANUP_PATH =
-      List.of(
-          new Pose2d(3.62, 6.7, Rotation2d.fromDegrees(47.03)),
-          new Pose2d(2.57, 6.34, Rotation2d.fromDegrees(-7.35)),
-          new Pose2d(2.34, 4.49, Rotation2d.fromDegrees(16.93)));
-  public static final Pose2d MIDLINE_CLEANUP_POSE = new Pose2d(8.271, 4.106, new Rotation2d(0));
-  public static final List<Pose2d> RED_SCORING_DESTINATIONS =
-      List.of(
-          new Pose2d(11.82, 6.49, Rotation2d.fromDegrees(-11.04)),
-          new Pose2d(13.36, 1.51, Rotation2d.fromDegrees(53.25)));
-
-  public static final List<Pose2d> BLUE_SCORING_DESTINATIONS =
-      List.of(
-          new Pose2d(4.32, 6.41, Rotation2d.fromDegrees(-169.48)),
-          new Pose2d(4.29, 5.02, Rotation2d.fromDegrees(172.97)),
-          new Pose2d(3.17, 3.21, Rotation2d.fromDegrees(142.74)));
-
-  public static final List<Pose2d> RED_DROPPING_DESTINATIONS =
-      List.of(
-          new Pose2d(11.39, 7.5, Rotation2d.fromDegrees(0.0)),
-          new Pose2d(11.91, 4.59, Rotation2d.fromDegrees(0.0)),
-          new Pose2d(11.38, 1.94, Rotation2d.fromDegrees(19.08)));
-
-  public static final List<Pose2d> BLUE_DROPPING_DESTINATIONS =
-      List.of(
-          new Pose2d(5.21, 7.5, Rotation2d.fromDegrees(180)),
-          new Pose2d(4.8, 4.65, Rotation2d.fromDegrees(180)),
-          new Pose2d(5.25, 1.92, Rotation2d.fromDegrees(144.57)));
-
-  public static final Pose2d RED_DROPPING_DESTINATION =
-      new Pose2d(11.25, 7.26, Rotation2d.fromDegrees(16.18));
-  public static final Pose2d BLUE_DROPPING_DESTINATION =
-      new Pose2d(5.33, 7.26, Rotation2d.fromDegrees(167.95));
-
-  private static final BoundingBox RED_SCORING_BOX =
-      new BoundingBox(
-          new Translation2d(11.12, 7.85),
-          new Translation2d(15.4, 7.61),
-          new Translation2d(11.75, 4.96),
-          new Translation2d(15.78, 3.19));
-  private static final BoundingBox BLUE_SCORING_BOX =
-      new BoundingBox(
-          new Translation2d(1.1, 7.57),
-          new Translation2d(5.08, 7.72),
-          new Translation2d(1.11, 3.49),
-          new Translation2d(4.97, 4.67));
-
-  private static final List<Pose2d> RED_MIDLINE_CLEANUP_PATH =
-      List.of(
-          new Pose2d(9.83, 2.42, Rotation2d.fromDegrees(43.18)),
-          new Pose2d(9.83, 5.69, Rotation2d.fromDegrees(-41.89)));
-  private static final List<Pose2d> BLUE_MIDLINE_CLEANUP_PATH =
-      List.of(
-          new Pose2d(6.66, 2.42, Rotation2d.fromDegrees(136.86)),
-          new Pose2d(6.66, 5.69, Rotation2d.fromDegrees(-144.39)));
   private static final double INTAKE_PATHFIND_THRESHOLD_METERS = 1.0;
+  private NoteMapState state = NoteMapState.IDLE;
 
   public AutoManager(
       RobotCommands actions,
@@ -116,41 +48,41 @@ public class AutoManager extends StateMachine<NoteMapState> {
 
   private static BoundingBox getScoringBox() {
     if (FmsSubsystem.isRedAlliance()) {
-      return RED_SCORING_BOX;
+      return NoteMapLocations.RED_SCORING_BOX;
     } else {
-      return BLUE_SCORING_BOX;
+      return NoteMapLocations.BLUE_SCORING_BOX;
     }
   }
 
   private static List<Pose2d> getScoringDestinations() {
     if (FmsSubsystem.isRedAlliance()) {
-      return RED_SCORING_DESTINATIONS;
+      return NoteMapLocations.RED_SCORING_DESTINATIONS;
     } else {
-      return BLUE_SCORING_DESTINATIONS;
+      return NoteMapLocations.BLUE_SCORING_DESTINATIONS;
     }
   }
 
   private static List<Pose2d> getDroppingDestinations() {
     if (FmsSubsystem.isRedAlliance()) {
-      return RED_DROPPING_DESTINATIONS;
+      return NoteMapLocations.RED_DROPPING_DESTINATIONS;
     } else {
-      return BLUE_DROPPING_DESTINATIONS;
+      return NoteMapLocations.BLUE_DROPPING_DESTINATIONS;
     }
   }
 
   private static List<Pose2d> getSpeakerCleanupPath() {
     if (FmsSubsystem.isRedAlliance()) {
-      return RED_SPEAKER_CLEANUP_PATH;
+      return NoteMapLocations.RED_SPEAKER_CLEANUP_PATH;
     } else {
-      return BLUE_SPEAKER_CLEANUP_PATH;
+      return NoteMapLocations.BLUE_SPEAKER_CLEANUP_PATH;
     }
   }
 
   private static List<Pose2d> getMidlineCleanupPath() {
     if (FmsSubsystem.isRedAlliance()) {
-      return RED_MIDLINE_CLEANUP_PATH;
+      return NoteMapLocations.RED_MIDLINE_CLEANUP_PATH;
     } else {
-      return BLUE_MIDLINE_CLEANUP_PATH;
+      return NoteMapLocations.BLUE_MIDLINE_CLEANUP_PATH;
     }
   }
 
@@ -195,156 +127,6 @@ public class AutoManager extends StateMachine<NoteMapState> {
 
     return closest;
   }
-
-  private boolean robotInBox() {
-    return getScoringBox().contains(localization.getPose().getTranslation());
-  }
-
-  private Command intakeNoteAtPose(Supplier<Optional<Translation2d>> searchPoseSupplier) {
-    return noteTrackingManager.intakeNoteAtPose(searchPoseSupplier, 2.5);
-  }
-
-  private Command intakeAnyStepNotes(AutoNoteStep step) {
-    // For each note in the step, try intaking until we get a note
-    return Commands.sequence(
-            step.notes().stream().map(this::intakeNoteAtPose).toArray(Command[]::new))
-        .until(() -> robotManager.getState().hasNote);
-  }
-
-  /**
-   * Depending on the robot's current position, follow a path towards areas where there are probably
-   * stray notes. If we see a note, end the command so we can start running cleanup. Otherwise, it
-   * will just complete the path and sit there.
-   */
-  private Command searchForNoteForCleanupCommand() {
-    // TODO: This possibly needs us to specifcy requirements or else something bad might happen
-    return Commands.defer(
-        () -> {
-          Translation2d robot = localization.getPose().getTranslation();
-
-          var path =
-              robot.getDistance(getClosestSpeaker().getTranslation()) < 4.0
-                  ? getSpeakerCleanupPath()
-                  : getMidlineCleanupPath();
-
-          return Commands.sequence(
-                  path.stream()
-                      .map(pose -> AutoBuilder.pathfindToPose(pose, DEFAULT_CONSTRAINTS))
-                      .toArray(Command[]::new))
-              .until(() -> noteTrackingManager.getNoteNearPose(robot, 5.0).isPresent());
-        },
-        Set.of());
-  }
-
-  private Command cleanupAllMapNotes() {
-    return noteTrackingManager
-        .intakeNearestMapNote(15.0)
-        .andThen(pathfindToScoreCommand())
-        .repeatedly()
-        .until(() -> !robotManager.getState().hasNote && !noteTrackingManager.mapContainsNote());
-  }
-
-  private Command cleanupCommand() {
-
-    return cleanupAllMapNotes()
-        .andThen(searchForNoteForCleanupCommand())
-        .andThen(cleanupAllMapNotes());
-  }
-
-  public Command dropNote() {
-
-    return actions
-        .dropCommand()
-        .andThen(
-            Commands.runOnce(
-                () -> {
-                  var translationRobotRelative =
-                      new Translation2d(1, 0).rotateBy(localization.getPose().getRotation());
-                  var translationFieldRelative =
-                      localization.getPose().getTranslation().plus(translationRobotRelative);
-                  DogLog.log(
-                      "Debug/droppednotepose",
-                      new Pose2d(translationFieldRelative, new Rotation2d()));
-                  noteTrackingManager.addNoteToMap(translationFieldRelative);
-                  AutoNoteDropped.addDroppedNote(translationFieldRelative);
-                }));
-  }
-
-  private Command pathfindToDropCommand() {
-    return Commands.sequence(
-            // Pathfind to outtake
-            Commands.defer(
-                () ->
-                    AutoBuilder.pathfindToPose(
-                        getClosestDroppingDestination(), DEFAULT_CONSTRAINTS),
-                Set.of(robotManager.swerve)),
-            // Drop the note
-            dropNote())
-        .onlyIf(() -> robotManager.getState().hasNote)
-        .withTimeout(2.5);
-  }
-
-  private Command pathfindToScoreCommand() {
-
-    return Commands.defer(
-            () -> AutoBuilder.pathfindToPose(getClosestScoringDestination(), DEFAULT_CONSTRAINTS),
-            Set.of(robotManager.swerve))
-        .withTimeout(3)
-        .andThen(actions.speakerShotCommand().until(() -> !robotManager.getState().hasNote))
-        .onlyIf(
-            () -> {
-              boolean shouldScore = robotManager.getState().hasNote;
-              DogLog.log("AutoManager/ShouldScore", shouldScore);
-              return shouldScore;
-            });
-  }
-
-  public Command doAutoStep(AutoNoteStep step) {
-    return switch (step.action()) {
-      case CLEANUP -> cleanupCommand();
-      case DROP ->
-          intakeAnyStepNotes(step)
-              // Then, once we have a note, do the drop
-              .andThen(pathfindToDropCommand())
-              .withTimeout(6);
-      case SCORE ->
-          intakeAnyStepNotes(step)
-              // Then, once we have a note, do the score
-              .andThen(pathfindToScoreCommand())
-              .withTimeout(6);
-    };
-  }
-
-  public Command doManyAutoSteps(List<AutoNoteStep> steps) {
-    return Commands.sequence(steps.stream().map(this::doAutoStep).toArray(Command[]::new));
-  }
-
-  public Command testCommand1() {
-    return Commands.sequence(
-        Commands.runOnce(
-            () -> {
-              var now = Timer.getFPGATimestamp();
-              noteTrackingManager.resetNoteMap(
-                  new ArrayList<>(
-                      List.of(
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(2)),
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(3)),
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4)),
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(6)),
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(1)),
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(7)),
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(8)),
-                          new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(5)))));
-            }),
-        doManyAutoSteps(List.of(AutoNoteStep.score(4, 5), AutoNoteStep.score(5))));
-  }
-
-  public Command testCommand() {
-
-    return Commands.sequence(doManyAutoSteps(List.of(AutoNoteStep.cleanup())));
-  }
-
-  // state machine zone below
 
   private Optional<Pose2d> maybeNotePose = Optional.empty();
 
