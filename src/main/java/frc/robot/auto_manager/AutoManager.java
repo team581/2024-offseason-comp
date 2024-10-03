@@ -10,6 +10,7 @@ import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -21,6 +22,7 @@ import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
 import frc.robot.util.scheduling.SubsystemPriority;
 import frc.robot.util.state_machines.StateMachine;
+import frc.robot.vision.DistanceAngle;
 import frc.robot.vision.VisionSubsystem;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -346,11 +348,16 @@ public class AutoManager extends StateMachine<NoteMapState> {
 
   // state machine zone below
 
-  private Optional<NoteMapElement> maybeSearchPose = Optional.empty();
+  private Translation2d searchLocation = new Translation2d();
+  private Optional<NoteMapElement> noteNearPose = Optional.empty();
+
   private Queue<AutoNoteStep> steps = new LinkedList<>();
   private Optional<AutoNoteStep> currentStep = Optional.empty();
+
   private Pose2d closestScoringLocation = new Pose2d();
   private Pose2d droppingDestination = new Pose2d();
+
+  private Command noteMapCommand = Commands.none();
 
   public void setSteps(LinkedList<AutoNoteStep> newSteps) {
     steps = newSteps;
@@ -358,13 +365,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
   }
 
   @Override
-  protected void collectInputs() {
-    // TODO: make this actually get a search pose from the step, so we can later give it to the
-    // commands which use it to find an actual note
-    maybeSearchPose = Optional.empty();
-  }
-
-  private Command noteMapCommand = Commands.none();
+  protected void collectInputs() {}
 
   @Override
   protected void afterTransition(NoteMapState newState) {
@@ -388,13 +389,35 @@ public class AutoManager extends StateMachine<NoteMapState> {
       }
       case PATHFIND_TO_INTAKE -> {
         noteMapCommand.cancel();
-        noteMapCommand = AutoBuilder.pathfindToPose(new Pose2d(), DEFAULT_CONSTRAINTS);
-        noteMapCommand.schedule();
+
+        if (currentStep.isPresent() && currentStep.get().notes().get(0).get().isPresent()) {
+          searchLocation = currentStep.get().notes().get(0).get().get();
+          noteNearPose = noteTrackingManager.getNoteNearPose(searchLocation, 1.5);
+          if (noteNearPose.isPresent()) {
+
+            DistanceAngle noteDistanceAngle =
+                VisionSubsystem.distanceAngleToTarget(
+                    new Pose2d(noteNearPose.get().noteTranslation(), new Rotation2d()),
+                    localization.getPose());
+            Rotation2d rotation =
+                new Rotation2d(Units.degreesToRadians(noteDistanceAngle.targetAngle()) + Math.PI);
+            var notePose = new Pose2d(noteNearPose.get().noteTranslation(), rotation);
+
+            noteMapCommand = AutoBuilder.pathfindToPose(notePose, DEFAULT_CONSTRAINTS);
+            noteMapCommand.schedule();
+          }
+        }
       }
       case PID_INTAKE -> {
         noteMapCommand.cancel();
-        noteMapCommand = noteTrackingManager.intakeNoteAtPose(new Translation2d(), 99.99);
-        noteMapCommand.schedule();
+
+        if (currentStep.isPresent() && currentStep.get().notes().get(0).get().isPresent()) {
+          searchLocation = currentStep.get().notes().get(0).get().get();
+          noteNearPose = noteTrackingManager.getNoteNearPose(searchLocation, 1.5);
+          noteMapCommand = noteTrackingManager.intakeNoteAtPose(searchLocation, 1.5);
+            noteMapCommand.schedule();
+
+        }
       }
       case PATHFIND_TO_DROP -> {
         noteMapCommand.cancel();
@@ -403,8 +426,8 @@ public class AutoManager extends StateMachine<NoteMapState> {
         noteMapCommand.schedule();
       }
       case PATHFIND_TO_SCORE -> {
-        closestScoringLocation = getClosestScoringDestination();
         noteMapCommand.cancel();
+        closestScoringLocation = getClosestScoringDestination();
         noteMapCommand = AutoBuilder.pathfindToPose(closestScoringLocation, DEFAULT_CONSTRAINTS);
         noteMapCommand.schedule();
       }
@@ -416,14 +439,24 @@ public class AutoManager extends StateMachine<NoteMapState> {
     return switch (currentState) {
       case IDLE -> currentState;
       case PATHFIND_TO_INTAKE -> {
-        // If the tracked note goes away go to idle
-        if (maybeSearchPose.isEmpty()) {
+        // If current step is empty
+        if (currentStep.isEmpty()) {
+          yield NoteMapState.IDLE;
+        }
+
+        // If we don't have a search location
+        if (currentStep.get().notes().get(0).get().isEmpty()) {
+          yield NoteMapState.IDLE;
+        }
+
+        // If note doesn't exist on map
+        if (noteNearPose.isEmpty()) {
           yield NoteMapState.IDLE;
         }
 
         // If the note is still there and we are close enough go to PID intake mode
-        if (maybeSearchPose.isPresent()
-            && maybeSearchPose
+        if (noteNearPose.isPresent()
+            && noteNearPose
                     .get()
                     .noteTranslation()
                     .getDistance(localization.getPose().getTranslation())
@@ -441,12 +474,32 @@ public class AutoManager extends StateMachine<NoteMapState> {
         yield currentState;
       }
       case PID_INTAKE -> {
-        // If the note on map doesn't exist, give up (go to next step)
-        if (maybeSearchPose.isEmpty()) {
+        // If current step is empty
+        if (currentStep.isEmpty()) {
           yield NoteMapState.IDLE;
         }
 
-        // If we already have a note, go to score/drop
+        // If we don't have a search location
+        if (currentStep.get().notes().get(0).get().isEmpty()) {
+          yield NoteMapState.IDLE;
+        }
+
+        // If note doesn't exist on map
+        if (noteNearPose.isEmpty()) {
+          yield NoteMapState.IDLE;
+        }
+
+        // If the note is still there and we are close enough go to PID intake mode
+        if (noteNearPose.isPresent()
+            && noteNearPose
+                    .get()
+                    .noteTranslation()
+                    .getDistance(localization.getPose().getTranslation())
+                < INTAKE_PATHFIND_THRESHOLD_METERS) {
+          yield NoteMapState.PID_INTAKE;
+        }
+
+        // If we already have note go and score/drop
         if (robotManager.getState().hasNote) {
           if (currentStep.isPresent() && currentStep.get().action() == AutoNoteAction.DROP) {
             yield NoteMapState.PATHFIND_TO_DROP;
