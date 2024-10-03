@@ -6,8 +6,8 @@ package frc.robot.auto_manager;
 
 public enum NoteMapState {
   IDLE,
-  PATHFIND_TO_INTAKE,
-  PID_INTAKE,
+  INTAKING_PATHFINDING,
+  INTAKING_PID,
   PATHFIND_TO_DROP,
   PATHFIND_TO_SCORE,
   DROP,

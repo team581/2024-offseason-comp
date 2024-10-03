@@ -37,7 +37,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
   private final LocalizationSubsystem localization;
   private static final PathConstraints DEFAULT_CONSTRAINTS =
       new PathConstraints(5.0, 5.0, 2 * Math.PI, 4 * Math.PI);
-
+  private static final double TARGET_NOTE_THRESHOLD_METERS = 2.0;
   private NoteMapState state = NoteMapState.IDLE;
 
   public static final List<Pose2d> RED_SPEAKER_CLEANUP_PATH =
@@ -346,7 +346,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
 
   // state machine zone below
 
-  private Optional<Translation2d> maybeSearchLocation = Optional.empty();
+  private Optional<Pose2d> maybeNotePose = Optional.empty();
 
   private Queue<AutoNoteStep> steps = new LinkedList<>();
   private Optional<AutoNoteStep> currentStep = Optional.empty();
@@ -362,7 +362,33 @@ public class AutoManager extends StateMachine<NoteMapState> {
   }
 
   @Override
-  protected void collectInputs() {}
+  protected void collectInputs() {
+
+    for (var maybeSearchPoseSupplier : currentStep.get().notes()) {
+      var maybeSearchPose = maybeSearchPoseSupplier.get();
+      if (maybeSearchPose.isEmpty()) {
+        continue;
+      }
+
+      var rawSearchLocation = maybeSearchPose.get();
+      var maybeCurrentTargetedNote =
+          noteTrackingManager.getNoteNearPose(rawSearchLocation, TARGET_NOTE_THRESHOLD_METERS);
+
+      if (maybeCurrentTargetedNote.isPresent()) {
+        var noteDistanceAngle =
+            VisionSubsystem.distanceAngleToTarget(
+                new Pose2d(maybeCurrentTargetedNote.get().noteTranslation(), new Rotation2d()),
+                localization.getPose());
+
+        maybeNotePose =
+            Optional.of(
+                new Pose2d(
+                    maybeCurrentTargetedNote.get().noteTranslation(),
+                    Rotation2d.fromDegrees(noteDistanceAngle.targetAngle() + 180)));
+        break;
+      }
+    }
+  }
 
   @Override
   protected void afterTransition(NoteMapState newState) {
@@ -383,52 +409,29 @@ public class AutoManager extends StateMachine<NoteMapState> {
         noteMapCommand.cancel();
         robotManager.speakerShotRequest();
       }
-      case PATHFIND_TO_INTAKE -> {
+      case INTAKING_PATHFINDING -> {
         noteMapCommand.cancel();
 
         if (currentStep.isEmpty()) {
           break;
         }
 
-        for (var maybeSearchPoseSupplier : currentStep.get().notes()) {
-          var maybeSearchPose = maybeSearchPoseSupplier.get();
-          if (maybeSearchPose.isEmpty()) {
-            // There was no search pose for this reqest in the step
-            continue;
-          }
-
-          var rawSearchLocation = maybeSearchPose.get();
-          maybeSearchLocation = Optional.of(rawSearchLocation);
-          var maybeCurrentTargetedNote =
-              noteTrackingManager.getNoteNearPose(rawSearchLocation, 1.5);
-
-          if (maybeCurrentTargetedNote.isPresent()) {
-            // We were able to match a tracked note with the request from the step
-
-            var noteDistanceAngle =
-                VisionSubsystem.distanceAngleToTarget(
-                    new Pose2d(maybeCurrentTargetedNote.get().noteTranslation(), new Rotation2d()),
-                    localization.getPose());
-
-            var wantedRobotPose =
-                new Pose2d(
-                    maybeCurrentTargetedNote.get().noteTranslation(),
-                    Rotation2d.fromDegrees(noteDistanceAngle.targetAngle() + 180));
-
-            noteMapCommand = AutoBuilder.pathfindToPose(wantedRobotPose, DEFAULT_CONSTRAINTS);
-            noteMapCommand.schedule();
-
-            // We only need to do this once per step
-            break;
-          }
+        if (maybeNotePose.isPresent()) {
+          noteMapCommand = AutoBuilder.pathfindToPose(maybeNotePose.get(), DEFAULT_CONSTRAINTS);
+          noteMapCommand.schedule();
         }
       }
-      case PID_INTAKE -> {
+      case INTAKING_PID -> {
         noteMapCommand.cancel();
 
-        // At this point, we have ensured that the stored search location is current
-        if (maybeSearchLocation.isPresent()) {
-          noteMapCommand = noteTrackingManager.intakeNoteAtPose(maybeSearchLocation.get(), 1.5);
+        if (currentStep.isEmpty()) {
+          break;
+        }
+
+        if (maybeNotePose.isPresent()) {
+          noteMapCommand =
+              noteTrackingManager.intakeNoteAtPose(
+                  maybeNotePose.get().getTranslation(), TARGET_NOTE_THRESHOLD_METERS);
           noteMapCommand.schedule();
         }
       }
@@ -451,7 +454,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
   protected NoteMapState getNextState(NoteMapState currentState) {
     return switch (currentState) {
       case IDLE -> currentState;
-      case PATHFIND_TO_INTAKE -> {
+      case INTAKING_PATHFINDING -> {
         // If current step is empty
         if (currentStep.isEmpty()) {
           yield NoteMapState.IDLE;
@@ -464,20 +467,8 @@ public class AutoManager extends StateMachine<NoteMapState> {
         }
 
         // If note doesn't exist on map
-        // TODO: Should query note map to see if there is a tracked note at the search location
-        if (maybeCurrentTargetedNote.isEmpty()) {
+        if (maybeNotePose.isEmpty()) {
           yield NoteMapState.IDLE;
-        }
-
-        // If the note is still there and we are close enough go to PID intake mode
-        // TODO: Should reuse the note map query from the previous if statement
-        if (maybeCurrentTargetedNote.isPresent()
-            && maybeCurrentTargetedNote
-                    .get()
-                    .noteTranslation()
-                    .getDistance(localization.getPose().getTranslation())
-                < INTAKE_PATHFIND_THRESHOLD_METERS) {
-          yield NoteMapState.PID_INTAKE;
         }
 
         // If we already have note go and score/drop
@@ -487,10 +478,21 @@ public class AutoManager extends StateMachine<NoteMapState> {
           }
           yield NoteMapState.PATHFIND_TO_SCORE;
         }
+
+        // If the note is still there and we are close enough go to PID intake mode
+        if (maybeNotePose.isPresent()
+            && maybeNotePose
+                    .get()
+                    .getTranslation()
+                    .getDistance(localization.getPose().getTranslation())
+                < INTAKE_PATHFIND_THRESHOLD_METERS) {
+          yield NoteMapState.INTAKING_PID;
+        }
+
         yield currentState;
       }
         // TODO: Should follow same refactors as PATHFIND_TO_INTAKE
-      case PID_INTAKE -> {
+      case INTAKING_PID -> {
         // If current step is empty
         if (currentStep.isEmpty()) {
           yield NoteMapState.IDLE;
@@ -502,18 +504,8 @@ public class AutoManager extends StateMachine<NoteMapState> {
         }
 
         // If note doesn't exist on map
-        if (maybeCurrentTargetedNote.isEmpty()) {
+        if (maybeNotePose.isEmpty()) {
           yield NoteMapState.IDLE;
-        }
-
-        // If the note is still there and we are close enough go to PID intake mode
-        if (maybeCurrentTargetedNote.isPresent()
-            && maybeCurrentTargetedNote
-                    .get()
-                    .noteTranslation()
-                    .getDistance(localization.getPose().getTranslation())
-                < INTAKE_PATHFIND_THRESHOLD_METERS) {
-          yield NoteMapState.PID_INTAKE;
         }
 
         // If we already have note go and score/drop
@@ -573,7 +565,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
               : NoteMapState.SEARCH_MIDLINE;
       case SEARCH_MIDLINE -> {
         if (noteTrackingManager.mapContainsNote() && !robotManager.getState().hasNote) {
-          yield NoteMapState.PATHFIND_TO_INTAKE;
+          yield NoteMapState.INTAKING_PATHFINDING;
         }
         if (robotManager.getState().hasNote) {
           yield NoteMapState.PATHFIND_TO_SCORE;
@@ -585,7 +577,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
       }
       case SEARCH_SPEAKER -> {
         if (noteTrackingManager.mapContainsNote() && !robotManager.getState().hasNote) {
-          yield NoteMapState.PATHFIND_TO_INTAKE;
+          yield NoteMapState.INTAKING_PATHFINDING;
         }
         if (robotManager.getState().hasNote) {
           yield NoteMapState.PATHFIND_TO_SCORE;
