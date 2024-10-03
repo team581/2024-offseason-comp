@@ -317,6 +317,8 @@ public class AutoManager extends StateMachine<NoteMapState> {
   private Optional<NoteMapElement> maybeSearchPose = Optional.empty();
   private Queue<AutoNoteStep> steps = new LinkedList<>();
   private Optional<AutoNoteStep> currentStep = Optional.empty();
+  private Pose2d closestScoringLocation = new Pose2d();
+  private Pose2d droppingDestination = getDroppingDestination();
 
   public void setSteps(LinkedList<AutoNoteStep> newSteps) {
     steps = newSteps;
@@ -364,13 +366,13 @@ public class AutoManager extends StateMachine<NoteMapState> {
       }
       case PATHFIND_TO_DROP -> {
         noteMapCommand.cancel();
-        noteMapCommand = AutoBuilder.pathfindToPose(getDroppingDestination(), DEFAULT_CONSTRAINTS);
+        noteMapCommand = AutoBuilder.pathfindToPose(droppingDestination, DEFAULT_CONSTRAINTS);
         noteMapCommand.schedule();
       }
       case PATHFIND_TO_SCORE -> {
+        closestScoringLocation = getClosestScoringDestination();
         noteMapCommand.cancel();
-        noteMapCommand =
-            AutoBuilder.pathfindToPose(getClosestScoringDestination(), DEFAULT_CONSTRAINTS);
+        noteMapCommand = AutoBuilder.pathfindToPose(closestScoringLocation, DEFAULT_CONSTRAINTS);
         noteMapCommand.schedule();
       }
     }
@@ -427,7 +429,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
         }
 
         // if we finished pathfinding, drop note
-        if (localization.atTranslation(getDroppingDestination().getTranslation(), 0.2)) {
+        if (localization.atTranslation(droppingDestination.getTranslation(), 0.2)) {
           yield NoteMapState.DROP;
         }
         yield currentState;
@@ -441,7 +443,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
         // If we're already at location to score, score the note
         // TODO: maybe use the scoring destination that we used when we decided where to go, not
         // right now
-        if (localization.atTranslation(getClosestScoringDestination().getTranslation(), 0.2)) {
+        if (localization.atTranslation(closestScoringLocation.getTranslation(), 0.2)) {
           yield NoteMapState.SCORE;
         }
         yield currentState;
