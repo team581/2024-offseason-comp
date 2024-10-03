@@ -10,7 +10,6 @@ import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -22,7 +21,6 @@ import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
 import frc.robot.util.scheduling.SubsystemPriority;
 import frc.robot.util.state_machines.StateMachine;
-import frc.robot.vision.DistanceAngle;
 import frc.robot.vision.VisionSubsystem;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -348,8 +346,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
 
   // state machine zone below
 
-  private Translation2d searchLocation = new Translation2d();
-  private Optional<NoteMapElement> noteNearPose = Optional.empty();
+  private Optional<Translation2d> maybeSearchLocation = Optional.empty();
 
   private Queue<AutoNoteStep> steps = new LinkedList<>();
   private Optional<AutoNoteStep> currentStep = Optional.empty();
@@ -369,7 +366,6 @@ public class AutoManager extends StateMachine<NoteMapState> {
 
   @Override
   protected void afterTransition(NoteMapState newState) {
-
     switch (state) {
       case IDLE -> {
         robotManager.stowRequest();
@@ -390,31 +386,49 @@ public class AutoManager extends StateMachine<NoteMapState> {
       case PATHFIND_TO_INTAKE -> {
         noteMapCommand.cancel();
 
-        if (currentStep.isPresent() && currentStep.get().notes().get(0).get().isPresent()) {
-          searchLocation = currentStep.get().notes().get(0).get().get();
-          noteNearPose = noteTrackingManager.getNoteNearPose(searchLocation, 1.5);
-          if (noteNearPose.isPresent()) {
+        if (currentStep.isEmpty()) {
+          break;
+        }
 
-            DistanceAngle noteDistanceAngle =
+        for (var maybeSearchPoseSupplier : currentStep.get().notes()) {
+          var maybeSearchPose = maybeSearchPoseSupplier.get();
+          if (maybeSearchPose.isEmpty()) {
+            // There was no search pose for this reqest in the step
+            continue;
+          }
+
+          var rawSearchLocation = maybeSearchPose.get();
+          maybeSearchLocation = Optional.of(rawSearchLocation);
+          var maybeCurrentTargetedNote =
+              noteTrackingManager.getNoteNearPose(rawSearchLocation, 1.5);
+
+          if (maybeCurrentTargetedNote.isPresent()) {
+            // We were able to match a tracked note with the request from the step
+
+            var noteDistanceAngle =
                 VisionSubsystem.distanceAngleToTarget(
-                    new Pose2d(noteNearPose.get().noteTranslation(), new Rotation2d()),
+                    new Pose2d(maybeCurrentTargetedNote.get().noteTranslation(), new Rotation2d()),
                     localization.getPose());
-            Rotation2d rotation =
-                new Rotation2d(Units.degreesToRadians(noteDistanceAngle.targetAngle()) + Math.PI);
-            var notePose = new Pose2d(noteNearPose.get().noteTranslation(), rotation);
 
-            noteMapCommand = AutoBuilder.pathfindToPose(notePose, DEFAULT_CONSTRAINTS);
+            var wantedRobotPose =
+                new Pose2d(
+                    maybeCurrentTargetedNote.get().noteTranslation(),
+                    Rotation2d.fromDegrees(noteDistanceAngle.targetAngle() + 180));
+
+            noteMapCommand = AutoBuilder.pathfindToPose(wantedRobotPose, DEFAULT_CONSTRAINTS);
             noteMapCommand.schedule();
+
+            // We only need to do this once per step
+            break;
           }
         }
       }
       case PID_INTAKE -> {
         noteMapCommand.cancel();
 
-        if (currentStep.isPresent() && currentStep.get().notes().get(0).get().isPresent()) {
-          searchLocation = currentStep.get().notes().get(0).get().get();
-          noteNearPose = noteTrackingManager.getNoteNearPose(searchLocation, 1.5);
-          noteMapCommand = noteTrackingManager.intakeNoteAtPose(searchLocation, 1.5);
+        // At this point, we have ensured that the stored search location is current
+        if (maybeSearchLocation.isPresent()) {
+          noteMapCommand = noteTrackingManager.intakeNoteAtPose(maybeSearchLocation.get(), 1.5);
           noteMapCommand.schedule();
         }
       }
@@ -444,18 +458,21 @@ public class AutoManager extends StateMachine<NoteMapState> {
         }
 
         // If we don't have a search location
+        // TODO: Should use stored search location
         if (currentStep.get().notes().get(0).get().isEmpty()) {
           yield NoteMapState.IDLE;
         }
 
         // If note doesn't exist on map
-        if (noteNearPose.isEmpty()) {
+        // TODO: Should query note map to see if there is a tracked note at the search location
+        if (maybeCurrentTargetedNote.isEmpty()) {
           yield NoteMapState.IDLE;
         }
 
         // If the note is still there and we are close enough go to PID intake mode
-        if (noteNearPose.isPresent()
-            && noteNearPose
+        // TODO: Should reuse the note map query from the previous if statement
+        if (maybeCurrentTargetedNote.isPresent()
+            && maybeCurrentTargetedNote
                     .get()
                     .noteTranslation()
                     .getDistance(localization.getPose().getTranslation())
@@ -472,6 +489,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
         }
         yield currentState;
       }
+        // TODO: Should follow same refactors as PATHFIND_TO_INTAKE
       case PID_INTAKE -> {
         // If current step is empty
         if (currentStep.isEmpty()) {
@@ -484,13 +502,13 @@ public class AutoManager extends StateMachine<NoteMapState> {
         }
 
         // If note doesn't exist on map
-        if (noteNearPose.isEmpty()) {
+        if (maybeCurrentTargetedNote.isEmpty()) {
           yield NoteMapState.IDLE;
         }
 
         // If the note is still there and we are close enough go to PID intake mode
-        if (noteNearPose.isPresent()
-            && noteNearPose
+        if (maybeCurrentTargetedNote.isPresent()
+            && maybeCurrentTargetedNote
                     .get()
                     .noteTranslation()
                     .getDistance(localization.getPose().getTranslation())
