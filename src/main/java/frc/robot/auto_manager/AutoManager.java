@@ -51,16 +51,28 @@ public class AutoManager extends StateMachine<NoteMapState> {
           new Pose2d(2.57, 6.34, Rotation2d.fromDegrees(-7.35)),
           new Pose2d(2.34, 4.49, Rotation2d.fromDegrees(16.93)));
   public static final Pose2d MIDLINE_CLEANUP_POSE = new Pose2d(8.271, 4.106, new Rotation2d(0));
-  public static final List<Pose2d> RED_DESTINATIONS =
+  public static final List<Pose2d> RED_SCORING_DESTINATIONS =
       List.of(
           new Pose2d(11.82, 6.49, Rotation2d.fromDegrees(-11.04)),
           new Pose2d(13.36, 1.51, Rotation2d.fromDegrees(53.25)));
 
-  public static final List<Pose2d> BLUE_DESTINATIONS =
+  public static final List<Pose2d> BLUE_SCORING_DESTINATIONS =
       List.of(
           new Pose2d(4.32, 6.41, Rotation2d.fromDegrees(-169.48)),
           new Pose2d(4.29, 5.02, Rotation2d.fromDegrees(172.97)),
           new Pose2d(3.17, 3.21, Rotation2d.fromDegrees(142.74)));
+
+  public static final List<Pose2d> RED_DROPPING_DESTINATIONS =
+      List.of(
+          new Pose2d(11.39, 7.5, Rotation2d.fromDegrees(0.0)),
+          new Pose2d(11.91, 4.59, Rotation2d.fromDegrees(0.0)),
+          new Pose2d(11.38, 1.94, Rotation2d.fromDegrees(19.08)));
+
+  public static final List<Pose2d> BLUE_DROPPING_DESTINATIONS =
+      List.of(
+          new Pose2d(5.21, 7.5, Rotation2d.fromDegrees(180)),
+          new Pose2d(4.8, 4.65, Rotation2d.fromDegrees(180)),
+          new Pose2d(5.25, 1.92, Rotation2d.fromDegrees(144.57)));
 
   public static final Pose2d RED_DROPPING_DESTINATION =
       new Pose2d(11.25, 7.26, Rotation2d.fromDegrees(16.18));
@@ -112,17 +124,17 @@ public class AutoManager extends StateMachine<NoteMapState> {
 
   private static List<Pose2d> getScoringDestinations() {
     if (FmsSubsystem.isRedAlliance()) {
-      return RED_DESTINATIONS;
+      return RED_SCORING_DESTINATIONS;
     } else {
-      return BLUE_DESTINATIONS;
+      return BLUE_SCORING_DESTINATIONS;
     }
   }
 
-  private static Pose2d getDroppingDestination() {
+  private static List<Pose2d> getDroppingDestinations() {
     if (FmsSubsystem.isRedAlliance()) {
-      return RED_DROPPING_DESTINATION;
+      return RED_DROPPING_DESTINATIONS;
     } else {
-      return BLUE_DROPPING_DESTINATION;
+      return BLUE_DROPPING_DESTINATIONS;
     }
   }
 
@@ -157,6 +169,23 @@ public class AutoManager extends StateMachine<NoteMapState> {
     double currentDistance = Double.POSITIVE_INFINITY;
 
     for (Pose2d target : getScoringDestinations()) {
+      double distance = target.getTranslation().getDistance(current.getTranslation());
+      if (distance < currentDistance) {
+        closest = target;
+        currentDistance = distance;
+      }
+    }
+
+    return closest;
+  }
+
+  private Pose2d getClosestDroppingDestination() {
+    Pose2d current = localization.getPose();
+
+    Pose2d closest = getDroppingDestinations().get(0);
+    double currentDistance = Double.POSITIVE_INFINITY;
+
+    for (Pose2d target : getDroppingDestinations()) {
       double distance = target.getTranslation().getDistance(current.getTranslation());
       if (distance < currentDistance) {
         closest = target;
@@ -245,7 +274,9 @@ public class AutoManager extends StateMachine<NoteMapState> {
     return Commands.sequence(
             // Pathfind to outtake
             Commands.defer(
-                () -> AutoBuilder.pathfindToPose(getDroppingDestination(), DEFAULT_CONSTRAINTS),
+                () ->
+                    AutoBuilder.pathfindToPose(
+                        getClosestDroppingDestination(), DEFAULT_CONSTRAINTS),
                 Set.of(robotManager.swerve)),
             // Drop the note
             dropNote())
@@ -254,7 +285,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
   }
 
   private Command pathfindToScoreCommand() {
-    DogLog.log("Debug/ScoringDestination", RED_DESTINATIONS.get(0));
+
     return Commands.defer(
             () -> AutoBuilder.pathfindToPose(getClosestScoringDestination(), DEFAULT_CONSTRAINTS),
             Set.of(robotManager.swerve))
@@ -309,6 +340,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
   }
 
   public Command testCommand() {
+
     return Commands.sequence(doManyAutoSteps(List.of(AutoNoteStep.cleanup())));
   }
 
@@ -318,7 +350,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
   private Queue<AutoNoteStep> steps = new LinkedList<>();
   private Optional<AutoNoteStep> currentStep = Optional.empty();
   private Pose2d closestScoringLocation = new Pose2d();
-  private Pose2d droppingDestination = getDroppingDestination();
+  private Pose2d droppingDestination = new Pose2d();
 
   public void setSteps(LinkedList<AutoNoteStep> newSteps) {
     steps = newSteps;
@@ -366,6 +398,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
       }
       case PATHFIND_TO_DROP -> {
         noteMapCommand.cancel();
+        droppingDestination = getClosestDroppingDestination();
         noteMapCommand = AutoBuilder.pathfindToPose(droppingDestination, DEFAULT_CONSTRAINTS);
         noteMapCommand.schedule();
       }
