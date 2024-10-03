@@ -172,6 +172,8 @@ public class AutoManager extends StateMachine<NoteMapState> {
     }
   }
 
+
+  //State actions
   @Override
   protected void afterTransition(NoteMapState newState) {
     switch (state) {
@@ -232,6 +234,8 @@ public class AutoManager extends StateMachine<NoteMapState> {
     }
   }
 
+
+  // State transitions
   @Override
   protected NoteMapState getNextState(NoteMapState currentState) {
     return switch (currentState) {
@@ -242,11 +246,6 @@ public class AutoManager extends StateMachine<NoteMapState> {
           yield NoteMapState.IDLE;
         }
 
-        // If we don't have a search location
-        // TODO: Should use stored search location
-        if (currentStep.get().notes().get(0).get().isEmpty()) {
-          yield NoteMapState.IDLE;
-        }
 
         // If note doesn't exist on map
         if (maybeNotePose.isEmpty()) {
@@ -277,11 +276,6 @@ public class AutoManager extends StateMachine<NoteMapState> {
       case INTAKING_PID -> {
         // If current step is empty
         if (currentStep.isEmpty()) {
-          yield NoteMapState.IDLE;
-        }
-
-        // If we don't have a search location
-        if (currentStep.get().notes().get(0).get().isEmpty()) {
           yield NoteMapState.IDLE;
         }
 
