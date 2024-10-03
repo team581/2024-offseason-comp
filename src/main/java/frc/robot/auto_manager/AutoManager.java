@@ -415,8 +415,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
           searchLocation = currentStep.get().notes().get(0).get().get();
           noteNearPose = noteTrackingManager.getNoteNearPose(searchLocation, 1.5);
           noteMapCommand = noteTrackingManager.intakeNoteAtPose(searchLocation, 1.5);
-            noteMapCommand.schedule();
-
+          noteMapCommand.schedule();
         }
       }
       case PATHFIND_TO_DROP -> {
