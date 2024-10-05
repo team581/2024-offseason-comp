@@ -243,6 +243,7 @@ public class Robot extends TimedRobot {
     operatorController.povUp().onTrue(actions.getClimberForwardCommand());
     operatorController.povDown().onTrue(actions.getClimberBackwardCommand());
 
+    operatorController.leftTrigger().whileTrue(autoManager.testCommand()).onFalse(actions.stowCommand());
     operatorController.a().onTrue(actions.stowCommand());
     operatorController.b().onTrue(actions.waitPodiumShotCommand()).onFalse(actions.stowCommand());
     operatorController.povLeft().onTrue(actions.unjamCommand()).onFalse(actions.idleNoGPCommand());

@@ -6,18 +6,22 @@ package frc.robot.auto_manager;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
+import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.fms.FmsSubsystem;
 import frc.robot.localization.LocalizationSubsystem;
+import frc.robot.note_tracking.NoteMapElement;
 import frc.robot.note_tracking.NoteTrackingManager;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
 import frc.robot.util.scheduling.SubsystemPriority;
 import frc.robot.util.state_machines.StateMachine;
 import frc.robot.vision.VisionSubsystem;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -128,6 +132,21 @@ public class AutoManager extends StateMachine<NoteMapState> {
     return closest;
   }
 
+  public Command testCommand() {
+    return Commands.runOnce(
+        () -> {
+          var now = Timer.getFPGATimestamp();
+          noteTrackingManager.resetNoteMap(
+              new ArrayList<>(
+                  List.of(
+                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4))
+                      )));
+          var steps = new LinkedList<AutoNoteStep>();
+          steps.add(AutoNoteStep.score(4));
+          setSteps(steps);
+        });
+  }
+
   private Optional<Pose2d> maybeNotePose = Optional.empty();
 
   private Queue<AutoNoteStep> steps = new LinkedList<>();
@@ -145,35 +164,41 @@ public class AutoManager extends StateMachine<NoteMapState> {
 
   @Override
   protected void collectInputs() {
+    if (currentStep.isPresent()) {
 
-    for (var maybeSearchPoseSupplier : currentStep.get().notes()) {
-      var maybeSearchPose = maybeSearchPoseSupplier.get();
-      if (maybeSearchPose.isEmpty()) {
-        continue;
-      }
+      for (var maybeSearchPoseSupplier : currentStep.get().notes()) {
+        var maybeSearchPose = maybeSearchPoseSupplier.get();
+        if (maybeSearchPose.isEmpty()) {
+          continue;
+        }
 
-      var rawSearchLocation = maybeSearchPose.get();
-      var maybeCurrentTargetedNote =
-          noteTrackingManager.getNoteNearPose(rawSearchLocation, TARGET_NOTE_THRESHOLD_METERS);
+        var rawSearchLocation = maybeSearchPose.get();
+        var maybeCurrentTargetedNote =
+            noteTrackingManager.getNoteNearPose(rawSearchLocation, TARGET_NOTE_THRESHOLD_METERS);
 
-      if (maybeCurrentTargetedNote.isPresent()) {
-        var noteDistanceAngle =
-            VisionSubsystem.distanceAngleToTarget(
-                new Pose2d(maybeCurrentTargetedNote.get().noteTranslation(), new Rotation2d()),
-                localization.getPose());
+        if (maybeCurrentTargetedNote.isPresent()) {
+          var noteDistanceAngle =
+              VisionSubsystem.distanceAngleToTarget(
+                  new Pose2d(maybeCurrentTargetedNote.get().noteTranslation(), new Rotation2d()),
+                  localization.getPose());
 
-        maybeNotePose =
-            Optional.of(
-                new Pose2d(
-                    maybeCurrentTargetedNote.get().noteTranslation(),
-                    Rotation2d.fromDegrees(noteDistanceAngle.targetAngle() + 180)));
-        break;
+          maybeNotePose =
+              Optional.of(
+                  new Pose2d(
+                      maybeCurrentTargetedNote.get().noteTranslation(),
+                      Rotation2d.fromDegrees(noteDistanceAngle.targetAngle() + 180)));
+
+          if (maybeNotePose.isPresent()) {
+
+            DogLog.log("AutoManager/MaybeNotePose", maybeNotePose.get());
+          }
+          break;
+        }
       }
     }
   }
 
-
-  //State actions
+  // State actions
   @Override
   protected void afterTransition(NoteMapState newState) {
     switch (state) {
@@ -183,6 +208,9 @@ public class AutoManager extends StateMachine<NoteMapState> {
           // Nothing new to do, keep idling
         } else {
           currentStep = Optional.of(steps.poll());
+          if (currentStep.isPresent()) {
+            DogLog.log("AutoManager/StepAction", currentStep.get().action().toString());
+          }
         }
       }
       case DROP -> {
@@ -197,10 +225,13 @@ public class AutoManager extends StateMachine<NoteMapState> {
         noteMapCommand.cancel();
 
         if (currentStep.isEmpty()) {
+          DogLog.log("AutoManager/CURRENTSTEPEMPTYINTAKEPATH", Timer.getFPGATimestamp());
+
           break;
         }
 
         if (maybeNotePose.isPresent()) {
+          DogLog.log("AutoManager/PathfindingIntakingTrue", Timer.getFPGATimestamp());
           noteMapCommand = AutoBuilder.pathfindToPose(maybeNotePose.get(), DEFAULT_CONSTRAINTS);
           noteMapCommand.schedule();
         }
@@ -213,6 +244,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
         }
 
         if (maybeNotePose.isPresent()) {
+          DogLog.log("AutoManager/PIDIntakingTrue", Timer.getFPGATimestamp());
           noteMapCommand =
               noteTrackingManager.intakeNoteAtPose(
                   maybeNotePose.get().getTranslation(), TARGET_NOTE_THRESHOLD_METERS);
@@ -234,26 +266,36 @@ public class AutoManager extends StateMachine<NoteMapState> {
     }
   }
 
-
   // State transitions
   @Override
   protected NoteMapState getNextState(NoteMapState currentState) {
     return switch (currentState) {
-      case IDLE -> currentState;
+      case IDLE -> {
+        if (currentStep.isPresent()
+            && currentStep.get().action() == AutoNoteAction.CLEANUP) {
+          yield NoteMapState.CLEANUP;
+        } else if (currentStep.isPresent()) {
+          yield NoteMapState.INTAKING_PATHFINDING;
+        }
+        yield currentState;
+      }
       case INTAKING_PATHFINDING -> {
         // If current step is empty
         if (currentStep.isEmpty()) {
+          DogLog.log("AutoManager/IntakingPathfindCurrentStepEmpty", Timer.getFPGATimestamp());
+
           yield NoteMapState.IDLE;
         }
 
-
         // If note doesn't exist on map
         if (maybeNotePose.isEmpty()) {
+          DogLog.log("AutoManager/IntakingPathfindMapNoteGone", Timer.getFPGATimestamp());
           yield NoteMapState.IDLE;
         }
 
         // If we already have note go and score/drop
         if (robotManager.getState().hasNote) {
+          DogLog.log("AutoManager/IntakingPathfindRobotHasNote", Timer.getFPGATimestamp());
           if (currentStep.isPresent() && currentStep.get().action() == AutoNoteAction.DROP) {
             yield NoteMapState.PATHFIND_TO_DROP;
           }
@@ -267,12 +309,13 @@ public class AutoManager extends StateMachine<NoteMapState> {
                     .getTranslation()
                     .getDistance(localization.getPose().getTranslation())
                 < INTAKE_PATHFIND_THRESHOLD_METERS) {
+                  DogLog.log("AutoManager/CloseEnoughStopPathfinding", Timer.getFPGATimestamp());
+
           yield NoteMapState.INTAKING_PID;
         }
 
         yield currentState;
       }
-        // TODO: Should follow same refactors as PATHFIND_TO_INTAKE
       case INTAKING_PID -> {
         // If current step is empty
         if (currentStep.isEmpty()) {
@@ -312,8 +355,6 @@ public class AutoManager extends StateMachine<NoteMapState> {
         }
 
         // If we're already at location to score, score the note
-        // TODO: maybe use the scoring destination that we used when we decided where to go, not
-        // right now
         if (localization.atTranslation(closestScoringLocation.getTranslation(), 0.2)) {
           yield NoteMapState.SCORE;
         }

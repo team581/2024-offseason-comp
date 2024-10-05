@@ -32,15 +32,15 @@ public class AutoNoteStaged {
 
         // TODO: SUBTRACT 1 METER FROM X TO PUT INTO NORMAL FIELD POSES
       case 4:
-        return new Translation2d(8.271, 7.458);
+        return new Translation2d(9.271, 7.458);
       case 5:
-        return new Translation2d(8.271, 5.782);
+        return new Translation2d(9.271, 5.782);
       case 6:
-        return new Translation2d(8.271, 4.106);
+        return new Translation2d(9.271, 4.106);
       case 7:
-        return new Translation2d(8.271, 2.429);
+        return new Translation2d(9.271, 2.429);
       case 8:
-        return new Translation2d(8.271, 0.753);
+        return new Translation2d(9.271, 0.753);
       default:
         throw new IllegalArgumentException("Expected a note ID from between 1 and 8");
     }
