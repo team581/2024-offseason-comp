@@ -15,6 +15,7 @@ import java.util.Set;
 /** A state machine backed by {@link LifecycleSubsystem}. */
 public abstract class StateMachine<S extends Enum<S>> extends LifecycleSubsystem {
   private S state;
+  private boolean isInitialized = false;
 
   /**
    * Creates a new state machine.
@@ -25,13 +26,18 @@ public abstract class StateMachine<S extends Enum<S>> extends LifecycleSubsystem
   protected StateMachine(SubsystemPriority priority, S initialState) {
     super(priority);
     state = initialState;
-    // Log the state once on boot
-    DogLog.log(subsystemName + "/State", state);
   }
 
   /** Processes collecting inputs, state transitions, and state actions. */
   @Override
   public void robotPeriodic() {
+    // The first time the robot boots up, we need to set the state from null to the initial state
+    // This also gives us an opportunity to run the state actions for the initial state
+    // Think of it as transitioning from the robot being off to initialState
+    if (!isInitialized) {
+      doTransition();
+    }
+
     collectInputs();
 
     setStateFromRequest(getNextState(state));
@@ -105,9 +111,13 @@ public abstract class StateMachine<S extends Enum<S>> extends LifecycleSubsystem
     }
 
     state = requestedState;
+    doTransition();
+  }
 
+  /** Run side effects that occur when a state transition happens. */
+  private void doTransition() {
     DogLog.log(subsystemName + "/State", state);
 
-    afterTransition(requestedState);
+    afterTransition(state);
   }
 }
