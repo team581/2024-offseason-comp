@@ -36,6 +36,7 @@ public abstract class StateMachine<S extends Enum<S>> extends LifecycleSubsystem
     // Think of it as transitioning from the robot being off to initialState
     if (!isInitialized) {
       doTransition();
+      isInitialized = true;
     }
 
     collectInputs();
