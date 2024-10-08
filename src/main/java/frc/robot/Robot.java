@@ -156,14 +156,14 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
-    var now = Timer.getFPGATimestamp();
-    DogLog.log("AutoManager/RobotInit", Timer.getFPGATimestamp());
-    noteTrackingManager.resetNoteMap(
-        new ArrayList<>(
-            List.of(new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4)))));
-    var steps = new LinkedList<AutoNoteStep>();
-    steps.add(AutoNoteStep.score(4));
-    autoManager.setSteps(steps);
+    // var now = Timer.getFPGATimestamp();
+    // DogLog.log("AutoManager/RobotInit", Timer.getFPGATimestamp());
+    // noteTrackingManager.resetNoteMap(
+    //     new ArrayList<>(
+    //         List.of(new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4)))));
+    // var steps = new LinkedList<AutoNoteStep>();
+    // steps.add(AutoNoteStep.score(4));
+    // autoManager.setSteps(steps);
   }
 
   @Override
