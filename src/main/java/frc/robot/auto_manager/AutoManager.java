@@ -188,10 +188,12 @@ public class AutoManager extends StateMachine<NoteMapState> {
                       Rotation2d.fromDegrees(noteDistanceAngle.targetAngle() + 180)));
 
           if (maybeNotePose.isPresent()) {
-
             DogLog.log("AutoManager/MaybeNotePose", maybeNotePose.get());
           }
           break;
+        } else {
+          maybeNotePose = Optional.empty();
+          continue;
         }
       }
     }
@@ -236,7 +238,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
 
         if (maybeNotePose.isPresent()) {
           DogLog.log("AutoManager/InPathActionNoteExists", Timer.getFPGATimestamp());
-          noteMapCommand = AutoBuilder.pathfindToPose(maybeNotePose.get(), DEFAULT_CONSTRAINTS);
+          noteMapCommand = AutoBuilder.pathfindToPose(maybeNotePose.get(), DEFAULT_CONSTRAINTS).withName("PathfindIntake");
           noteMapCommand.schedule();
         }
       }
@@ -252,20 +254,20 @@ public class AutoManager extends StateMachine<NoteMapState> {
           DogLog.log("AutoManager/InPIDActionNoteExists", Timer.getFPGATimestamp());
           noteMapCommand =
               noteTrackingManager.intakeNoteAtPose(
-                  maybeNotePose.get().getTranslation(), TARGET_NOTE_THRESHOLD_METERS);
+                  maybeNotePose.get().getTranslation(), TARGET_NOTE_THRESHOLD_METERS).withName("PIDIntake");
           noteMapCommand.schedule();
         }
       }
       case PATHFIND_TO_DROP -> {
         noteMapCommand.cancel();
         droppingDestination = getClosestDroppingDestination();
-        noteMapCommand = AutoBuilder.pathfindToPose(droppingDestination, DEFAULT_CONSTRAINTS);
+        noteMapCommand = AutoBuilder.pathfindToPose(droppingDestination, DEFAULT_CONSTRAINTS).withName("PathfindDrop");
         noteMapCommand.schedule();
       }
       case PATHFIND_TO_SCORE -> {
         noteMapCommand.cancel();
         closestScoringLocation = getClosestScoringDestination();
-        noteMapCommand = AutoBuilder.pathfindToPose(closestScoringLocation, DEFAULT_CONSTRAINTS);
+        noteMapCommand = AutoBuilder.pathfindToPose(closestScoringLocation, DEFAULT_CONSTRAINTS).withName("PathfindScore");
         noteMapCommand.schedule();
       }
       case CLEANUP -> {}
@@ -282,7 +284,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
         if (currentStep.isPresent() && currentStep.get().action() == AutoNoteAction.CLEANUP) {
           DogLog.log("AutoManager/IdleToCleanup", Timer.getFPGATimestamp());
           yield NoteMapState.CLEANUP;
-        } else if (currentStep.isPresent()) {
+        } else if (currentStep.isPresent() && maybeNotePose.isPresent()) {
           DogLog.log("AutoManager/IdleToIntakePathfinding", Timer.getFPGATimestamp());
 
           yield NoteMapState.INTAKING_PATHFINDING;
