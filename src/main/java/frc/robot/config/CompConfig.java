@@ -298,8 +298,8 @@ class CompConfig {
                 tyToNoteDistance.put(11.85, Units.inchesToMeters(17.75 + 7 + 60.1));
                 tyToNoteDistance.put(15.25, Units.inchesToMeters(17.75 + 7 + 88.9));
               },
-              InterpolatedVisionDataset.CHEZY_CHAMPS),
-          new PerfToggles(true, false, false));
+              InterpolatedVisionDataset.HOME),
+          new PerfToggles(true, true, true));
 
   private CompConfig() {}
 }
