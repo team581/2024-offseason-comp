@@ -230,8 +230,8 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private boolean safeToTrack() {
     var speeds = swerve.getRobotRelativeSpeeds();
 
-    return speeds.vxMetersPerSecond < 2.5
-        && speeds.vyMetersPerSecond < 2.5
+    return speeds.vxMetersPerSecond < 3
+        && speeds.vyMetersPerSecond < 3
         && speeds.omegaRadiansPerSecond < Units.degreesToRadians(3.0);
   }
 
