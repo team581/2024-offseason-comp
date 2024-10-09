@@ -5,7 +5,8 @@
 package frc.robot.auto_manager;
 
 public enum NoteMapState {
-  IDLE,
+  STOPPED,
+  WAITING_FOR_NOTES,
   INTAKING_PATHFINDING,
   INTAKING_PID,
   PATHFIND_TO_DROP,

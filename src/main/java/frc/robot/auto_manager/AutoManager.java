@@ -35,14 +35,14 @@ public class AutoManager extends StateMachine<NoteMapState> {
   private static final PathConstraints DEFAULT_CONSTRAINTS =
       new PathConstraints(5.0, 5.0, 2 * Math.PI, 4 * Math.PI);
   private static final double TARGET_NOTE_THRESHOLD_METERS = 2.0;
-  private static final double INTAKE_PATHFIND_THRESHOLD_METERS = 1.0;
+  private static final double INTAKE_PATHFIND_THRESHOLD_METERS = 2.0;
 
   public AutoManager(
       RobotCommands actions,
       NoteTrackingManager noteTrackingManager,
       RobotManager robotManager,
       LocalizationSubsystem localization) {
-    super(SubsystemPriority.AUTOS, NoteMapState.IDLE);
+    super(SubsystemPriority.AUTOS, NoteMapState.STOPPED);
     this.actions = actions;
     this.noteTrackingManager = noteTrackingManager;
     this.robotManager = robotManager;
@@ -132,15 +132,19 @@ public class AutoManager extends StateMachine<NoteMapState> {
   }
 
   public Command testCommand() {
-    return Commands.run(
+    return Commands.runOnce(
         () -> {
           var now = Timer.getFPGATimestamp();
           DogLog.log("AutoManager/TestCommandRun", Timer.getFPGATimestamp());
           noteTrackingManager.resetNoteMap(
               new ArrayList<>(
-                  List.of(new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4)))));
+                  List.of(
+                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4)),
+                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(5)))));
           var steps = new LinkedList<AutoNoteStep>();
           steps.add(AutoNoteStep.score(4));
+          steps.add(AutoNoteStep.score(5));
+
           setSteps(steps);
         });
   }
@@ -157,8 +161,14 @@ public class AutoManager extends StateMachine<NoteMapState> {
 
   public void setSteps(LinkedList<AutoNoteStep> newSteps) {
     steps = newSteps;
-    DogLog.log("AutoManager/setStepsFirst", steps.peek().toString());
-    setStateFromRequest(NoteMapState.IDLE);
+    setStateFromRequest(NoteMapState.WAITING_FOR_NOTES);
+  }
+
+  public void off() {
+    currentStep = Optional.empty();
+    steps = new LinkedList<>();
+    maybeNotePose = Optional.empty();
+    setStateFromRequest(NoteMapState.STOPPED);
   }
 
   @Override
@@ -203,20 +213,24 @@ public class AutoManager extends StateMachine<NoteMapState> {
   @Override
   protected void afterTransition(NoteMapState newState) {
     switch (newState) {
-      case IDLE -> {
-        DogLog.log("AutoManager/IdleAction", Timer.getFPGATimestamp());
+      case STOPPED -> {
+        noteMapCommand.cancel();
         robotManager.stowRequest();
+      }
+      case WAITING_FOR_NOTES -> {
+        noteMapCommand.cancel();
+        DogLog.log("AutoManager/IdleAction", Timer.getFPGATimestamp());
         if (steps.isEmpty()) {
           // Nothing new to do, keep idling
-          DogLog.log("AutoManager/IdleActionStepsEmpty", Timer.getFPGATimestamp());
+          DogLog.log("AutoManager/IdleStepsEmpty", Timer.getFPGATimestamp());
 
         } else {
-          DogLog.log("AutoManager/IdleActionStepsPresent", Timer.getFPGATimestamp());
+          DogLog.log("AutoManager/IdleStepsPresent", Timer.getFPGATimestamp());
           currentStep = Optional.of(steps.poll());
           if (currentStep.isEmpty()) {
-            DogLog.log("AutoManager/IdleActionCurrentStepEmpty", Timer.getFPGATimestamp());
+            DogLog.log("AutoManager/IdleCurrentStepEmpty", Timer.getFPGATimestamp());
           } else {
-            DogLog.log("AutoManager/IdleActionCurrentStepPresent", Timer.getFPGATimestamp());
+            DogLog.log("AutoManager/IdleCurrentStepPresent", Timer.getFPGATimestamp());
           }
         }
       }
@@ -238,8 +252,12 @@ public class AutoManager extends StateMachine<NoteMapState> {
 
         if (maybeNotePose.isPresent()) {
           DogLog.log("AutoManager/InPathActionNoteExists", Timer.getFPGATimestamp());
-          noteMapCommand = AutoBuilder.pathfindToPose(maybeNotePose.get(), DEFAULT_CONSTRAINTS).withName("PathfindIntake");
+          noteMapCommand =
+              AutoBuilder.pathfindToPose(maybeNotePose.get(), DEFAULT_CONSTRAINTS)
+                  .withName("PathfindIntake");
           noteMapCommand.schedule();
+        } else {
+          DogLog.log("AutoManager/InPathActionNoNoteExists", Timer.getFPGATimestamp());
         }
       }
       case INTAKING_PID -> {
@@ -253,21 +271,27 @@ public class AutoManager extends StateMachine<NoteMapState> {
         if (maybeNotePose.isPresent()) {
           DogLog.log("AutoManager/InPIDActionNoteExists", Timer.getFPGATimestamp());
           noteMapCommand =
-              noteTrackingManager.intakeNoteAtPose(
-                  maybeNotePose.get().getTranslation(), TARGET_NOTE_THRESHOLD_METERS).withName("PIDIntake");
+              noteTrackingManager
+                  .intakeNoteAtPose(
+                      maybeNotePose.get().getTranslation(), TARGET_NOTE_THRESHOLD_METERS)
+                  .withName("PIDIntake");
           noteMapCommand.schedule();
         }
       }
       case PATHFIND_TO_DROP -> {
         noteMapCommand.cancel();
         droppingDestination = getClosestDroppingDestination();
-        noteMapCommand = AutoBuilder.pathfindToPose(droppingDestination, DEFAULT_CONSTRAINTS).withName("PathfindDrop");
+        noteMapCommand =
+            AutoBuilder.pathfindToPose(droppingDestination, DEFAULT_CONSTRAINTS)
+                .withName("PathfindDrop");
         noteMapCommand.schedule();
       }
       case PATHFIND_TO_SCORE -> {
         noteMapCommand.cancel();
         closestScoringLocation = getClosestScoringDestination();
-        noteMapCommand = AutoBuilder.pathfindToPose(closestScoringLocation, DEFAULT_CONSTRAINTS).withName("PathfindScore");
+        noteMapCommand =
+            AutoBuilder.pathfindToPose(closestScoringLocation, DEFAULT_CONSTRAINTS)
+                .withName("PathfindScore");
         noteMapCommand.schedule();
       }
       case CLEANUP -> {}
@@ -280,7 +304,10 @@ public class AutoManager extends StateMachine<NoteMapState> {
   @Override
   protected NoteMapState getNextState(NoteMapState currentState) {
     return switch (currentState) {
-      case IDLE -> {
+      case STOPPED -> {
+        yield currentState;
+      }
+      case WAITING_FOR_NOTES -> {
         if (currentStep.isPresent() && currentStep.get().action() == AutoNoteAction.CLEANUP) {
           DogLog.log("AutoManager/IdleToCleanup", Timer.getFPGATimestamp());
           yield NoteMapState.CLEANUP;
@@ -289,11 +316,8 @@ public class AutoManager extends StateMachine<NoteMapState> {
 
           yield NoteMapState.INTAKING_PATHFINDING;
         }
-        if (currentStep.isEmpty()) {
-          DogLog.log("AutoManager/IdleTransitionsCurrentStepEmpty", Timer.getFPGATimestamp());
-        }
-        DogLog.log("AutoManager/IdleToIdle", Timer.getFPGATimestamp());
 
+        DogLog.log("AutoManager/IdleToIdle", Timer.getFPGATimestamp());
         yield currentState;
       }
       case INTAKING_PATHFINDING -> {
@@ -301,13 +325,13 @@ public class AutoManager extends StateMachine<NoteMapState> {
         if (currentStep.isEmpty()) {
           DogLog.log("AutoManager/IntakingPathfindCurrentStepEmpty", Timer.getFPGATimestamp());
 
-          yield NoteMapState.IDLE;
+          yield NoteMapState.WAITING_FOR_NOTES;
         }
 
         // If note doesn't exist on map
         if (maybeNotePose.isEmpty()) {
           DogLog.log("AutoManager/IntakingPathfindMapNoteGone", Timer.getFPGATimestamp());
-          yield NoteMapState.IDLE;
+          yield NoteMapState.WAITING_FOR_NOTES;
         }
 
         // If we already have note go and score/drop
@@ -336,14 +360,8 @@ public class AutoManager extends StateMachine<NoteMapState> {
       case INTAKING_PID -> {
         // If current step is empty
         if (currentStep.isEmpty()) {
-          yield NoteMapState.IDLE;
+          yield NoteMapState.WAITING_FOR_NOTES;
         }
-
-        // If note doesn't exist on map
-        if (maybeNotePose.isEmpty()) {
-          yield NoteMapState.IDLE;
-        }
-
         // If we already have note go and score/drop
         if (robotManager.getState().hasNote) {
           if (currentStep.isPresent() && currentStep.get().action() == AutoNoteAction.DROP) {
@@ -351,12 +369,18 @@ public class AutoManager extends StateMachine<NoteMapState> {
           }
           yield NoteMapState.PATHFIND_TO_SCORE;
         }
+
+        // If note doesn't exist on map
+        if (maybeNotePose.isEmpty()) {
+          yield NoteMapState.WAITING_FOR_NOTES;
+        }
+
         yield currentState;
       }
       case PATHFIND_TO_DROP -> {
         // If robot doesn't have a note, give up (go to next step)
         if (!robotManager.getState().hasNote) {
-          yield NoteMapState.IDLE;
+          yield NoteMapState.WAITING_FOR_NOTES;
         }
 
         // if we finished pathfinding, drop note
@@ -368,7 +392,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
       case PATHFIND_TO_SCORE -> {
         // If robot doesn't have a note, give up (go to next step)
         if (!robotManager.getState().hasNote) {
-          yield NoteMapState.IDLE;
+          yield NoteMapState.WAITING_FOR_NOTES;
         }
 
         // If we're already at location to score, score the note
@@ -377,7 +401,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
         }
         yield currentState;
       }
-      case DROP -> robotManager.getState().hasNote ? currentState : NoteMapState.IDLE;
+      case DROP -> robotManager.getState().hasNote ? currentState : NoteMapState.WAITING_FOR_NOTES;
       case SCORE -> {
         if (currentStep.isPresent() && currentStep.get().action().equals(AutoNoteAction.CLEANUP)) {
           if (robotManager.getState().hasNote) {
@@ -390,7 +414,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
           yield currentState;
         }
 
-        yield NoteMapState.IDLE;
+        yield NoteMapState.WAITING_FOR_NOTES;
       }
       case CLEANUP ->
           localization.getPose().getTranslation().getDistance(getClosestSpeaker().getTranslation())
@@ -405,7 +429,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
           yield NoteMapState.PATHFIND_TO_SCORE;
         }
         if (localization.atTranslation(getMidlineCleanupPath().get(1).getTranslation(), 0.2)) {
-          yield NoteMapState.IDLE;
+          yield NoteMapState.WAITING_FOR_NOTES;
         }
         yield currentState;
       }
@@ -417,7 +441,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
           yield NoteMapState.PATHFIND_TO_SCORE;
         }
         if (localization.atTranslation(getMidlineCleanupPath().get(1).getTranslation(), 0.2)) {
-          yield NoteMapState.IDLE;
+          yield NoteMapState.WAITING_FOR_NOTES;
         }
         yield currentState;
       }
