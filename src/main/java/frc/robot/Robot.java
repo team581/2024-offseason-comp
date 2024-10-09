@@ -13,15 +13,12 @@ import dev.doglog.DogLogOptions;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.auto_manager.AutoManager;
-import frc.robot.auto_manager.AutoNoteStaged;
-import frc.robot.auto_manager.AutoNoteStep;
 import frc.robot.autos.Autos;
 import frc.robot.climber.ClimberSubsystem;
 import frc.robot.config.RobotConfig;
@@ -35,7 +32,6 @@ import frc.robot.intake.IntakeSubsystem;
 import frc.robot.lights.LightsSubsystem;
 import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.note_manager.NoteManager;
-import frc.robot.note_tracking.NoteMapElement;
 import frc.robot.note_tracking.NoteTrackingManager;
 import frc.robot.queuer.QueuerSubsystem;
 import frc.robot.redirect.RedirectSubsystem;
@@ -49,9 +45,6 @@ import frc.robot.util.Stopwatch;
 import frc.robot.util.scheduling.LifecycleSubsystemManager;
 import frc.robot.vision.VisionSubsystem;
 import frc.robot.wrist.WristSubsystem;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
 public class Robot extends TimedRobot {
   private Command autonomousCommand;
@@ -262,7 +255,14 @@ public class Robot extends TimedRobot {
     operatorController
         .leftTrigger()
         .whileTrue(autoManager.testCommand())
-        .onFalse(actions.stowCommand());
+        .onFalse(
+            actions
+                .stowCommand()
+                .alongWith(
+                    Commands.runOnce(
+                        () -> {
+                          autoManager.off();
+                        })));
     operatorController.a().onTrue(actions.stowCommand());
     operatorController.b().onTrue(actions.waitPodiumShotCommand()).onFalse(actions.stowCommand());
     operatorController.povLeft().onTrue(actions.unjamCommand()).onFalse(actions.idleNoGPCommand());
