@@ -293,6 +293,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
             AutoBuilder.pathfindToPose(closestScoringLocation, DEFAULT_CONSTRAINTS)
                 .withName("PathfindScore");
         noteMapCommand.schedule();
+        robotManager.waitSpeakerShotRequest();
       }
       case CLEANUP -> {}
       case SEARCH_MIDLINE -> {}
