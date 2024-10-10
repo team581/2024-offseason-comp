@@ -5,6 +5,7 @@
 package frc.robot.util.state_machines;
 
 import dev.doglog.DogLog;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.util.scheduling.LifecycleSubsystem;
@@ -16,6 +17,7 @@ import java.util.Set;
 public abstract class StateMachine<S extends Enum<S>> extends LifecycleSubsystem {
   private S state;
   private boolean isInitialized = false;
+  private double lastTransitionTimestamp = Timer.getFPGATimestamp();
 
   /**
    * Creates a new state machine.
@@ -115,9 +117,24 @@ public abstract class StateMachine<S extends Enum<S>> extends LifecycleSubsystem
     doTransition();
   }
 
+  /**
+   * Checks if the current state has been in for longer than the given duration. Used for having
+   * timeout logic in state transitions.
+   *
+   * @param duration The timeout duration (in seconds) to use.
+   * @return Whether the current state has been active for longer than the given duration.
+   */
+  protected boolean timeout(double duration) {
+    var currentStateDuration = Timer.getFPGATimestamp() - lastTransitionTimestamp;
+
+    return currentStateDuration > duration;
+  }
+
   /** Run side effects that occur when a state transition happens. */
   private void doTransition() {
     DogLog.log(subsystemName + "/State", state);
+
+    lastTransitionTimestamp = Timer.getFPGATimestamp();
 
     afterTransition(state);
   }
