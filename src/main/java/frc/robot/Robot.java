@@ -105,7 +105,7 @@ public class Robot extends TimedRobot {
   private final NoteTrackingManager noteTrackingManager =
       new NoteTrackingManager(localization, swerve, actions, robotManager);
   private final AutoManager autoManager =
-      new AutoManager(actions, noteTrackingManager, robotManager, localization);
+      new AutoManager(actions, noteTrackingManager, robotManager, localization, snaps);
   private final Autos autos = new Autos(swerve, localization, actions, robotManager);
 
   public Robot() {

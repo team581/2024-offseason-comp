@@ -18,6 +18,7 @@ import frc.robot.note_tracking.NoteMapElement;
 import frc.robot.note_tracking.NoteTrackingManager;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
+import frc.robot.snaps.SnapManager;
 import frc.robot.util.scheduling.SubsystemPriority;
 import frc.robot.util.state_machines.StateMachine;
 import frc.robot.vision.VisionSubsystem;
@@ -32,6 +33,8 @@ public class AutoManager extends StateMachine<NoteMapState> {
   private final NoteTrackingManager noteTrackingManager;
   private final RobotManager robotManager;
   private final LocalizationSubsystem localization;
+  private final SnapManager snaps;
+
   private static final PathConstraints DEFAULT_CONSTRAINTS =
       new PathConstraints(5.0, 5.0, 2 * Math.PI, 4 * Math.PI);
   private static final double TARGET_NOTE_THRESHOLD_METERS = 2.0;
@@ -41,12 +44,14 @@ public class AutoManager extends StateMachine<NoteMapState> {
       RobotCommands actions,
       NoteTrackingManager noteTrackingManager,
       RobotManager robotManager,
-      LocalizationSubsystem localization) {
+      LocalizationSubsystem localization,
+      SnapManager snaps) {
     super(SubsystemPriority.AUTOS, NoteMapState.STOPPED);
     this.actions = actions;
     this.noteTrackingManager = noteTrackingManager;
     this.robotManager = robotManager;
     this.localization = localization;
+    this.snaps = snaps;
   }
 
   private static BoundingBox getScoringBox() {
@@ -219,6 +224,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
       }
       case WAITING_FOR_NOTES -> {
         noteMapCommand.cancel();
+        snaps.setEnabled(false);
         DogLog.log("AutoManager/IdleAction", Timer.getFPGATimestamp());
         if (steps.isEmpty()) {
           // Nothing new to do, keep idling
@@ -244,7 +250,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
       }
       case INTAKING_PATHFINDING -> {
         noteMapCommand.cancel();
-
+        snaps.setEnabled(false);
         if (currentStep.isEmpty()) {
           DogLog.log("AutoManager/InPathActionCurrentStepEmpty", Timer.getFPGATimestamp());
           break;
@@ -256,13 +262,15 @@ public class AutoManager extends StateMachine<NoteMapState> {
               AutoBuilder.pathfindToPose(maybeNotePose.get(), DEFAULT_CONSTRAINTS)
                   .withName("PathfindIntake");
           noteMapCommand.schedule();
+          snaps.setAngle(maybeNotePose.get().getRotation().getDegrees());
+          snaps.setEnabled(true);
         } else {
           DogLog.log("AutoManager/InPathActionNoNoteExists", Timer.getFPGATimestamp());
         }
       }
       case INTAKING_PID -> {
         noteMapCommand.cancel();
-
+        snaps.setEnabled(false);
         if (currentStep.isEmpty()) {
           DogLog.log("AutoManager/InPIDActionCurrentStepEmpty", Timer.getFPGATimestamp());
           break;
@@ -280,6 +288,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
       }
       case PATHFIND_TO_DROP -> {
         noteMapCommand.cancel();
+        snaps.setEnabled(false);
         droppingDestination = getClosestDroppingDestination();
         noteMapCommand =
             AutoBuilder.pathfindToPose(droppingDestination, DEFAULT_CONSTRAINTS)
@@ -288,6 +297,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
       }
       case PATHFIND_TO_SCORE -> {
         noteMapCommand.cancel();
+        snaps.setEnabled(false);
         closestScoringLocation = getClosestScoringDestination();
         noteMapCommand =
             AutoBuilder.pathfindToPose(closestScoringLocation, DEFAULT_CONSTRAINTS)
