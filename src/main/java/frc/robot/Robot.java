@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.auto_manager.AutoManager;
 import frc.robot.autos.Autos;
 import frc.robot.climber.ClimberSubsystem;
 import frc.robot.config.RobotConfig;
@@ -31,6 +32,7 @@ import frc.robot.intake.IntakeSubsystem;
 import frc.robot.lights.LightsSubsystem;
 import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.note_manager.NoteManager;
+import frc.robot.note_tracking.NoteTrackingManager;
 import frc.robot.queuer.QueuerSubsystem;
 import frc.robot.redirect.RedirectSubsystem;
 import frc.robot.robot_manager.RobotCommands;
@@ -100,10 +102,10 @@ public class Robot extends TimedRobot {
   private final LightsSubsystem lightsSubsystem =
       new LightsSubsystem(
           new CANdle(RobotConfig.get().lights().deviceID(), "rio"), robotManager, vision, intake);
-  // private final NoteTrackingManager noteTrackingManager =
-  //     new NoteTrackingManager(localization, swerve, actions, robotManager);
-  // private final AutoManager autoManager =
-  //     new AutoManager(actions, noteTrackingManager, robotManager, localization);
+  private final NoteTrackingManager noteTrackingManager =
+      new NoteTrackingManager(localization, swerve, actions, robotManager);
+  private final AutoManager autoManager =
+      new AutoManager(actions, noteTrackingManager, robotManager, localization, snaps);
   private final Autos autos = new Autos(swerve, localization, actions, robotManager);
 
   public Robot() {
@@ -146,7 +148,16 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void robotInit() {}
+  public void robotInit() {
+    // var now = Timer.getFPGATimestamp();
+    // DogLog.log("AutoManager/RobotInit", Timer.getFPGATimestamp());
+    // noteTrackingManager.resetNoteMap(
+    //     new ArrayList<>(
+    //         List.of(new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4)))));
+    // var steps = new LinkedList<AutoNoteStep>();
+    // steps.add(AutoNoteStep.score(4));
+    // autoManager.setSteps(steps);
+  }
 
   @Override
   public void robotPeriodic() {
@@ -241,6 +252,17 @@ public class Robot extends TimedRobot {
     operatorController.povUp().onTrue(actions.getClimberForwardCommand());
     operatorController.povDown().onTrue(actions.getClimberBackwardCommand());
 
+    operatorController
+        .leftTrigger()
+        .whileTrue(autoManager.testCommand())
+        .onFalse(
+            actions
+                .stowCommand()
+                .alongWith(
+                    Commands.runOnce(
+                        () -> {
+                          autoManager.off();
+                        })));
     operatorController.a().onTrue(actions.stowCommand());
     operatorController.b().onTrue(actions.waitPodiumShotCommand()).onFalse(actions.stowCommand());
     operatorController.povLeft().onTrue(actions.unjamCommand()).onFalse(actions.idleNoGPCommand());
@@ -252,11 +274,6 @@ public class Robot extends TimedRobot {
         .y()
         .onTrue(actions.waitSubwooferShotCommand())
         .onFalse(actions.stowCommand());
-
-    // operatorController
-    //     .leftTrigger()
-    //     .onTrue(autoManager.testCommand())
-    //     .onFalse(actions.stowCommand());
     operatorController
         .rightTrigger()
         .onTrue(actions.waitForSpeakerShotCommand())
