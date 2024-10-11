@@ -9,6 +9,7 @@ import com.pathplanner.lib.path.PathConstraints;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -39,6 +40,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
       new PathConstraints(5.0, 5.0, 2 * Math.PI, 4 * Math.PI);
   private static final double TARGET_NOTE_THRESHOLD_METERS = 2.0;
   private static final double INTAKE_PATHFIND_THRESHOLD_METERS = 2.0;
+  private static final double DROPPED_NOTE_DISTANCE_METERS = 1.0;
 
   public AutoManager(
       RobotCommands actions,
@@ -242,6 +244,14 @@ public class AutoManager extends StateMachine<NoteMapState> {
       }
       case DROP -> {
         noteMapCommand.cancel();
+        var translationFieldRelative =
+            new Translation2d(DROPPED_NOTE_DISTANCE_METERS, 0)
+                .rotateBy(localization.getPose().getRotation())
+                .plus(localization.getPose().getTranslation());
+
+        DogLog.log("Debug/droppednotepose", new Pose2d(translationFieldRelative, new Rotation2d()));
+        noteTrackingManager.addNoteToMap(translationFieldRelative);
+        AutoNoteDropped.addDroppedNote(translationFieldRelative);
         robotManager.dropRequest();
       }
       case SCORE -> {
