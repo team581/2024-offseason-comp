@@ -366,6 +366,11 @@ public class AutoManager extends StateMachine<NoteMapState> {
           yield NoteMapState.INTAKING_PID;
         }
 
+        if (timeout(4)) {
+          DogLog.log("AutoManager/PathfindIntakeTimeout", Timer.getFPGATimestamp());
+          yield NoteMapState.WAITING_FOR_NOTES;
+        }
+
         yield currentState;
       }
       case INTAKING_PID -> {
@@ -386,6 +391,11 @@ public class AutoManager extends StateMachine<NoteMapState> {
           yield NoteMapState.WAITING_FOR_NOTES;
         }
 
+        if (timeout(3)) {
+          DogLog.log("AutoManager/PIDIntakeTimeout", Timer.getFPGATimestamp());
+          yield NoteMapState.WAITING_FOR_NOTES;
+        }
+
         yield currentState;
       }
       case PATHFIND_TO_DROP -> {
@@ -397,6 +407,11 @@ public class AutoManager extends StateMachine<NoteMapState> {
         // if we finished pathfinding, drop note
         if (localization.atTranslation(droppingDestination.getTranslation(), 0.2)) {
           yield NoteMapState.DROP;
+        }
+
+        if (timeout(4)) {
+          DogLog.log("AutoManager/PathfindDropTimeout", Timer.getFPGATimestamp());
+          yield NoteMapState.WAITING_FOR_NOTES;
         }
         yield currentState;
       }
@@ -410,6 +425,11 @@ public class AutoManager extends StateMachine<NoteMapState> {
         if (localization.atTranslation(closestScoringLocation.getTranslation(), 0.2)) {
           yield NoteMapState.SCORE;
         }
+
+        if (timeout(4)) {
+          DogLog.log("AutoManager/PathfindScoreTimeout", Timer.getFPGATimestamp());
+          yield NoteMapState.WAITING_FOR_NOTES;
+        }
         yield currentState;
       }
       case DROP -> robotManager.getState().hasNote ? currentState : NoteMapState.WAITING_FOR_NOTES;
@@ -418,7 +438,6 @@ public class AutoManager extends StateMachine<NoteMapState> {
           if (robotManager.getState().hasNote) {
             yield currentState;
           }
-
           yield NoteMapState.CLEANUP;
         }
         if (robotManager.getState().hasNote) {
