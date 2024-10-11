@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 
-public class AutoManager extends StateMachine<NoteMapState> {
+public class NoteMapManager extends StateMachine<NoteMapState> {
   private final RobotCommands actions;
   private final NoteTrackingManager noteTrackingManager;
   private final RobotManager robotManager;
@@ -42,7 +42,7 @@ public class AutoManager extends StateMachine<NoteMapState> {
   private static final double INTAKE_PATHFIND_THRESHOLD_METERS = 2.0;
   private static final double DROPPED_NOTE_DISTANCE_METERS = 1.0;
 
-  public AutoManager(
+  public NoteMapManager(
       RobotCommands actions,
       NoteTrackingManager noteTrackingManager,
       RobotManager robotManager,

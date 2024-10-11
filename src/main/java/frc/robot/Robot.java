@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.auto_manager.AutoManager;
+import frc.robot.auto_manager.NoteMapManager;
 import frc.robot.autos.Autos;
 import frc.robot.climber.ClimberSubsystem;
 import frc.robot.config.RobotConfig;
@@ -104,8 +104,8 @@ public class Robot extends TimedRobot {
           new CANdle(RobotConfig.get().lights().deviceID(), "rio"), robotManager, vision, intake);
   private final NoteTrackingManager noteTrackingManager =
       new NoteTrackingManager(localization, swerve, actions, robotManager);
-  private final AutoManager autoManager =
-      new AutoManager(actions, noteTrackingManager, robotManager, localization, snaps);
+  private final NoteMapManager noteMapManager =
+      new NoteMapManager(actions, noteTrackingManager, robotManager, localization, snaps);
   private final Autos autos = new Autos(swerve, localization, actions, robotManager);
 
   public Robot() {
@@ -254,14 +254,14 @@ public class Robot extends TimedRobot {
 
     operatorController
         .leftTrigger()
-        .whileTrue(autoManager.testCommand())
+        .whileTrue(noteMapManager.testCommand())
         .onFalse(
             actions
                 .stowCommand()
                 .alongWith(
                     Commands.runOnce(
                         () -> {
-                          autoManager.off();
+                          noteMapManager.off();
                         })));
     operatorController.a().onTrue(actions.stowCommand());
     operatorController.b().onTrue(actions.waitPodiumShotCommand()).onFalse(actions.stowCommand());
