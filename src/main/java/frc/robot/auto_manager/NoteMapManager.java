@@ -96,7 +96,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
     }
   }
 
-  private static Pose2d getClosestSpeaker() {
+  private static Pose2d getSpeakerPose() {
     if (FmsSubsystem.isRedAlliance()) {
       return VisionSubsystem.ORIGINAL_RED_SPEAKER;
     } else {
@@ -163,8 +163,14 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
   private Pose2d closestScoringLocation = new Pose2d();
   private Pose2d droppingDestination = new Pose2d();
+  private Pose2d speakerPose = getSpeakerPose();
+  private List<Pose2d> speakerCleanupPath = getSpeakerCleanupPath();
+  private List<Pose2d> midlineCleanupPath = getMidlineCleanupPath();
+
 
   private Command noteMapCommand = Commands.none();
+
+  private boolean snapToNote = false;
 
   public void setSteps(LinkedList<AutoNoteStep> newSteps) {
     steps = newSteps;
@@ -176,6 +182,15 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
     steps = new LinkedList<>();
     maybeNotePose = Optional.empty();
     setStateFromRequest(NoteMapState.STOPPED);
+  }
+
+  @Override
+  public void robotPeriodic() {
+    if (snapToNote == true) {
+      if (maybeNotePose.isPresent()) {
+        snaps.setAngle(maybeNotePose.get().getRotation().getDegrees());
+      }
+    }
   }
 
   @Override
@@ -272,7 +287,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
               AutoBuilder.pathfindToPose(maybeNotePose.get(), DEFAULT_CONSTRAINTS)
                   .withName("PathfindIntake");
           noteMapCommand.schedule();
-          snaps.setAngle(maybeNotePose.get().getRotation().getDegrees());
+          snapToNote = true;
           snaps.setEnabled(true);
         } else {
           DogLog.log("AutoManager/InPathActionNoNoteExists", Timer.getFPGATimestamp());
@@ -316,8 +331,36 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         robotManager.waitSpeakerShotRequest();
       }
       case CLEANUP -> {}
-      case SEARCH_MIDLINE -> {}
-      case SEARCH_SPEAKER -> {}
+      case SEARCH_MIDLINE_FIRST -> {
+        noteMapCommand.cancel();
+        noteMapCommand =
+            AutoBuilder.pathfindToPose(midlineCleanupPath.get(0), DEFAULT_CONSTRAINTS);
+        noteMapCommand.schedule();
+      }
+      case SEARCH_MIDLINE_SECOND -> {
+        noteMapCommand.cancel();
+        noteMapCommand =
+            AutoBuilder.pathfindToPose(midlineCleanupPath.get(1), DEFAULT_CONSTRAINTS);
+        noteMapCommand.schedule();
+      }
+      case SEARCH_SPEAKER_FIRST -> {
+        noteMapCommand.cancel();
+        noteMapCommand =
+            AutoBuilder.pathfindToPose(speakerCleanupPath.get(0), DEFAULT_CONSTRAINTS);
+        noteMapCommand.schedule();
+      }
+      case SEARCH_SPEAKER_SECOND -> {
+        noteMapCommand.cancel();
+        noteMapCommand =
+            AutoBuilder.pathfindToPose(speakerCleanupPath.get(1), DEFAULT_CONSTRAINTS);
+        noteMapCommand.schedule();
+      }
+      case SEARCH_SPEAKER_THIRD -> {
+        noteMapCommand.cancel();
+        noteMapCommand =
+            AutoBuilder.pathfindToPose(speakerCleanupPath.get(2), DEFAULT_CONSTRAINTS);
+        noteMapCommand.schedule();
+      }
     }
   }
 
@@ -457,30 +500,86 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         yield NoteMapState.WAITING_FOR_NOTES;
       }
       case CLEANUP ->
-          localization.getPose().getTranslation().getDistance(getClosestSpeaker().getTranslation())
+          localization.getPose().getTranslation().getDistance(speakerPose.getTranslation())
                   < 4.0
-              ? NoteMapState.SEARCH_SPEAKER
-              : NoteMapState.SEARCH_MIDLINE;
-      case SEARCH_MIDLINE -> {
+              ? NoteMapState.SEARCH_SPEAKER_FIRST
+              : NoteMapState.SEARCH_MIDLINE_FIRST;
+      case SEARCH_MIDLINE_FIRST -> {
         if (noteTrackingManager.mapContainsNote() && !robotManager.getState().hasNote) {
           yield NoteMapState.INTAKING_PATHFINDING;
         }
         if (robotManager.getState().hasNote) {
           yield NoteMapState.PATHFIND_TO_SCORE;
         }
-        if (localization.atTranslation(getMidlineCleanupPath().get(1).getTranslation(), 0.2)) {
+        if (localization.atTranslation(midlineCleanupPath.get(0).getTranslation(), 0.2)) {
+          yield NoteMapState.SEARCH_MIDLINE_SECOND;
+        }
+        if (timeout(3)) {
+          DogLog.log("AutoManager/SearchMidline1Timeout", Timer.getFPGATimestamp());
+          yield NoteMapState.SEARCH_SPEAKER_THIRD;
+        }
+        yield currentState;
+      }
+      case SEARCH_MIDLINE_SECOND -> {
+        if (noteTrackingManager.mapContainsNote() && !robotManager.getState().hasNote) {
+          yield NoteMapState.INTAKING_PATHFINDING;
+        }
+        if (robotManager.getState().hasNote) {
+          yield NoteMapState.PATHFIND_TO_SCORE;
+        }
+        if (localization.atTranslation(midlineCleanupPath.get(1).getTranslation(), 0.2)) {
+          yield NoteMapState.WAITING_FOR_NOTES;
+        }
+        if (timeout(3)) {
+          DogLog.log("AutoManager/SearchMidline2Timeout", Timer.getFPGATimestamp());
           yield NoteMapState.WAITING_FOR_NOTES;
         }
         yield currentState;
       }
-      case SEARCH_SPEAKER -> {
+      case SEARCH_SPEAKER_FIRST -> {
         if (noteTrackingManager.mapContainsNote() && !robotManager.getState().hasNote) {
           yield NoteMapState.INTAKING_PATHFINDING;
         }
         if (robotManager.getState().hasNote) {
           yield NoteMapState.PATHFIND_TO_SCORE;
         }
-        if (localization.atTranslation(getMidlineCleanupPath().get(1).getTranslation(), 0.2)) {
+        if (localization.atTranslation(speakerCleanupPath.get(0).getTranslation(), 0.2)) {
+          yield NoteMapState.SEARCH_SPEAKER_SECOND;
+        }
+        if (timeout(2.5)) {
+          DogLog.log("AutoManager/SearchSpeaker1Timeout", Timer.getFPGATimestamp());
+          yield NoteMapState.SEARCH_SPEAKER_THIRD;
+        }
+        yield currentState;
+      }
+      case SEARCH_SPEAKER_SECOND -> {
+        if (noteTrackingManager.mapContainsNote() && !robotManager.getState().hasNote) {
+          yield NoteMapState.INTAKING_PATHFINDING;
+        }
+        if (robotManager.getState().hasNote) {
+          yield NoteMapState.PATHFIND_TO_SCORE;
+        }
+        if (localization.atTranslation(speakerCleanupPath.get(1).getTranslation(), 0.2)) {
+          yield NoteMapState.SEARCH_SPEAKER_THIRD;
+        }
+        if (timeout(2)) {
+          DogLog.log("AutoManager/SearchSpeaker2Timeout", Timer.getFPGATimestamp());
+          yield NoteMapState.SEARCH_SPEAKER_THIRD;
+        }
+        yield currentState;
+      }
+      case SEARCH_SPEAKER_THIRD -> {
+        if (noteTrackingManager.mapContainsNote() && !robotManager.getState().hasNote) {
+          yield NoteMapState.INTAKING_PATHFINDING;
+        }
+        if (robotManager.getState().hasNote) {
+          yield NoteMapState.PATHFIND_TO_SCORE;
+        }
+        if (localization.atTranslation(speakerCleanupPath.get(2).getTranslation(), 0.2)) {
+          yield NoteMapState.WAITING_FOR_NOTES;
+        }
+        if (timeout(3)) {
+          DogLog.log("AutoManager/SearchSpeaker3Timeout", Timer.getFPGATimestamp());
           yield NoteMapState.WAITING_FOR_NOTES;
         }
         yield currentState;
