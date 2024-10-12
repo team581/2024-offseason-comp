@@ -171,9 +171,6 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
   private Command noteMapCommand = Commands.none();
 
-  private boolean snapToNote = false;
-  private boolean warmupSpeaker = false;
-
   public void setSteps(LinkedList<AutoNoteStep> newSteps) {
     steps = newSteps;
     setStateFromRequest(NoteMapState.WAITING_FOR_NOTES);
@@ -189,15 +186,16 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   @Override
   public void robotPeriodic() {
     super.robotPeriodic();
-    if (snapToNote == true) {
-      if (maybeNotePose.isPresent()) {
-        snaps.setAngle(maybeNotePose.get().getRotation().getDegrees());
+    switch (getState()) {
+      case PATHFIND_TO_SCORE -> {
+        if (robotManager.getState() == RobotState.IDLE_WITH_GP) {
+          robotManager.waitSpeakerShotRequest();
+        }
       }
-    }
-
-    if (warmupSpeaker) {
-      if (robotManager.getState() == RobotState.IDLE_WITH_GP) {
-        robotManager.waitSpeakerShotRequest();
+      case INTAKING_PATHFINDING -> {
+        if (maybeNotePose.isPresent()) {
+          snaps.setAngle(maybeNotePose.get().getRotation().getDegrees());
+        }
       }
     }
   }
@@ -248,12 +246,9 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       case STOPPED -> {
         noteMapCommand.cancel();
         robotManager.stowRequest();
-        warmupSpeaker = false;
-        snapToNote = false;
       }
       case WAITING_FOR_NOTES -> {
         noteMapCommand.cancel();
-        warmupSpeaker = false;
         snaps.setEnabled(false);
         DogLog.log("AutoManager/IdleAction", Timer.getFPGATimestamp());
         if (steps.isEmpty()) {
@@ -287,7 +282,6 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       }
       case SCORE -> {
         noteMapCommand.cancel();
-        warmupSpeaker = false;
         robotManager.speakerShotRequest();
       }
       case INTAKING_PATHFINDING -> {
@@ -304,8 +298,6 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
               AutoBuilder.pathfindToPose(maybeNotePose.get(), DEFAULT_CONSTRAINTS)
                   .withName("PathfindIntake");
           noteMapCommand.schedule();
-          snapToNote = true;
-          snaps.setEnabled(true);
         } else {
           DogLog.log("AutoManager/InPathActionNoNoteExists", Timer.getFPGATimestamp());
         }
@@ -345,7 +337,6 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
             AutoBuilder.pathfindToPose(closestScoringLocation, DEFAULT_CONSTRAINTS)
                 .withName("PathfindScore");
         noteMapCommand.schedule();
-        warmupSpeaker = true;
       }
       case CLEANUP -> {}
       case SEARCH_MIDLINE_FIRST -> {
