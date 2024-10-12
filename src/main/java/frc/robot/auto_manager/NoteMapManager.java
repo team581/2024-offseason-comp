@@ -197,6 +197,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           snaps.setAngle(maybeNotePose.get().getRotation().getDegrees());
         }
       }
+      default -> {}
     }
   }
 
