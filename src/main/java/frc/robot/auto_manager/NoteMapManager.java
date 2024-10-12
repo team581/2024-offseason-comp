@@ -169,12 +169,10 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   private List<Pose2d> speakerCleanupPath = getSpeakerCleanupPath();
   private List<Pose2d> midlineCleanupPath = getMidlineCleanupPath();
 
-
   private Command noteMapCommand = Commands.none();
 
   private boolean snapToNote = false;
   private boolean warmupSpeaker = false;
-
 
   public void setSteps(LinkedList<AutoNoteStep> newSteps) {
     steps = newSteps;
@@ -189,19 +187,19 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   }
 
   @Override
-    public void robotPeriodic() {
-      super.robotPeriodic();
-      if (snapToNote == true) {
-        if (maybeNotePose.isPresent()) {
-          snaps.setAngle(maybeNotePose.get().getRotation().getDegrees());
-        }
+  public void robotPeriodic() {
+    super.robotPeriodic();
+    if (snapToNote == true) {
+      if (maybeNotePose.isPresent()) {
+        snaps.setAngle(maybeNotePose.get().getRotation().getDegrees());
       }
+    }
 
-      if (warmupSpeaker) {
-        if (robotManager.getState() == RobotState.IDLE_WITH_GP) {
-          robotManager.waitSpeakerShotRequest();
-        }
+    if (warmupSpeaker) {
+      if (robotManager.getState() == RobotState.IDLE_WITH_GP) {
+        robotManager.waitSpeakerShotRequest();
       }
+    }
   }
 
   @Override
@@ -216,18 +214,20 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
 
         var rawSearchLocation = maybeSearchPose.get();
-        var maybeCurrentTargetedNote = noteTrackingManager.getNoteNearPose(rawSearchLocation,
-            TARGET_NOTE_THRESHOLD_METERS);
+        var maybeCurrentTargetedNote =
+            noteTrackingManager.getNoteNearPose(rawSearchLocation, TARGET_NOTE_THRESHOLD_METERS);
 
         if (maybeCurrentTargetedNote.isPresent()) {
-          var noteDistanceAngle = VisionSubsystem.distanceAngleToTarget(
-              new Pose2d(maybeCurrentTargetedNote.get().noteTranslation(), new Rotation2d()),
-              localization.getPose());
+          var noteDistanceAngle =
+              VisionSubsystem.distanceAngleToTarget(
+                  new Pose2d(maybeCurrentTargetedNote.get().noteTranslation(), new Rotation2d()),
+                  localization.getPose());
 
-          maybeNotePose = Optional.of(
-              new Pose2d(
-                  maybeCurrentTargetedNote.get().noteTranslation(),
-                  Rotation2d.fromDegrees(noteDistanceAngle.targetAngle() + 180)));
+          maybeNotePose =
+              Optional.of(
+                  new Pose2d(
+                      maybeCurrentTargetedNote.get().noteTranslation(),
+                      Rotation2d.fromDegrees(noteDistanceAngle.targetAngle() + 180)));
 
           if (maybeNotePose.isPresent()) {
             DogLog.log("AutoManager/MaybeNotePose", maybeNotePose.get());
@@ -239,7 +239,6 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
       }
     }
-
   }
 
   // State actions
@@ -351,32 +350,27 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       case CLEANUP -> {}
       case SEARCH_MIDLINE_FIRST -> {
         noteMapCommand.cancel();
-        noteMapCommand =
-            AutoBuilder.pathfindToPose(midlineCleanupPath.get(0), DEFAULT_CONSTRAINTS);
+        noteMapCommand = AutoBuilder.pathfindToPose(midlineCleanupPath.get(0), DEFAULT_CONSTRAINTS);
         noteMapCommand.schedule();
       }
       case SEARCH_MIDLINE_SECOND -> {
         noteMapCommand.cancel();
-        noteMapCommand =
-            AutoBuilder.pathfindToPose(midlineCleanupPath.get(1), DEFAULT_CONSTRAINTS);
+        noteMapCommand = AutoBuilder.pathfindToPose(midlineCleanupPath.get(1), DEFAULT_CONSTRAINTS);
         noteMapCommand.schedule();
       }
       case SEARCH_SPEAKER_FIRST -> {
         noteMapCommand.cancel();
-        noteMapCommand =
-            AutoBuilder.pathfindToPose(speakerCleanupPath.get(0), DEFAULT_CONSTRAINTS);
+        noteMapCommand = AutoBuilder.pathfindToPose(speakerCleanupPath.get(0), DEFAULT_CONSTRAINTS);
         noteMapCommand.schedule();
       }
       case SEARCH_SPEAKER_SECOND -> {
         noteMapCommand.cancel();
-        noteMapCommand =
-            AutoBuilder.pathfindToPose(speakerCleanupPath.get(1), DEFAULT_CONSTRAINTS);
+        noteMapCommand = AutoBuilder.pathfindToPose(speakerCleanupPath.get(1), DEFAULT_CONSTRAINTS);
         noteMapCommand.schedule();
       }
       case SEARCH_SPEAKER_THIRD -> {
         noteMapCommand.cancel();
-        noteMapCommand =
-            AutoBuilder.pathfindToPose(speakerCleanupPath.get(2), DEFAULT_CONSTRAINTS);
+        noteMapCommand = AutoBuilder.pathfindToPose(speakerCleanupPath.get(2), DEFAULT_CONSTRAINTS);
         noteMapCommand.schedule();
       }
     }
@@ -518,8 +512,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         yield NoteMapState.WAITING_FOR_NOTES;
       }
       case CLEANUP ->
-          localization.getPose().getTranslation().getDistance(speakerPose.getTranslation())
-                  < 4.0
+          localization.getPose().getTranslation().getDistance(speakerPose.getTranslation()) < 4.0
               ? NoteMapState.SEARCH_SPEAKER_FIRST
               : NoteMapState.SEARCH_MIDLINE_FIRST;
       case SEARCH_MIDLINE_FIRST -> {
