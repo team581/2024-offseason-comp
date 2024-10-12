@@ -34,9 +34,9 @@ public class NoteMapLocations {
 
   public static final List<Pose2d> RED_DROPPING_DESTINATIONS =
       List.of(
-          new Pose2d(11.39, 7.5, Rotation2d.fromDegrees(0.0)),
+          new Pose2d(11.39, 8.0, Rotation2d.fromDegrees(0.0)),
           new Pose2d(11.91, 4.59, Rotation2d.fromDegrees(0.0)),
-          new Pose2d(11.38, 1.94, Rotation2d.fromDegrees(19.08)));
+          new Pose2d(11.38, 1.94, Rotation2d.fromDegrees(0.0)));
 
   public static final List<Pose2d> BLUE_DROPPING_DESTINATIONS =
       List.of(

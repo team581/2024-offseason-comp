@@ -149,6 +149,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
+    noteMapManager.off();
     // var now = Timer.getFPGATimestamp();
     // DogLog.log("AutoManager/RobotInit", Timer.getFPGATimestamp());
     // noteTrackingManager.resetNoteMap(
@@ -192,6 +193,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
+    noteMapManager.off();
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }

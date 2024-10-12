@@ -290,12 +290,12 @@ public class NoteTrackingManager extends LifecycleSubsystem {
                 return true;
               }
               var searchPose = maybeSearchPose.get();
-              var intakedNote = getNoteNearPose(searchPose, 1.5);
+              var intakedNote = getNoteNearPose(searchPose, 0.8);
               if (robot.getState().hasNote) {
                 // Already holding note
                 // We just intaked this note, so let's remove it from note map
                 if (intakedNote.isPresent()) {
-                  removeNote(intakedNote.get().noteTranslation(), 1.5);
+                  removeNote(intakedNote.get().noteTranslation(), 0.8);
                 }
                 return true;
               }
@@ -305,7 +305,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
                 return true;
               }
 
-              if (localization.atTranslation(searchPose, 0.05)) {
+              if (localization.atTranslation(searchPose, 0.08)) {
                 // We have driven to where the note is, but don't have it
                 // We should have intaked the note at this point, so just continue
 

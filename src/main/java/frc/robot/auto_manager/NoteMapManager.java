@@ -19,6 +19,7 @@ import frc.robot.note_tracking.NoteMapElement;
 import frc.robot.note_tracking.NoteTrackingManager;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
+import frc.robot.robot_manager.RobotState;
 import frc.robot.snaps.SnapManager;
 import frc.robot.util.scheduling.SubsystemPriority;
 import frc.robot.util.state_machines.StateMachine;
@@ -146,11 +147,12 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           noteTrackingManager.resetNoteMap(
               new ArrayList<>(
                   List.of(
-                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4)),
-                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(5)))));
+                      new NoteMapElement(now + 20, AutoNoteStaged.noteIdToTranslation(4)),
+                      new NoteMapElement(now + 20, AutoNoteStaged.noteIdToTranslation(5)))));
           var steps = new LinkedList<AutoNoteStep>();
-          steps.add(AutoNoteStep.score(4));
+          steps.add(AutoNoteStep.drop(4));
           steps.add(AutoNoteStep.score(5));
+          steps.add(AutoNoteStep.score(10));
 
           setSteps(steps);
         });
@@ -171,6 +173,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   private Command noteMapCommand = Commands.none();
 
   private boolean snapToNote = false;
+  private boolean warmupSpeaker = false;
+
 
   public void setSteps(LinkedList<AutoNoteStep> newSteps) {
     steps = newSteps;
@@ -185,16 +189,24 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   }
 
   @Override
-  public void robotPeriodic() {
-    if (snapToNote == true) {
-      if (maybeNotePose.isPresent()) {
-        snaps.setAngle(maybeNotePose.get().getRotation().getDegrees());
+    public void robotPeriodic() {
+      super.robotPeriodic();
+      if (snapToNote == true) {
+        if (maybeNotePose.isPresent()) {
+          snaps.setAngle(maybeNotePose.get().getRotation().getDegrees());
+        }
       }
-    }
+
+      if (warmupSpeaker) {
+        if (robotManager.getState() == RobotState.IDLE_WITH_GP) {
+          robotManager.waitSpeakerShotRequest();
+        }
+      }
   }
 
   @Override
   protected void collectInputs() {
+
     if (currentStep.isPresent()) {
 
       for (var maybeSearchPoseSupplier : currentStep.get().notes()) {
@@ -204,20 +216,18 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
 
         var rawSearchLocation = maybeSearchPose.get();
-        var maybeCurrentTargetedNote =
-            noteTrackingManager.getNoteNearPose(rawSearchLocation, TARGET_NOTE_THRESHOLD_METERS);
+        var maybeCurrentTargetedNote = noteTrackingManager.getNoteNearPose(rawSearchLocation,
+            TARGET_NOTE_THRESHOLD_METERS);
 
         if (maybeCurrentTargetedNote.isPresent()) {
-          var noteDistanceAngle =
-              VisionSubsystem.distanceAngleToTarget(
-                  new Pose2d(maybeCurrentTargetedNote.get().noteTranslation(), new Rotation2d()),
-                  localization.getPose());
+          var noteDistanceAngle = VisionSubsystem.distanceAngleToTarget(
+              new Pose2d(maybeCurrentTargetedNote.get().noteTranslation(), new Rotation2d()),
+              localization.getPose());
 
-          maybeNotePose =
-              Optional.of(
-                  new Pose2d(
-                      maybeCurrentTargetedNote.get().noteTranslation(),
-                      Rotation2d.fromDegrees(noteDistanceAngle.targetAngle() + 180)));
+          maybeNotePose = Optional.of(
+              new Pose2d(
+                  maybeCurrentTargetedNote.get().noteTranslation(),
+                  Rotation2d.fromDegrees(noteDistanceAngle.targetAngle() + 180)));
 
           if (maybeNotePose.isPresent()) {
             DogLog.log("AutoManager/MaybeNotePose", maybeNotePose.get());
@@ -229,6 +239,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
       }
     }
+
   }
 
   // State actions
@@ -238,9 +249,12 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       case STOPPED -> {
         noteMapCommand.cancel();
         robotManager.stowRequest();
+        warmupSpeaker = false;
+        snapToNote = false;
       }
       case WAITING_FOR_NOTES -> {
         noteMapCommand.cancel();
+        warmupSpeaker = false;
         snaps.setEnabled(false);
         DogLog.log("AutoManager/IdleAction", Timer.getFPGATimestamp());
         if (steps.isEmpty()) {
@@ -259,6 +273,9 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       }
       case DROP -> {
         noteMapCommand.cancel();
+
+        snaps.setAngle(droppingDestination.getRotation().getDegrees());
+        snaps.setEnabled(true);
         var translationFieldRelative =
             new Translation2d(DROPPED_NOTE_DISTANCE_METERS, 0)
                 .rotateBy(localization.getPose().getRotation())
@@ -271,6 +288,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       }
       case SCORE -> {
         noteMapCommand.cancel();
+        warmupSpeaker = false;
         robotManager.speakerShotRequest();
       }
       case INTAKING_PATHFINDING -> {
@@ -328,7 +346,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
             AutoBuilder.pathfindToPose(closestScoringLocation, DEFAULT_CONSTRAINTS)
                 .withName("PathfindScore");
         noteMapCommand.schedule();
-        robotManager.waitSpeakerShotRequest();
+        warmupSpeaker = true;
       }
       case CLEANUP -> {}
       case SEARCH_MIDLINE_FIRST -> {
@@ -481,7 +499,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
         if (timeout(4)) {
           DogLog.log("AutoManager/PathfindScoreTimeout", Timer.getFPGATimestamp());
-          yield NoteMapState.WAITING_FOR_NOTES;
+          yield NoteMapState.SCORE;
         }
         yield currentState;
       }
