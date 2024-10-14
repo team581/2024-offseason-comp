@@ -8,7 +8,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import java.util.List;
 
 public class InterpolationUtil {
-  private static final boolean USE_LINEAR_WEIGHTS = true;
+  private static final boolean USE_LINEAR_WEIGHTS = false;
 
   public static Translation2d interpolateTranslation(
       List<VisionInterpolationData> dataPoints, Translation2d visionInput) {
