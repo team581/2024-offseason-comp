@@ -23,8 +23,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.config.RobotConfig;
 import frc.robot.fms.FmsSubsystem;
-import frc.robot.generated.CompBotTunerConstants;
-import frc.robot.generated.PracticeBotTunerConstants;
 import frc.robot.util.ControllerHelpers;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;

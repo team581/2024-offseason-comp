@@ -143,7 +143,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
     return Commands.runOnce(
         () -> {
           var now = Timer.getFPGATimestamp();
-          DogLog.log("AutoManager/TestCommandRun", Timer.getFPGATimestamp());
+          DogLog.timestamp("AutoManager/TestCommandRun");
           noteTrackingManager.resetNoteMap(
               new ArrayList<>(
                   List.of(
@@ -251,18 +251,18 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       case WAITING_FOR_NOTES -> {
         noteMapCommand.cancel();
         snaps.setEnabled(false);
-        DogLog.log("AutoManager/IdleAction", Timer.getFPGATimestamp());
+        DogLog.timestamp("AutoManager/IdleAction");
         if (steps.isEmpty()) {
           // Nothing new to do, keep idling
-          DogLog.log("AutoManager/IdleStepsEmpty", Timer.getFPGATimestamp());
+          DogLog.timestamp("AutoManager/IdleStepsEmpty");
 
         } else {
-          DogLog.log("AutoManager/IdleStepsPresent", Timer.getFPGATimestamp());
+          DogLog.timestamp("AutoManager/IdleStepsPresent");
           currentStep = Optional.of(steps.poll());
           if (currentStep.isEmpty()) {
-            DogLog.log("AutoManager/IdleCurrentStepEmpty", Timer.getFPGATimestamp());
+            DogLog.timestamp("AutoManager/IdleCurrentStepEmpty");
           } else {
-            DogLog.log("AutoManager/IdleCurrentStepPresent", Timer.getFPGATimestamp());
+            DogLog.timestamp("AutoManager/IdleCurrentStepPresent");
           }
         }
       }
@@ -289,30 +289,30 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         noteMapCommand.cancel();
         snaps.setEnabled(false);
         if (currentStep.isEmpty()) {
-          DogLog.log("AutoManager/InPathActionCurrentStepEmpty", Timer.getFPGATimestamp());
+          DogLog.timestamp("AutoManager/InPathActionCurrentStepEmpty");
           break;
         }
 
         if (maybeNotePose.isPresent()) {
-          DogLog.log("AutoManager/InPathActionNoteExists", Timer.getFPGATimestamp());
+          DogLog.timestamp("AutoManager/InPathActionNoteExists");
           noteMapCommand =
               AutoBuilder.pathfindToPose(maybeNotePose.get(), DEFAULT_CONSTRAINTS)
                   .withName("PathfindIntake");
           noteMapCommand.schedule();
         } else {
-          DogLog.log("AutoManager/InPathActionNoNoteExists", Timer.getFPGATimestamp());
+          DogLog.timestamp("AutoManager/InPathActionNoNoteExists");
         }
       }
       case INTAKING_PID -> {
         noteMapCommand.cancel();
         snaps.setEnabled(false);
         if (currentStep.isEmpty()) {
-          DogLog.log("AutoManager/InPIDActionCurrentStepEmpty", Timer.getFPGATimestamp());
+          DogLog.timestamp("AutoManager/InPIDActionCurrentStepEmpty");
           break;
         }
 
         if (maybeNotePose.isPresent()) {
-          DogLog.log("AutoManager/InPIDActionNoteExists", Timer.getFPGATimestamp());
+          DogLog.timestamp("AutoManager/InPIDActionNoteExists");
           noteMapCommand =
               noteTrackingManager
                   .intakeNoteAtPose(
@@ -377,34 +377,34 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       }
       case WAITING_FOR_NOTES -> {
         if (currentStep.isPresent() && currentStep.get().action() == AutoNoteAction.CLEANUP) {
-          DogLog.log("AutoManager/IdleToCleanup", Timer.getFPGATimestamp());
+          DogLog.timestamp("AutoManager/IdleToCleanup");
           yield NoteMapState.CLEANUP;
         } else if (currentStep.isPresent() && maybeNotePose.isPresent()) {
-          DogLog.log("AutoManager/IdleToIntakePathfinding", Timer.getFPGATimestamp());
+          DogLog.timestamp("AutoManager/IdleToIntakePathfinding");
 
           yield NoteMapState.INTAKING_PATHFINDING;
         }
 
-        DogLog.log("AutoManager/IdleToIdle", Timer.getFPGATimestamp());
+        DogLog.timestamp("AutoManager/IdleToIdle");
         yield currentState;
       }
       case INTAKING_PATHFINDING -> {
         // If current step is empty
         if (currentStep.isEmpty()) {
-          DogLog.log("AutoManager/IntakingPathfindCurrentStepEmpty", Timer.getFPGATimestamp());
+          DogLog.timestamp("AutoManager/IntakingPathfindCurrentStepEmpty");
 
           yield NoteMapState.WAITING_FOR_NOTES;
         }
 
         // If note doesn't exist on map
         if (maybeNotePose.isEmpty()) {
-          DogLog.log("AutoManager/IntakingPathfindMapNoteGone", Timer.getFPGATimestamp());
+          DogLog.timestamp("AutoManager/IntakingPathfindMapNoteGone");
           yield NoteMapState.WAITING_FOR_NOTES;
         }
 
         // If we already have note go and score/drop
         if (robotManager.getState().hasNote) {
-          DogLog.log("AutoManager/IntakingPathfindRobotHasNote", Timer.getFPGATimestamp());
+          DogLog.timestamp("AutoManager/IntakingPathfindRobotHasNote");
           if (currentStep.isPresent() && currentStep.get().action() == AutoNoteAction.DROP) {
             yield NoteMapState.PATHFIND_TO_DROP;
           }
@@ -418,13 +418,13 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
                     .getTranslation()
                     .getDistance(localization.getPose().getTranslation())
                 < INTAKE_PATHFIND_THRESHOLD_METERS) {
-          DogLog.log("AutoManager/CloseEnoughStopPathfinding", Timer.getFPGATimestamp());
+          DogLog.timestamp("AutoManager/CloseEnoughStopPathfinding");
 
           yield NoteMapState.INTAKING_PID;
         }
 
         if (timeout(4)) {
-          DogLog.log("AutoManager/PathfindIntakeTimeout", Timer.getFPGATimestamp());
+          DogLog.timestamp("AutoManager/PathfindIntakeTimeout");
           yield NoteMapState.WAITING_FOR_NOTES;
         }
 
@@ -449,7 +449,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
 
         if (timeout(3)) {
-          DogLog.log("AutoManager/PIDIntakeTimeout", Timer.getFPGATimestamp());
+          DogLog.timestamp("AutoManager/PIDIntakeTimeout");
           yield NoteMapState.WAITING_FOR_NOTES;
         }
 
@@ -467,7 +467,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
 
         if (timeout(4)) {
-          DogLog.log("AutoManager/PathfindDropTimeout", Timer.getFPGATimestamp());
+          DogLog.timestamp("AutoManager/PathfindDropTimeout");
           yield NoteMapState.WAITING_FOR_NOTES;
         }
         yield currentState;
@@ -484,7 +484,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
 
         if (timeout(4)) {
-          DogLog.log("AutoManager/PathfindScoreTimeout", Timer.getFPGATimestamp());
+          DogLog.timestamp("AutoManager/PathfindScoreTimeout");
           yield NoteMapState.SCORE;
         }
         yield currentState;
@@ -518,7 +518,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           yield NoteMapState.SEARCH_MIDLINE_SECOND;
         }
         if (timeout(3)) {
-          DogLog.log("AutoManager/SearchMidline1Timeout", Timer.getFPGATimestamp());
+          DogLog.timestamp("AutoManager/SearchMidline1Timeout");
           yield NoteMapState.SEARCH_SPEAKER_THIRD;
         }
         yield currentState;
@@ -534,7 +534,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           yield NoteMapState.WAITING_FOR_NOTES;
         }
         if (timeout(3)) {
-          DogLog.log("AutoManager/SearchMidline2Timeout", Timer.getFPGATimestamp());
+          DogLog.timestamp("AutoManager/SearchMidline2Timeout");
           yield NoteMapState.WAITING_FOR_NOTES;
         }
         yield currentState;
@@ -550,7 +550,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           yield NoteMapState.SEARCH_SPEAKER_SECOND;
         }
         if (timeout(2.5)) {
-          DogLog.log("AutoManager/SearchSpeaker1Timeout", Timer.getFPGATimestamp());
+          DogLog.timestamp("AutoManager/SearchSpeaker1Timeout");
           yield NoteMapState.SEARCH_SPEAKER_THIRD;
         }
         yield currentState;
@@ -566,7 +566,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           yield NoteMapState.SEARCH_SPEAKER_THIRD;
         }
         if (timeout(2)) {
-          DogLog.log("AutoManager/SearchSpeaker2Timeout", Timer.getFPGATimestamp());
+          DogLog.timestamp("AutoManager/SearchSpeaker2Timeout");
           yield NoteMapState.SEARCH_SPEAKER_THIRD;
         }
         yield currentState;
@@ -582,7 +582,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           yield NoteMapState.WAITING_FOR_NOTES;
         }
         if (timeout(3)) {
-          DogLog.log("AutoManager/SearchSpeaker3Timeout", Timer.getFPGATimestamp());
+          DogLog.timestamp("AutoManager/SearchSpeaker3Timeout");
           yield NoteMapState.WAITING_FOR_NOTES;
         }
         yield currentState;

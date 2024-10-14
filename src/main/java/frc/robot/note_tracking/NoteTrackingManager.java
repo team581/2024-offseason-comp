@@ -310,7 +310,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
                 // We should have intaked the note at this point, so just continue
 
                 // Someone else probably just intaked this note, so let's remove it from note map
-                DogLog.log("NoteTracking/TimeoutAtTranslation", Timer.getFPGATimestamp());
+                DogLog.timestamp("NoteTracking/TimeoutAtTranslation");
                 if (intakedNote.isPresent()) {
                   removeNote(intakedNote.get().noteTranslation(), 1.5);
                 }
