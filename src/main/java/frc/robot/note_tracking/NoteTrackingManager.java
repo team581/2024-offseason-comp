@@ -38,7 +38,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private static final double CAMERA_IMAGE_HEIGHT = 960.0;
   private static final double CAMERA_IMAGE_WIDTH = 1280.0;
   // how much we keep a note in the map if it was added or updated from camera (seconds)
-  private static final double NOTE_MAP_LIFETIME = 10.0;
+  private static final double NOTE_MAP_LIFETIME_SECONDS = 10.0;
   private final LocalizationSubsystem localization;
   private final SwerveSubsystem swerve;
   private final RobotCommands actions;
@@ -380,7 +380,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   }
 
   public void addNoteToMap(Translation2d pose) {
-    noteMap.add(new NoteMapElement(Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME, pose, 10));
+    noteMap.add(new NoteMapElement(Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME_SECONDS, pose));
   }
 
   private void updateMap() {
@@ -413,7 +413,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
       }
     }
 
-    double newNoteExpiry = Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME;
+    double newNoteExpiry = Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME_SECONDS;
 
     for (var visionNote : visionNotes) {
       Optional<NoteMapElement> match =
