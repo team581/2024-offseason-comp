@@ -7,6 +7,7 @@ package frc.robot.auto_manager;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
 import dev.doglog.DogLog;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -41,7 +42,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       new PathConstraints(5.0, 5.0, 2 * Math.PI, 4 * Math.PI);
   private static final double TARGET_NOTE_THRESHOLD_METERS = 2.0;
   private static final double INTAKE_PATHFIND_THRESHOLD_METERS = 2.0;
-  private static final double DROPPED_NOTE_DISTANCE_METERS = 1.0;
+  private static final double DROPPED_NOTE_DISTANCE_METERS = 0.95;
 
   public NoteMapManager(
       RobotCommands actions,
@@ -169,6 +170,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   private List<Pose2d> speakerCleanupPath = getSpeakerCleanupPath();
   private List<Pose2d> midlineCleanupPath = getMidlineCleanupPath();
 
+  // TODO: Remove this if we end up using triggers
   private Command noteMapCommand = Commands.none();
 
   public void setSteps(LinkedList<AutoNoteStep> newSteps) {
@@ -180,6 +182,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
     currentStep = Optional.empty();
     steps = new LinkedList<>();
     maybeNotePose = Optional.empty();
+    noteMapCommand.cancel();
     setStateFromRequest(NoteMapState.STOPPED);
   }
 
@@ -197,8 +200,18 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           snaps.setAngle(maybeNotePose.get().getRotation().getDegrees());
         }
       }
+      case PATHFIND_TO_DROP -> {
+        if (robotManager.getState() == RobotState.IDLE_WITH_GP) {
+          robotManager.waitingDropRequest();
+        }
+      }
       default -> {}
     }
+
+    // todo: log target score pose, drop pose, etc.
+    // log always, even when it's not relevant
+    DogLog.log("AutoManager/ScoringPose", closestScoringLocation);
+    DogLog.log("AutoManager/DroppingPose", droppingDestination);
   }
 
   @Override
@@ -287,7 +300,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       }
       case INTAKING_PATHFINDING -> {
         noteMapCommand.cancel();
-        snaps.setEnabled(false);
+        robotManager.intakeRequest();
+        snaps.setEnabled(true);
         if (currentStep.isEmpty()) {
           DogLog.timestamp("AutoManager/InPathActionCurrentStepEmpty");
           break;
@@ -305,6 +319,10 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       }
       case INTAKING_PID -> {
         noteMapCommand.cancel();
+        DogLog.log(
+            "AutoManager/IntakePid/OldPathfindCommandCancelled", noteMapCommand.isFinished());
+        DogLog.log(
+            "AutoManager/IntakePid/OldPathfindCommandScheduled", noteMapCommand.isScheduled());
         snaps.setEnabled(false);
         if (currentStep.isEmpty()) {
           DogLog.timestamp("AutoManager/InPIDActionCurrentStepEmpty");
@@ -324,6 +342,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       case PATHFIND_TO_DROP -> {
         noteMapCommand.cancel();
         snaps.setEnabled(false);
+
         droppingDestination = getClosestDroppingDestination();
         noteMapCommand =
             AutoBuilder.pathfindToPose(droppingDestination, DEFAULT_CONSTRAINTS)
@@ -367,6 +386,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       }
     }
   }
+
+  private final Debouncer droppedNoteInRobotDebouncer = new Debouncer(0.5);
 
   // State transitions
   @Override
@@ -423,6 +444,14 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           yield NoteMapState.INTAKING_PID;
         }
 
+        // Pathfinding might finish even though we are way off from where we want to be
+        // Which sucks but like, what're you gonna do
+        // So just try PID at that point
+        if (noteMapCommand.isFinished()) {
+          DogLog.timestamp("AutoManager/IntakePathfindingFinished");
+          yield NoteMapState.INTAKING_PID;
+        }
+
         if (timeout(4)) {
           DogLog.timestamp("AutoManager/PathfindIntakeTimeout");
           yield NoteMapState.WAITING_FOR_NOTES;
@@ -448,7 +477,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           yield NoteMapState.WAITING_FOR_NOTES;
         }
 
-        if (timeout(3)) {
+        if (timeout(4)) {
           DogLog.timestamp("AutoManager/PIDIntakeTimeout");
           yield NoteMapState.WAITING_FOR_NOTES;
         }
@@ -462,7 +491,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
 
         // if we finished pathfinding, drop note
-        if (localization.atTranslation(droppingDestination.getTranslation(), 0.2)) {
+        if (noteMapCommand.isFinished()) {
+          DogLog.timestamp("AutoManager/PathfindDropFinished");
           yield NoteMapState.DROP;
         }
 
@@ -470,6 +500,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           DogLog.timestamp("AutoManager/PathfindDropTimeout");
           yield NoteMapState.WAITING_FOR_NOTES;
         }
+
         yield currentState;
       }
       case PATHFIND_TO_SCORE -> {
@@ -479,7 +510,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
 
         // If we're already at location to score, score the note
-        if (localization.atTranslation(closestScoringLocation.getTranslation(), 0.2)) {
+        if (noteMapCommand.isFinished()) {
+          DogLog.timestamp("AutoManager/PathfindScoreFinished");
           yield NoteMapState.SCORE;
         }
 
@@ -489,7 +521,10 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
         yield currentState;
       }
-      case DROP -> robotManager.getState().hasNote ? currentState : NoteMapState.WAITING_FOR_NOTES;
+      case DROP ->
+          droppedNoteInRobotDebouncer.calculate(robotManager.getState().hasNote)
+              ? currentState
+              : NoteMapState.WAITING_FOR_NOTES;
       case SCORE -> {
         if (currentStep.isPresent() && currentStep.get().action().equals(AutoNoteAction.CLEANUP)) {
           if (robotManager.getState().hasNote) {

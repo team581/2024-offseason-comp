@@ -8,7 +8,6 @@ import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
-import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.config.RobotConfig;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
@@ -45,11 +44,7 @@ public class ShooterSubsystem extends LifecycleSubsystem {
 
   @Override
   public void robotPeriodic() {
-    if (goalMode == ShooterMode.SHOOTER_AMP) {
-      usingNoteSpin = false;
-    } else {
-      usingNoteSpin = true;
-    }
+    usingNoteSpin = true;
     switch (goalMode) {
       case SPEAKER_SHOT:
         goalRPM = speakerDistanceToRPM.get(speakerDistance);
@@ -65,22 +60,22 @@ public class ShooterSubsystem extends LifecycleSubsystem {
         break;
       case DROPPING:
         goalRPM = ShooterRPMs.DROPPING;
+        usingNoteSpin = false;
         break;
       case OUTTAKE:
         goalRPM = ShooterRPMs.OUTTAKE;
         break;
       case SHOOTER_AMP:
         goalRPM = ShooterRPMs.SHOOTER_AMP;
+        usingNoteSpin = false;
         break;
       case IDLE:
-        if (DriverStation.isAutonomous()) {
-          goalRPM = speakerDistanceToRPM.get(speakerDistance);
-        } else {
-          goalRPM = ShooterRPMs.IDLE;
-        }
+        goalRPM = ShooterRPMs.IDLE;
+        usingNoteSpin = false;
         break;
       case FULLY_STOPPED:
         goalRPM = ShooterRPMs.FULLY_STOPPED;
+        usingNoteSpin = false;
         break;
       default:
         break;

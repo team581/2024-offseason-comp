@@ -200,7 +200,8 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   }
 
   private static boolean isOutOfBounds(Pose2d notePose) {
-    var fieldBorderThreshold = Units.inchesToMeters(4);
+    // This is important in ignoring hallucinated notes from reflections in field border (ex. RSL)
+    var fieldBorderThreshold = Units.inchesToMeters(3);
     boolean yOutOfBounds =
         notePose.getY() < (0.0 + fieldBorderThreshold)
             || notePose.getY() > (8.2 - fieldBorderThreshold);
@@ -212,9 +213,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   }
 
   private List<Pose2d> getFilteredNotePoses() {
-    if (!safeToTrack()) {
-      return List.of();
-    }
+
     List<Pose2d> possibleNotes = getRawNotePoses();
     List<Pose2d> filteredNotes = new ArrayList<>();
 
@@ -222,6 +221,15 @@ public class NoteTrackingManager extends LifecycleSubsystem {
       if (!isOutOfBounds(possibleNote)) {
         filteredNotes.add(possibleNote);
       }
+    }
+
+    DogLog.log(
+        "asdlasdljkljaksdlkjasd/UnsafeRawNoteMap", possibleNotes.stream().toArray(Pose2d[]::new));
+    DogLog.log(
+        "asdlasdljkljaksdlkjasd/UnsafeNoteMap", filteredNotes.stream().toArray(Pose2d[]::new));
+
+    if (!safeToTrack()) {
+      return List.of();
     }
 
     return filteredNotes;

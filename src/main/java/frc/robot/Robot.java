@@ -154,10 +154,16 @@ public class Robot extends TimedRobot {
     // DogLog.timestamp("AutoManager/RobotInit");
     // noteTrackingManager.resetNoteMap(
     //     new ArrayList<>(
-    //         List.of(new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4)))));
+    //         List.of(
+    //             new NoteMapElement(now + 8, AutoNoteStaged.noteIdToTranslation(4)),
+    //             new NoteMapElement(now + 5, AutoNoteStaged.noteIdToTranslation(5)),
+    //             new NoteMapElement(now + 3, AutoNoteStaged.noteIdToTranslation(6))
+
+    //           )));
     // var steps = new LinkedList<AutoNoteStep>();
+    // steps.add(AutoNoteStep.score(7, 6));
     // steps.add(AutoNoteStep.score(4));
-    // autoManager.setSteps(steps);
+    // noteMapManager.setSteps(steps);
   }
 
   @Override
