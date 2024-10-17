@@ -37,6 +37,10 @@ import java.util.function.Supplier;
 public class NoteTrackingManager extends LifecycleSubsystem {
   private static final double CAMERA_IMAGE_HEIGHT = 960.0;
   private static final double CAMERA_IMAGE_WIDTH = 1280.0;
+  private static final double NOTE_LIMELIGHT_PITCH = 0.0;
+  private static final double NOTE_LIMELIGHT_HEIGHT = 0.0;
+  private static final double NOTE_LIMELIGHT_FORWARD_DISTANCE = 0.0;
+
   // how much we keep a note in the map if it was added or updated from camera (seconds)
   private static final double NOTE_MAP_LIFETIME_SECONDS = 10.0;
   private final LocalizationSubsystem localization;
@@ -129,7 +133,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   }
 
   private Optional<Pose2d> noteTxTyToPose(double tx, double ty) {
-
     double latency =
         (LimelightHelpers.getLatency_Capture(LIMELIGHT_NAME)
                 + LimelightHelpers.getLatency_Pipeline(LIMELIGHT_NAME))
@@ -142,34 +145,52 @@ public class NoteTrackingManager extends LifecycleSubsystem {
       return Optional.empty();
     }
 
-    double forwardDistanceToNote = tyToDistance.get(ty);
-    Rotation2d angleFromNote = Rotation2d.fromDegrees(tx);
+    // Convert tx and ty to angles, tx on the limelight does not follow RHR
+    // convention, so we need to negate by one
 
-    var c = forwardDistanceToNote / Math.cos(angleFromNote.getRadians());
-    double sidewaysDistanceToNote = Math.sqrt(Math.pow(c, 2) - Math.pow(forwardDistanceToNote, 2));
+    double thetaX = -1 * Units.degreesToRadians(tx);
+    double thetaY = Units.degreesToRadians(ty);
+    double adjustedThetaY = NOTE_LIMELIGHT_PITCH - thetaY;
+    double yOffset =
+        (NOTE_LIMELIGHT_HEIGHT / Math.tan(adjustedThetaY)) + NOTE_LIMELIGHT_FORWARD_DISTANCE;
 
-    // Flips side of robot note is on based on if tx is positive or negative
-    if (tx > 0) {
-      sidewaysDistanceToNote *= -1.0;
-    }
+    double xOffset = yOffset * Math.tan(thetaX);
 
-    var notePoseWithoutRotation =
-        new Translation2d(-forwardDistanceToNote, -sidewaysDistanceToNote)
-            .rotateBy(robotPoseAtCapture.getRotation());
+    // invert both offsets since note is technically behind robot
+    var robotRelativeNoteTranslation = new Translation2d(-yOffset, -xOffset);
+    var fieldRelativeNoteTranslation =
+        robotRelativeNoteTranslation
+            .rotateBy(robotPoseAtCapture.getRotation())
+            .plus(robotPoseAtCapture.getTranslation());
+    var fieldRelativeNotePose = new Pose2d(fieldRelativeNoteTranslation, new Rotation2d());
 
-    var notePoseWithRobot =
-        new Translation2d(
-            robotPoseAtCapture.getX() + notePoseWithoutRotation.getX(),
-            robotPoseAtCapture.getY() + notePoseWithoutRotation.getY());
-    // Uses distance angle math to aim, inverses the angle for intake
+    return Optional.of(fieldRelativeNotePose);
 
-    DistanceAngle noteDistanceAngle =
-        VisionSubsystem.distanceAngleToTarget(
-            new Pose2d(notePoseWithRobot, new Rotation2d()), robotPoseAtCapture);
-    Rotation2d rotation =
-        new Rotation2d(Units.degreesToRadians(noteDistanceAngle.targetAngle()) + Math.PI);
+    // double forwardDistanceToNote = tyToDistance.get(ty);
+    // Rotation2d angleFromNote = Rotation2d.fromDegrees(tx);
 
-    return Optional.of(new Pose2d(notePoseWithRobot, rotation));
+    // double sidewaysDistanceToNote = Math.sqrt(Math.pow(forwardDistanceToNote /
+    // Math.cos(angleFromNote.getRadians()), 2) - Math.pow(forwardDistanceToNote, 2));
+
+    // // Flips side of robot note is on based on if tx is positive or negative
+    // if (tx > 0) {
+    //   sidewaysDistanceToNote *= -1.0;
+    // }
+
+    // var fieldRelativeNotePose =
+    //     new Translation2d(-forwardDistanceToNote, -sidewaysDistanceToNote)
+    //
+    // .rotateBy(robotPoseAtCapture.getRotation()).plus(robotPoseAtCapture.getTranslation());
+
+    // // Uses distance angle math to aim, inverses the angle for intake
+
+    // DistanceAngle noteDistanceAngle =
+    //     VisionSubsystem.distanceAngleToTarget(
+    //         new Pose2d(fieldRelativeNotePose, new Rotation2d()), robotPoseAtCapture);
+    // Rotation2d rotation =
+    //     new Rotation2d(Units.degreesToRadians(noteDistanceAngle.targetAngle()) + Math.PI);
+
+    // return Optional.of(new Pose2d(fieldRelativeNotePose, rotation));
   }
 
   private List<Pose2d> getRawNotePoses() {
