@@ -39,7 +39,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private static final double CAMERA_IMAGE_WIDTH = 1280.0;
   private static final double NOTE_LIMELIGHT_PITCH = 0.0;
   private static final double NOTE_LIMELIGHT_HEIGHT = 0.0;
-  private static final double NOTE_LIMELIGHT_FORWARD_DISTANCE = 0.0;
+  private static final double NOTE_LIMELIGHT_FORWARD_DISTANCE_FROM_CENTER = 0.0;
 
   // how much we keep a note in the map if it was added or updated from camera (seconds)
   private static final double NOTE_MAP_LIFETIME_SECONDS = 10.0;
@@ -152,7 +152,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     double thetaY = Units.degreesToRadians(ty);
     double adjustedThetaY = NOTE_LIMELIGHT_PITCH - thetaY;
     double yOffset =
-        (NOTE_LIMELIGHT_HEIGHT / Math.tan(adjustedThetaY)) + NOTE_LIMELIGHT_FORWARD_DISTANCE;
+        (NOTE_LIMELIGHT_HEIGHT / Math.tan(adjustedThetaY)) + Math.abs(NOTE_LIMELIGHT_FORWARD_DISTANCE_FROM_CENTER);
 
     double xOffset = yOffset * Math.tan(thetaX);
 
