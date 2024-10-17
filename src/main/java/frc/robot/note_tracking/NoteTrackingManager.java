@@ -152,7 +152,8 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     double thetaY = Units.degreesToRadians(ty);
     double adjustedThetaY = NOTE_LIMELIGHT_PITCH - thetaY;
     double yOffset =
-        (NOTE_LIMELIGHT_HEIGHT / Math.tan(adjustedThetaY)) + Math.abs(NOTE_LIMELIGHT_FORWARD_DISTANCE_FROM_CENTER);
+        (NOTE_LIMELIGHT_HEIGHT / Math.tan(adjustedThetaY))
+            + Math.abs(NOTE_LIMELIGHT_FORWARD_DISTANCE_FROM_CENTER);
 
     double xOffset = yOffset * Math.tan(thetaX);
 
@@ -165,32 +166,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     var fieldRelativeNotePose = new Pose2d(fieldRelativeNoteTranslation, new Rotation2d());
 
     return Optional.of(fieldRelativeNotePose);
-
-    // double forwardDistanceToNote = tyToDistance.get(ty);
-    // Rotation2d angleFromNote = Rotation2d.fromDegrees(tx);
-
-    // double sidewaysDistanceToNote = Math.sqrt(Math.pow(forwardDistanceToNote /
-    // Math.cos(angleFromNote.getRadians()), 2) - Math.pow(forwardDistanceToNote, 2));
-
-    // // Flips side of robot note is on based on if tx is positive or negative
-    // if (tx > 0) {
-    //   sidewaysDistanceToNote *= -1.0;
-    // }
-
-    // var fieldRelativeNotePose =
-    //     new Translation2d(-forwardDistanceToNote, -sidewaysDistanceToNote)
-    //
-    // .rotateBy(robotPoseAtCapture.getRotation()).plus(robotPoseAtCapture.getTranslation());
-
-    // // Uses distance angle math to aim, inverses the angle for intake
-
-    // DistanceAngle noteDistanceAngle =
-    //     VisionSubsystem.distanceAngleToTarget(
-    //         new Pose2d(fieldRelativeNotePose, new Rotation2d()), robotPoseAtCapture);
-    // Rotation2d rotation =
-    //     new Rotation2d(Units.degreesToRadians(noteDistanceAngle.targetAngle()) + Math.PI);
-
-    // return Optional.of(new Pose2d(fieldRelativeNotePose, rotation));
   }
 
   private List<Pose2d> getRawNotePoses() {
