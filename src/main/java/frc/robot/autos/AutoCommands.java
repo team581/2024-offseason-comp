@@ -102,44 +102,12 @@ public class AutoCommands {
         () -> {
           var steps = new LinkedList<AutoNoteStep>();
           steps.add(AutoNoteStep.score(3));
-          steps.add(AutoNoteStep.score(4, 5));
+          steps.add(AutoNoteStep.drop(4, 5));
           steps.add(AutoNoteStep.score(5, 6));
-          steps.add(AutoNoteStep.score(6));
-
+          steps.add(AutoNoteStep.score(10));
           noteMapManager.setSteps(steps);
         });
   }
-
-  // public Command doManyAutoSteps(List<AutoNoteStep> steps) {
-  //   return
-  // Commands.sequence(steps.stream().map(autoManager::doAutoStep).toArray(Command[]::new));
-  // }
-
-  // public Command noteMap456Command() {
-  //   return doManyAutoSteps(
-  //       List.of(AutoNoteStep.score(4, 5), AutoNoteStep.score(5, 6), AutoNoteStep.score(6)));
-  // }
-
-  // public Command notemap567Command() {
-  //   return Commands.sequence(
-  //       Commands.runOnce(
-  //           () -> {
-  //             var now = Timer.getFPGATimestamp();
-  //             noteTrackingManager.resetNoteMap(
-  //                 new ArrayList<>(
-  //                     List.of(
-  //                         new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(5)),
-  //                         new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(6)),
-  //                         new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(7)))));
-  //           }),
-  //       doManyAutoSteps(
-  //           List.of(AutoNoteStep.score(5, 6), AutoNoteStep.score(6, 7), AutoNoteStep.score(7))));
-  // }
-
-  // public Command notemap4_10Command() {
-  //   return doManyAutoSteps(
-  //       List.of(AutoNoteStep.score(4, 5), AutoNoteStep.score(5, 6), AutoNoteStep.score(10)));
-  // }
 
   public Command noteMapResetCommand() {
     return Commands.runOnce(

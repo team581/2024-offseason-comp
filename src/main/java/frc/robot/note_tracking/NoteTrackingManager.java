@@ -219,11 +219,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
       }
     }
 
-    DogLog.log(
-        "asdlasdljkljaksdlkjasd/UnsafeRawNoteMap", possibleNotes.stream().toArray(Pose2d[]::new));
-    DogLog.log(
-        "asdlasdljkljaksdlkjasd/UnsafeNoteMap", filteredNotes.stream().toArray(Pose2d[]::new));
-
     if (!safeToTrack()) {
       return List.of();
     }
