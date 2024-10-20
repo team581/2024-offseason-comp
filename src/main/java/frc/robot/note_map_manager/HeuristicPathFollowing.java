@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.fms.FmsSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
 import java.util.List;
+import java.util.ArrayList;
 
 // Truss is 12 in by 12 in, radius is around 8.5 in
 // Assumption is robot is 30 in by 30 in, radius is around 21.2 in
@@ -38,6 +39,16 @@ public class HeuristicPathFollowing {
     CollisionPoint(Translation2d(10.95502, 2.764626), TRUSS_RADIUS)
   );
 
+  public static final List<Translation2d> BLUE_INTERMEDIARY_POINTS = List.of(
+    Translation2d(13.0404, 7.001),
+    Translation2d(13.0404, 1.0),
+  );
+
+  public static final List<Translation2d> RED_INTERMEDIARY_POINTS = List.of(
+    Translation2d(14.2596, 7.001),
+    Translation2d(14.2596, 1.0),
+  );
+
   public HeuristicPathFollowing(){}
 
   public List<CollisionPoint> getCollisionPoints(){
@@ -45,6 +56,14 @@ public class HeuristicPathFollowing {
       return RED_COLLISION_POINTS;
     } else {
       return BLUE_COLLISION_POINTS;
+    }
+  }
+
+  public List<Translation2d> getIntermediaryPoints(){
+    if (FmsSubsystem.isRedAlliance()) {
+      return RED_INTERMEDIARY_POINTS;
+    } else {
+      return BLUE_INTERMEDIARY_POINTS;
     }
   }
 
@@ -69,15 +88,47 @@ public class HeuristicPathFollowing {
     return closestPointOnLineToCircleDistance < circle.radius;
   }
 
-  public boolean doesCollisionExists(Translation2d start, Translation2d end){
+  public boolean doesCollisionExist(Translation2d start, Translation2d end){
     // Return True if there is a collision between the two points and any Collision Points, False if not
-    List<CollisionPoint> CollisionPoint = getCollisionPoints();
-    for (CollisionPoint point : CollisionPoint) {
+    for (CollisionPoint point : getCollisionPoints()) {
       if (doesLineCollideWithCircle(start, end, point)){
         return true;
       }
     }
     return false;
+  }
+
+  public Pose2d getPoseToFollow(Pose2d robot, Pose2d end){
+    if (! doesCollisionExist(robot.getTranslation(), end.getTranslation())){
+      return end;
+    }
+
+    ArrayList<Translation2d> validIntermediaryPoints;
+    for (Translation2d intermediaryPoint: getIntermediaryPoints()) {
+      if (doesCollisionExist(robot.getTranslation(), intermediaryPoint)){
+        continue;
+      }
+      if (doesCollisionExist(end, intermediaryPoint)){
+        continue;
+      }
+      validIntermediaryPoints.add(intermediaryPoint);
+    }
+
+    if (validIntermediaryPoints.size() == 0){
+      return end; // This is the evil outcome, should probably crash code and delete notemap from Rio SD card if this happens.
+    }
+
+    Pose2d closestPoint = end;
+    double smallestDistance = Double.POSITIVE_INFINITY;
+    for (Translation2d intermediaryPoint: validIntermediaryPoints) {
+      double distanceToRobot = robot.getTranslation().getDistance(intermediaryPoint);
+      double distanceToEnd = end.getTranslation().getDistance(intermediaryPoint);
+      if (distanceToRobot + distanceToEnd < smallestDistance){
+        smallestDistance = distanceToRobot + distanceToEnd;
+        closestPoint = new Pose2d(intermediaryPoint, end.getRotation());
+      }
+    }
+    return closestPoint;
   }
 
 
