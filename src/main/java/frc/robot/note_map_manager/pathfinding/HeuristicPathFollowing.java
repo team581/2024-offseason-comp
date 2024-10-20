@@ -4,7 +4,9 @@
 
 package frc.robot.note_map_manager.pathfinding;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.fms.FmsSubsystem;
 import frc.robot.localization.LocalizationSubsystem;
@@ -19,18 +21,18 @@ public class HeuristicPathFollowing {
 
   private static final List<CollisionPoint> BLUE_COLLISION_POINTS =
       List.of(
-          new CollisionPoint(new Translation2d(3.3274, 4.106), TRUSS_RADIUS),
-          new CollisionPoint(new Translation2d(5.65658, 5.447374), TRUSS_RADIUS),
-          new CollisionPoint(new Translation2d(5.65658, 2.764626), TRUSS_RADIUS));
+          new CollisionPoint("SpeakerPodium", new Translation2d(3.3274, 4.106), TRUSS_RADIUS),
+          new CollisionPoint("AmpPodium", new Translation2d(5.65658, 5.447374), TRUSS_RADIUS),
+          new CollisionPoint("SourcePodium", new Translation2d(5.65658, 2.764626), TRUSS_RADIUS));
 
   private static final List<CollisionPoint> RED_COLLISION_POINTS =
       List.of(
-          new CollisionPoint(new Translation2d(13.2842, 4.106), TRUSS_RADIUS),
-          new CollisionPoint(new Translation2d(10.95502, 5.447374), TRUSS_RADIUS),
-          new CollisionPoint(new Translation2d(10.95502, 2.764626), TRUSS_RADIUS));
+          new CollisionPoint("SpeakerPodium", new Translation2d(13.2842, 4.106), TRUSS_RADIUS),
+          new CollisionPoint("AmpPodium", new Translation2d(10.95502, 5.447374), TRUSS_RADIUS),
+          new CollisionPoint("SourcePodium", new Translation2d(10.95502, 2.764626), TRUSS_RADIUS));
 
   private static final List<Translation2d> BLUE_INTERMEDIARY_POINTS =
-      List.of(new Translation2d(13.0404, 7.001), new Translation2d(13.0404, 1.0));
+      List.of(new Translation2d(2.28, 7.001), new Translation2d(2.28, 1.0));
 
   private static final List<Translation2d> RED_INTERMEDIARY_POINTS =
       List.of(new Translation2d(14.2596, 7.001), new Translation2d(14.2596, 1.0));
@@ -91,10 +93,29 @@ public class HeuristicPathFollowing {
     this.localization = localization;
   }
 
+  public void temporaryLogFunction() {
+    // Temporarily log all the psoes
+
+    for (var collisionPoint : getCollisionPoints()) {
+      DogLog.log(
+          "AutoManager/Pathfinding/CollisionPoints/" + collisionPoint.label(),
+          new Pose2d(collisionPoint.point(), new Rotation2d()));
+    }
+
+    DogLog.log(
+        "AutoManager/Pathfinding/IntermediaryPoints",
+        getIntermediaryPoints().stream()
+            .map(translation -> new Pose2d(translation, new Rotation2d()))
+            .toArray(Pose2d[]::new));
+  }
+
   public Pose2d getPoseToFollow(Pose2d end) {
     var robot = localization.getPose();
+    DogLog.log("AutoManager/Pathfinding/Input", robot);
 
     if (!doesCollisionExist(robot.getTranslation(), end.getTranslation())) {
+      DogLog.log("AutoManager/Pathfinding/Status", "No collision");
+      DogLog.log("AutoManager/Pathfinding/Output", end);
       return end;
     }
 
@@ -112,6 +133,10 @@ public class HeuristicPathFollowing {
     if (validIntermediaryPoints.isEmpty()) {
       // This is the evil outcome, should probably crash code and delete notemap from
       // Rio SD card if this happens.
+
+      DogLog.logFault("Pathfinding failed to find valid intermediary point");
+      DogLog.log("AutoManager/Pathfinding/Status", "Unavoidable collision");
+      DogLog.log("AutoManager/Pathfinding/Output", end);
       return end;
     }
 
@@ -125,6 +150,8 @@ public class HeuristicPathFollowing {
         closestPoint = new Pose2d(intermediaryPoint, end.getRotation());
       }
     }
+    DogLog.log("AutoManager/Pathfinding/Status", "Collision avoided");
+    DogLog.log("AutoManager/Pathfinding/Output", closestPoint);
     return closestPoint;
   }
 }
