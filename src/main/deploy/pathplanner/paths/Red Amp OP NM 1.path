@@ -3,32 +3,38 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.0,
-        "y": 7.0
+        "x": 15.786400226646611,
+        "y": 6.69734488405147
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.0,
-        "y": 7.0
+        "x": 15.548178421460698,
+        "y": 6.668305923617455
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 4.0,
-        "y": 6.0
+        "x": 14.428908334085083,
+        "y": 6.567447631621941
       },
       "prevControl": {
-        "x": 3.0,
-        "y": 6.0
+        "x": 14.667604376125285,
+        "y": 6.525145738507516
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Red Amp OP NM 1"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0,
+      "rotationDegrees": -59.526863901526,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
@@ -39,13 +45,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": -45.668012242927276,
     "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": -59.07179176278972,
     "velocity": 0
   },
   "useDefaultConstraints": true

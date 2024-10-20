@@ -4,11 +4,22 @@
 
 package frc.robot.autos;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
+
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.auto_manager.AutoNoteStaged;
+import frc.robot.auto_manager.AutoNoteStep;
+import frc.robot.auto_manager.NoteMapManager;
 import frc.robot.fms.FmsSubsystem;
+import frc.robot.note_tracking.NoteMapElement;
+import frc.robot.note_tracking.NoteTrackingManager;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
 import frc.robot.robot_manager.RobotState;
@@ -25,10 +36,14 @@ public class AutoCommands {
 
   private final RobotCommands actions;
   private final RobotManager robotManager;
+  private final NoteMapManager noteMapManager;
+  private final NoteTrackingManager noteTrackingManager;
 
-  public AutoCommands(RobotCommands actions, RobotManager robotManager) {
+  public AutoCommands(RobotCommands actions, RobotManager robotManager, NoteMapManager noteMapManager, NoteTrackingManager noteTrackingManager) {
     this.actions = actions;
     this.robotManager = robotManager;
+    this.noteMapManager = noteMapManager;
+    this.noteTrackingManager = noteTrackingManager;
   }
 
   public Command doNothingCommand() {
@@ -80,6 +95,19 @@ public class AutoCommands {
         || robotManager.getState() == RobotState.FINISH_INTAKING;
   }
 
+  public Command redAmpOPNM() {
+    return Commands.runOnce(
+      () -> {
+          var steps = new LinkedList<AutoNoteStep>();
+          steps.add(AutoNoteStep.score(3));
+        steps.add(AutoNoteStep.score(4, 5));
+        steps.add(AutoNoteStep.score(5, 6));
+        steps.add(AutoNoteStep.score(6));
+
+        noteMapManager.setSteps(steps);
+      });
+  }
+
   // public Command doManyAutoSteps(List<AutoNoteStep> steps) {
   //   return
   // Commands.sequence(steps.stream().map(autoManager::doAutoStep).toArray(Command[]::new));
@@ -111,23 +139,23 @@ public class AutoCommands {
   //       List.of(AutoNoteStep.score(4, 5), AutoNoteStep.score(5, 6), AutoNoteStep.score(10)));
   // }
 
-  // public Command noteMapResetCommand() {
-  //   return Commands.runOnce(
-  //       () -> {
-  //         var now = Timer.getFPGATimestamp();
-  //         noteTrackingManager.resetNoteMap(
-  //             new ArrayList<>(
-  //                 List.of(
-  //                     new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4)),
-  //                     new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(1)),
-  //                     new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(2)),
-  //                     new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(3)),
-  //                     new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(5)),
-  //                     new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(6)),
-  //                     new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(7)),
-  //                     new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(8)))));
-  //       });
-  // }
+  public Command noteMapResetCommand() {
+    return Commands.runOnce(
+        () -> {
+          var now = Timer.getFPGATimestamp();
+          noteTrackingManager.resetNoteMap(
+              new ArrayList<>(
+                  List.of(
+                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(4)),
+                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(1)),
+                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(2)),
+                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(3)),
+                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(5)),
+                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(6)),
+                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(7)),
+                      new NoteMapElement(now + 10, AutoNoteStaged.noteIdToTranslation(8)))));
+        });
+  }
 
   public Command waitingDropRequestCommand() {
     return Commands.runOnce(

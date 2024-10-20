@@ -1,0 +1,62 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 15.79,
+      "y": 6.7
+    },
+    "rotation": -58.55684349937042
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "sequential",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "homeClimber"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "resetNoteMap"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "preloadNote"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Amp OP NM 1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "redAmpOPNM"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}

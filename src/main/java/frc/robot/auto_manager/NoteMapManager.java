@@ -11,6 +11,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -40,7 +41,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
   private static final PathConstraints DEFAULT_CONSTRAINTS =
       new PathConstraints(5.0, 5.0, 2 * Math.PI, 4 * Math.PI);
-  private static final double TARGET_NOTE_THRESHOLD_METERS = 2.0;
+  private static final double TARGET_NOTE_THRESHOLD_METERS = 1.5;
   private static final double INTAKE_PATHFIND_THRESHOLD_METERS = 2.0;
   private static final double DROPPED_NOTE_DISTANCE_METERS = 0.95;
 
@@ -296,6 +297,9 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       }
       case SCORE -> {
         noteMapCommand.cancel();
+        // If pathfinding ends sometimes there is a remaining chassis speeds
+        // This sets that to zero, so the robot doesn't sorta drift around
+        robotManager.swerve.setFieldRelativeSpeeds(new ChassisSpeeds(), true);
         robotManager.speakerShotRequest();
       }
       case INTAKING_PATHFINDING -> {
@@ -512,6 +516,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         // If we're already at location to score, score the note
         if (noteMapCommand.isFinished()) {
           DogLog.timestamp("AutoManager/PathfindScoreFinished");
+          DogLog.log("AutoManager/PathfindToScore/Scheduled", noteMapCommand.isScheduled());
+          DogLog.log("AutoManager/PathfindToScore/Finished", noteMapCommand.isFinished());
           yield NoteMapState.SCORE;
         }
 

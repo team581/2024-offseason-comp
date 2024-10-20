@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.0,
-        "y": 7.0
+        "x": 14.428908334085083,
+        "y": 6.567447631621941
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.0,
-        "y": 7.0
+        "x": 14.102092095346224,
+        "y": 6.8614090501503435
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Red Amp OP NM 1"
     },
     {
       "anchor": {
-        "x": 4.0,
-        "y": 6.0
+        "x": 12.44003706910851,
+        "y": 7.035602577751801
       },
       "prevControl": {
-        "x": 3.0,
-        "y": 6.0
+        "x": 12.482338962222933,
+        "y": 6.999913635670152
       },
       "nextControl": null,
       "isLocked": false,
@@ -39,13 +39,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": -20.877554289548904,
     "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": -28.535831249674814,
     "velocity": 0
   },
   "useDefaultConstraints": true
