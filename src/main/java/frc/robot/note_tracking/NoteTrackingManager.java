@@ -37,9 +37,9 @@ import java.util.function.Supplier;
 public class NoteTrackingManager extends LifecycleSubsystem {
   private static final double CAMERA_IMAGE_HEIGHT = 960.0;
   private static final double CAMERA_IMAGE_WIDTH = 1280.0;
-  private static final double NOTE_LIMELIGHT_PITCH = 0.0;
-  private static final double NOTE_LIMELIGHT_HEIGHT = 0.0;
-  private static final double NOTE_LIMELIGHT_FORWARD_DISTANCE_FROM_CENTER = 0.0;
+  private static final double NOTE_LIMELIGHT_PITCH = 0.418879;
+  private static final double NOTE_LIMELIGHT_HEIGHT = 0.4140708;
+  private static final double NOTE_LIMELIGHT_FORWARD_DISTANCE_FROM_CENTER = 0.3683;
 
   // how much we keep a note in the map if it was added or updated from camera (seconds)
   private static final double NOTE_MAP_LIFETIME_SECONDS = 10.0;
@@ -62,13 +62,13 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private static final BoundingBox ROBOT_RELATIVE_FOV_BOUNDS =
       new BoundingBox(
           // top left
-          new Translation2d(-1.250, -0.5),
+          new Translation2d(-2.350, -1),
           // top right
-          new Translation2d(-1.250, 0.5),
+          new Translation2d(-2.350, 1),
           // bottom left
-          new Translation2d(-0.725, -0.1),
+          new Translation2d(-0.825, -0.1),
           // bottom right
-          new Translation2d(-0.720, 0.1));
+          new Translation2d(-0.820, 0.1));
 
   public NoteTrackingManager(
       LocalizationSubsystem localization,
