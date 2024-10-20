@@ -333,7 +333,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         if (maybeNotePose.isPresent()) {
           DogLog.timestamp("AutoManager/InPathActionNoteExists");
           noteMapCommand =
-              AutoBuilder.followPath(pathfindUtil.getPathToTarget(maybeNotePose.get()))
+              pathfindUtil
+                  .withPathCommand(maybeNotePose.get(), AutoBuilder::followPath)
                   .withName("PathfindIntake");
           noteMapCommand.schedule();
         } else {
@@ -368,7 +369,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
         droppingDestination = getClosestDroppingDestination();
         noteMapCommand =
-            AutoBuilder.followPath(pathfindUtil.getPathToTarget(droppingDestination))
+            pathfindUtil
+                .withPathCommand(droppingDestination, AutoBuilder::followPath)
                 .withName("PathfindDrop");
         noteMapCommand.schedule();
       }
@@ -377,7 +379,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         snaps.setEnabled(false);
         closestScoringLocation = getClosestScoringDestination();
         noteMapCommand =
-            AutoBuilder.followPath(pathfindUtil.getPathToTarget(closestScoringLocation))
+            pathfindUtil
+                .withPathCommand(closestScoringLocation, AutoBuilder::followPath)
                 .withName("PathfindScore");
         noteMapCommand.schedule();
       }
