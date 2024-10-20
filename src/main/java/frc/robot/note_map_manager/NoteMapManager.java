@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.config.RobotConfig;
 import frc.robot.fms.FmsSubsystem;
 import frc.robot.localization.LocalizationSubsystem;
+import frc.robot.note_map_manager.pathfinding.HeuristicPathFollowing;
 import frc.robot.note_tracking.NoteMapElement;
 import frc.robot.note_tracking.NoteTrackingManager;
 import frc.robot.robot_manager.RobotCommands;
@@ -39,6 +40,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   private final RobotManager robotManager;
   private final LocalizationSubsystem localization;
   private final SnapManager snaps;
+  private final HeuristicPathFollowing pathfinder;
 
   private static final PathConstraints DEFAULT_CONSTRAINTS =
       new PathConstraints(5.0, 5.0, 2 * Math.PI, 4 * Math.PI);
@@ -59,6 +61,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
     this.robotManager = robotManager;
     this.localization = localization;
     this.snaps = snaps;
+    this.pathfinder = new HeuristicPathFollowing(localization);
   }
 
   private static BoundingBox getScoringBox() {
@@ -211,6 +214,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
     } else {
       DogLog.log("AutoManager/CurrentStep/Action", "NO_CURRENT_STEP");
     }
+    pathfinder.temporaryLogFunction();
 
     switch (getState()) {
       case PATHFIND_TO_SCORE -> {
@@ -359,7 +363,12 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         if (maybeNotePose.isPresent()) {
           DogLog.timestamp("AutoManager/InPathActionNoteExists");
           noteMapCommand =
-              AutoBuilder.pathfindToPose(maybeNotePose.get(), DEFAULT_CONSTRAINTS)
+              robotManager
+                  .swerve
+                  .driveToPoseCommand(
+                      () -> Optional.of(pathfinder.getPoseToFollow(maybeNotePose.get())),
+                      localization::getPose,
+                      false)
                   .withName("PathfindIntake");
           noteMapCommand.schedule();
         } else {
@@ -394,7 +403,12 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
         droppingDestination = getClosestDroppingDestination();
         noteMapCommand =
-            AutoBuilder.pathfindToPose(droppingDestination, DEFAULT_CONSTRAINTS)
+            robotManager
+                .swerve
+                .driveToPoseCommand(
+                    () -> Optional.of(pathfinder.getPoseToFollow(droppingDestination)),
+                    localization::getPose,
+                    false)
                 .withName("PathfindDrop");
         noteMapCommand.schedule();
       }
@@ -403,7 +417,12 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         snaps.setEnabled(false);
         closestScoringLocation = getClosestScoringDestination();
         noteMapCommand =
-            AutoBuilder.pathfindToPose(closestScoringLocation, DEFAULT_CONSTRAINTS)
+            robotManager
+                .swerve
+                .driveToPoseCommand(
+                    () -> Optional.of(pathfinder.getPoseToFollow(closestScoringLocation)),
+                    localization::getPose,
+                    false)
                 .withName("PathfindScore");
         noteMapCommand.schedule();
       }
