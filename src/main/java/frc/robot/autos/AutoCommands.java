@@ -4,13 +4,8 @@
 
 package frc.robot.autos;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
-
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -23,6 +18,9 @@ import frc.robot.note_tracking.NoteTrackingManager;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
 import frc.robot.robot_manager.RobotState;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 public class AutoCommands {
   private static final boolean USE_DYNAMIC_AUTOS = true;
@@ -39,7 +37,11 @@ public class AutoCommands {
   private final NoteMapManager noteMapManager;
   private final NoteTrackingManager noteTrackingManager;
 
-  public AutoCommands(RobotCommands actions, RobotManager robotManager, NoteMapManager noteMapManager, NoteTrackingManager noteTrackingManager) {
+  public AutoCommands(
+      RobotCommands actions,
+      RobotManager robotManager,
+      NoteMapManager noteMapManager,
+      NoteTrackingManager noteTrackingManager) {
     this.actions = actions;
     this.robotManager = robotManager;
     this.noteMapManager = noteMapManager;
@@ -97,15 +99,15 @@ public class AutoCommands {
 
   public Command redAmpOPNM() {
     return Commands.runOnce(
-      () -> {
+        () -> {
           var steps = new LinkedList<AutoNoteStep>();
           steps.add(AutoNoteStep.score(3));
-        steps.add(AutoNoteStep.score(4, 5));
-        steps.add(AutoNoteStep.score(5, 6));
-        steps.add(AutoNoteStep.score(6));
+          steps.add(AutoNoteStep.score(4, 5));
+          steps.add(AutoNoteStep.score(5, 6));
+          steps.add(AutoNoteStep.score(6));
 
-        noteMapManager.setSteps(steps);
-      });
+          noteMapManager.setSteps(steps);
+        });
   }
 
   // public Command doManyAutoSteps(List<AutoNoteStep> steps) {

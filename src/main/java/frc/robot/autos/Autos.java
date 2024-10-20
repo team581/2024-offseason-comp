@@ -26,7 +26,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.auto_manager.NoteMapManager;
 import frc.robot.config.RobotConfig;
 import frc.robot.localization.LocalizationSubsystem;
-import frc.robot.note_tracking.NoteMapElement;
 import frc.robot.note_tracking.NoteTrackingManager;
 import frc.robot.robot_manager.RobotCommands;
 import frc.robot.robot_manager.RobotManager;
@@ -67,7 +66,8 @@ public class Autos extends LifecycleSubsystem {
       LocalizationSubsystem localization,
       RobotCommands actions,
       RobotManager robotManager,
-      NoteMapManager noteMapManager, NoteTrackingManager noteTrackingManager) {
+      NoteMapManager noteMapManager,
+      NoteTrackingManager noteTrackingManager) {
     super(SubsystemPriority.AUTOS);
     this.swerve = swerve;
     this.noteMapManager = noteMapManager;
