@@ -113,10 +113,9 @@ public class Autos extends LifecycleSubsystem {
     registerCommand("zeroGyro", autoCommands.doNothingCommand());
     registerCommand("waitingSpeakerShot", actions.waitForSpeakerShotCommand());
     registerCommand("redAmpOPNM", autoCommands.redAmpOPNM());
-    // registerCommand("noteMap456", autoCommands.noteMap456Command());
-    // registerCommand("noteMap567", autoCommands.notemap567Command());
-    registerCommand("dropNote", actions.dropCommand());
-    // registerCommand("notemapD4", autoCommands.notemap4_10Command());
+    registerCommand("redMidDropRaceNM", autoCommands.redMidDropRaceNM());
+
+    registerCommand("dropNote", noteMapManager.dropNote());
     registerCommand("waitingDropRequest", autoCommands.waitingDropRequestCommand());
     registerCommand("resetNoteMap", autoCommands.noteMapResetCommand());
 

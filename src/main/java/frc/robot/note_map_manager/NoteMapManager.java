@@ -141,6 +141,22 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
     return closest;
   }
 
+  public Command dropNote() {
+    return actions
+        .dropCommand()
+        .andThen(
+            Commands.runOnce(
+                () -> {
+                  var translationFieldRelative =
+                      new Translation2d(DROPPED_NOTE_DISTANCE_METERS, 0)
+                          .rotateBy(localization.getPose().getRotation())
+                          .plus(localization.getPose().getTranslation());
+
+                  noteTrackingManager.addNoteToMap(translationFieldRelative);
+                  AutoNoteDropped.addDroppedNote(translationFieldRelative);
+                }));
+  }
+
   public Command testCommand() {
     return Commands.runOnce(
         () -> {
