@@ -32,23 +32,6 @@
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "waitingDrop",
-      "waypointRelativePos": 0.15,
-      "command": {
-        "type": "sequential",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "waitingDropRequest"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
       "name": "dropNote",
       "waypointRelativePos": 0.75,
       "command": {
