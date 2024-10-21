@@ -23,26 +23,45 @@ public class NoteMapLocations {
   public static final Pose2d MIDLINE_CLEANUP_POSE = new Pose2d(8.271, 4.106, new Rotation2d(0));
   public static final List<Pose2d> RED_SCORING_DESTINATIONS =
       List.of(
-          new Pose2d(11.82, 6.49, Rotation2d.fromDegrees(-11.04)),
-          new Pose2d(13.36, 1.51, Rotation2d.fromDegrees(53.25)));
+          // Under stage
+          new Pose2d(12.05, 4.69, Rotation2d.fromDegrees(11.84)),
+          // Amp Side
+          new Pose2d(11.8, 6.38, Rotation2d.fromDegrees(-10.97)),
+          // Source side
+          new Pose2d(13.25, 3.1, Rotation2d.fromDegrees(37.59)));
 
   public static final List<Pose2d> BLUE_SCORING_DESTINATIONS =
       List.of(
-          new Pose2d(4.32, 6.41, Rotation2d.fromDegrees(-169.48)),
-          new Pose2d(4.29, 5.02, Rotation2d.fromDegrees(172.97)),
-          new Pose2d(3.17, 3.21, Rotation2d.fromDegrees(142.74)));
+          // Under stage
+          new Pose2d(4.66, 4.73, Rotation2d.fromDegrees(168.76)),
+          // Amp Side
+          new Pose2d(4.77, 6.47, Rotation2d.fromDegrees(-168.48)),
+          // Source side
+          new Pose2d(3.01, 3.32, Rotation2d.fromDegrees(142.77)));
 
   public static final List<Pose2d> RED_DROPPING_DESTINATIONS =
       List.of(
-          new Pose2d(11.39, 7.0, Rotation2d.fromDegrees(0.0)),
-          new Pose2d(11.91, 4.59, Rotation2d.fromDegrees(0.0)),
-          new Pose2d(11.38, 1.94, Rotation2d.fromDegrees(0.0)));
+          new Pose2d(9.271, 7.458, Rotation2d.fromDegrees(0.0)),
+          new Pose2d(9.271, 5.782, Rotation2d.fromDegrees(0.0)),
+          new Pose2d(9.271, 4.106, Rotation2d.fromDegrees(0.0)),
+          new Pose2d(9.271, 2.429, Rotation2d.fromDegrees(0.0)),
+          new Pose2d(9.271, 0.753, Rotation2d.fromDegrees(0.0)));
+
+  public static final List<Pose2d> RED_DROPPING_DESTINATIONS_HOME =
+      List.of(
+          new Pose2d(9.8, 7.458, Rotation2d.fromDegrees(0.0)),
+          new Pose2d(9.8, 5.782, Rotation2d.fromDegrees(0.0)),
+          new Pose2d(9.8, 4.106, Rotation2d.fromDegrees(0.0)),
+          new Pose2d(9.8, 2.429, Rotation2d.fromDegrees(0.0)),
+          new Pose2d(9.8, 0.753, Rotation2d.fromDegrees(0.0)));
 
   public static final List<Pose2d> BLUE_DROPPING_DESTINATIONS =
       List.of(
-          new Pose2d(5.21, 7.5, Rotation2d.fromDegrees(180)),
-          new Pose2d(4.8, 4.65, Rotation2d.fromDegrees(180)),
-          new Pose2d(5.25, 1.92, Rotation2d.fromDegrees(144.57)));
+          new Pose2d(7.271, 7.458, Rotation2d.fromDegrees(180.0)),
+          new Pose2d(7.271, 5.782, Rotation2d.fromDegrees(180.0)),
+          new Pose2d(7.271, 4.106, Rotation2d.fromDegrees(180.0)),
+          new Pose2d(7.271, 2.429, Rotation2d.fromDegrees(180.0)),
+          new Pose2d(7.271, 0.753, Rotation2d.fromDegrees(180.0)));
 
   public static final Pose2d RED_DROPPING_DESTINATION =
       new Pose2d(11.25, 7.26, Rotation2d.fromDegrees(16.18));

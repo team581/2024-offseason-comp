@@ -15,6 +15,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.config.RobotConfig;
 import frc.robot.fms.FmsSubsystem;
 import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.note_tracking.NoteMapElement;
@@ -77,6 +78,9 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
   private static List<Pose2d> getDroppingDestinations() {
     if (FmsSubsystem.isRedAlliance()) {
+      if (RobotConfig.IS_HOME) {
+        return NoteMapLocations.RED_DROPPING_DESTINATIONS_HOME;
+      }
       return NoteMapLocations.RED_DROPPING_DESTINATIONS;
     } else {
       return NoteMapLocations.BLUE_DROPPING_DESTINATIONS;
@@ -205,6 +209,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
   @Override
   public void robotPeriodic() {
+
     super.robotPeriodic();
     switch (getState()) {
       case PATHFIND_TO_SCORE -> {

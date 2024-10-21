@@ -81,8 +81,7 @@ public class RobotCommands {
   }
 
   public Command homeCommand() {
-    return Commands.runOnce(() -> robot.climber.startHoming())
-        .withName("HomeCommand");
+    return Commands.runOnce(() -> robot.climber.startHoming()).withName("HomeCommand");
   }
 
   public Command waitForSpeakerShotCommand() {
