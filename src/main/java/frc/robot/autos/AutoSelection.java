@@ -23,7 +23,9 @@ public enum AutoSelection {
   CHOREO_3_PIECE_7_8_DROP("Red 3 Piece 7 to 8 + 10", "Blue 3 Piece 7 to 8 + 10"),
   CHOREO_AMP_DROP("Red Amp 3 Piece 7 to 8 + 10", "Blue Amp 3 Piece 7 to 8 + 10"),
   CHOREO_SOURCE_ALT("Red 3 Piece Alt", "Blue 3 Piece Alt"),
-  RED_AMP_OP_NM("Red Amp OP NM", "");
+  RED_AMP_OP_NM("Red Amp OP NM", ""),
+  RED_MID_DROP_RACE_NM("Red Mid Drop Race NM", ""),
+  RED_SOURCE_SIDE_RACE_NM("Red Source Side Race NM", "");
 
   public final String redAutoName;
   public final String blueAutoName;
