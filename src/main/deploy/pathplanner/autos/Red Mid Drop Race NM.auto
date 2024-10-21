@@ -18,6 +18,12 @@
               {
                 "type": "named",
                 "data": {
+                  "name": "waitingDropRequest"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
                   "name": "homeClimber"
                 }
               },
@@ -25,12 +31,6 @@
                 "type": "named",
                 "data": {
                   "name": "resetNoteMap"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "waitingDropRequest"
                 }
               }
             ]
