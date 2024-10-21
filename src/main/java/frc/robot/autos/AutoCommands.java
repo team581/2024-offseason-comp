@@ -121,6 +121,18 @@ public class AutoCommands {
         });
   }
 
+  public Command redSourceSideRaceNM() {
+    return Commands.runOnce(
+        () -> {
+          var steps = new LinkedList<AutoNoteStep>();
+          steps.add(AutoNoteStep.drop(8));
+          steps.add(AutoNoteStep.score(7, 6));
+          steps.add(AutoNoteStep.score(11));
+          steps.add(AutoNoteStep.score(10));
+          noteMapManager.setSteps(steps);
+        });
+  }
+
   public Command noteMapResetCommand() {
     return Commands.runOnce(
         () -> {
