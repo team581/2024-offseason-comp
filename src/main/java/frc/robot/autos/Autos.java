@@ -94,7 +94,6 @@ public class Autos extends LifecycleSubsystem {
 
     registerCommand("preloadNote", actions.preloadNoteCommand());
     registerCommand("speakerShotNoTimeout", actions.speakerShotCommand());
-    registerCommand("speakerSnap", autoCommands.speakerSnapCommand());
     registerCommand("preparePresetRightShot", actions.preparePresetRightShotCommand());
     registerCommand("presetRightShot", actions.presetRightShotCommand());
     registerCommand("preparePresetLeftShot", actions.preparePresetLeftShotCommand());

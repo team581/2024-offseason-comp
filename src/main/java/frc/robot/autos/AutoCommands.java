@@ -52,7 +52,7 @@ public class AutoCommands {
     return robotManager.localization.getZeroCommand();
   }
 
-  public Command speakerSnapCommand() {
+  public Command waitingSpeakerCommand() {
     return actions.waitForSpeakerShotCommand();
   }
 
