@@ -173,10 +173,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
                       new NoteMapElement(now + 20, AutoNoteStaged.noteIdToTranslation(4)),
                       new NoteMapElement(now + 20, AutoNoteStaged.noteIdToTranslation(5)))));
           var steps = new LinkedList<AutoNoteStep>();
-          steps.add(AutoNoteStep.drop(4));
+          steps.add(AutoNoteStep.score(4));
           steps.add(AutoNoteStep.score(5));
-          steps.add(AutoNoteStep.score(10));
-
           setSteps(steps);
         });
   }
@@ -207,8 +205,13 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
   @Override
   public void robotPeriodic() {
-
     super.robotPeriodic();
+    if (currentStep.isPresent()) {
+      DogLog.log("AutoManager/CurrentStep/Action", currentStep.get().action());
+    } else {
+      DogLog.log("AutoManager/CurrentStep/Action", "NO_CURRENT_STEP");
+    }
+
     switch (getState()) {
       case PATHFIND_TO_SCORE -> {
         if (robotManager.getState() == RobotState.IDLE_WITH_GP) {
