@@ -45,6 +45,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   private static final double TARGET_NOTE_THRESHOLD_METERS = 1.5;
   private static final double INTAKE_PATHFIND_THRESHOLD_METERS = 2.0;
   private static final double DROPPED_NOTE_DISTANCE_METERS = 0.95;
+  private static final double CLEANUP_SEARCH_THRESHOLD_METERS = 15.00;
 
   public NoteMapManager(
       RobotCommands actions,
@@ -187,9 +188,6 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
   private Pose2d closestScoringLocation = new Pose2d();
   private Pose2d droppingDestination = new Pose2d();
-  private Pose2d speakerPose = getSpeakerPose();
-  private List<Pose2d> speakerCleanupPath = getSpeakerCleanupPath();
-  private List<Pose2d> midlineCleanupPath = getMidlineCleanupPath();
 
   // TODO: Remove this if we end up using triggers
   private Command noteMapCommand = Commands.none();
@@ -242,7 +240,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
     if (currentStep.isPresent()) {
       if (currentStep.get().action() == AutoNoteAction.CLEANUP) {
         var maybeNote =
-            noteTrackingManager.getNoteNearPose(localization.getPose().getTranslation(), 15.00);
+            noteTrackingManager.getNoteNearPose(localization.getPose().getTranslation(), CLEANUP_SEARCH_THRESHOLD_METERS);
         if (maybeNote.isPresent()) {
           var noteDistanceAngle =
               VisionSubsystem.distanceAngleToTarget(
