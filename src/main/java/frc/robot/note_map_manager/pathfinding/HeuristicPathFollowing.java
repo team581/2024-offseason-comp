@@ -32,10 +32,18 @@ public class HeuristicPathFollowing {
           new CollisionPoint("SourcePodium", new Translation2d(10.95502, 2.764626), TRUSS_RADIUS));
 
   private static final List<Translation2d> BLUE_INTERMEDIARY_POINTS =
-      List.of(new Translation2d(2.28, 7.001), new Translation2d(2.28, 1.0));
+      List.of(
+          new Translation2d(3.28, 6.88),
+          new Translation2d(3.28, 0.9),
+          new Translation2d(6.97, 6.88),
+          new Translation2d(6.97, 0.9));
 
   private static final List<Translation2d> RED_INTERMEDIARY_POINTS =
-      List.of(new Translation2d(14.2596, 7.001), new Translation2d(14.2596, 1.0));
+      List.of(
+          new Translation2d(13.26, 6.88),
+          new Translation2d(13.26, 0.9),
+          new Translation2d(9.57, 6.88),
+          new Translation2d(9.57, 0.9));
 
   private static List<CollisionPoint> getCollisionPoints() {
     if (FmsSubsystem.isRedAlliance()) {
