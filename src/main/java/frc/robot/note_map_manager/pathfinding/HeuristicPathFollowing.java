@@ -76,9 +76,9 @@ public class HeuristicPathFollowing {
 
     // If end to start dot end to circle is less than 0, use end as closest point.
     double end_to_start_dot_end_to_circle =
-      ((start.getX() - end.getX()) * (circle.point().getX() - end.getX()))
-          + ((start.getY() - end.getY()) * (circle.point().getY() - end.getY()));
-    if (end_to_start_dot_end_to_circle < 0){
+        ((start.getX() - end.getX()) * (circle.point().getX() - end.getX()))
+            + ((start.getY() - end.getY()) * (circle.point().getY() - end.getY()));
+    if (end_to_start_dot_end_to_circle < 0) {
       double endToCircleDistance = end.getDistance(circle.point());
       return endToCircleDistance < circle.radius();
     }
