@@ -64,6 +64,25 @@ public class HeuristicPathFollowing {
   private static boolean doesLineCollideWithCircle(
       Translation2d start, Translation2d end, CollisionPoint circle) {
     // Return True if there is a collision, False if not
+
+    // If start to end dot start to circle is less than 0, use start as closest point.
+    double start_to_end_dot_start_to_circle =
+        ((end.getX() - start.getX()) * (circle.point().getX() - start.getX()))
+            + ((end.getY() - start.getY()) * (circle.point().getY() - start.getY()));
+    if (start_to_end_dot_start_to_circle < 0) {
+      double startToCircleDistance = start.getDistance(circle.point());
+      return startToCircleDistance < circle.radius();
+    }
+
+    // If end to start dot end to circle is less than 0, use end as closest point.
+    double end_to_start_dot_end_to_circle =
+      ((start.getX() - end.getX()) * (circle.point().getX() - end.getX()))
+          + ((start.getY() - end.getY()) * (circle.point().getY() - end.getY()));
+    if (end_to_start_dot_end_to_circle < 0){
+      double endToCircleDistance = end.getDistance(circle.point());
+      return endToCircleDistance < circle.radius();
+    }
+
     double lineVectorX = end.getX() - start.getX();
     double lineVectorY = end.getY() - start.getY();
     double circleVectorX = circle.point().getX() - start.getX();
