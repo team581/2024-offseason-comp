@@ -8,6 +8,8 @@ import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.pathfinding.Pathfinding;
+
+import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -64,6 +66,7 @@ public class PathfindUtil {
    */
   public Command withPathCommand(
       Pose2d goal, double endVelocity, Function<PathPlannerPath, Command> afterPathGeneration) {
+    DogLog.log("AutoManager/Pathfinding/TargetPose", goal);
     return Commands.sequence(
         waitForGenerationCommand(goal, endVelocity),
         new ProxyCommand(() -> afterPathGeneration.apply(getCalculatedPath().get())));
