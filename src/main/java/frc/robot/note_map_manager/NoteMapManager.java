@@ -240,6 +240,28 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   protected void collectInputs() {
 
     if (currentStep.isPresent()) {
+      if (currentStep.get().action() == AutoNoteAction.CLEANUP) {
+        var maybeNote =
+            noteTrackingManager.getNoteNearPose(localization.getPose().getTranslation(), 15.00);
+        if (maybeNote.isPresent()) {
+          var noteDistanceAngle =
+              VisionSubsystem.distanceAngleToTarget(
+                  new Pose2d(maybeNote.get().noteTranslation(), new Rotation2d()),
+                  localization.getPose());
+
+          maybeNotePose =
+              Optional.of(
+                  new Pose2d(
+                      maybeNote.get().noteTranslation(),
+                      Rotation2d.fromDegrees(noteDistanceAngle.targetAngle() + 180)));
+
+          if (maybeNotePose.isPresent()) {
+            DogLog.log("AutoManager/MaybeNotePose", maybeNotePose.get());
+          }
+        } else {
+          maybeNotePose = Optional.empty();
+        }
+      }
 
       for (var maybeSearchPoseSupplier : currentStep.get().notes()) {
         var maybeSearchPose = maybeSearchPoseSupplier.get();
@@ -383,32 +405,6 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
                 .withName("PathfindScore");
         noteMapCommand.schedule();
       }
-      case CLEANUP -> {}
-      case SEARCH_MIDLINE_FIRST -> {
-        noteMapCommand.cancel();
-        noteMapCommand = AutoBuilder.pathfindToPose(midlineCleanupPath.get(0), DEFAULT_CONSTRAINTS);
-        noteMapCommand.schedule();
-      }
-      case SEARCH_MIDLINE_SECOND -> {
-        noteMapCommand.cancel();
-        noteMapCommand = AutoBuilder.pathfindToPose(midlineCleanupPath.get(1), DEFAULT_CONSTRAINTS);
-        noteMapCommand.schedule();
-      }
-      case SEARCH_SPEAKER_FIRST -> {
-        noteMapCommand.cancel();
-        noteMapCommand = AutoBuilder.pathfindToPose(speakerCleanupPath.get(0), DEFAULT_CONSTRAINTS);
-        noteMapCommand.schedule();
-      }
-      case SEARCH_SPEAKER_SECOND -> {
-        noteMapCommand.cancel();
-        noteMapCommand = AutoBuilder.pathfindToPose(speakerCleanupPath.get(1), DEFAULT_CONSTRAINTS);
-        noteMapCommand.schedule();
-      }
-      case SEARCH_SPEAKER_THIRD -> {
-        noteMapCommand.cancel();
-        noteMapCommand = AutoBuilder.pathfindToPose(speakerCleanupPath.get(2), DEFAULT_CONSTRAINTS);
-        noteMapCommand.schedule();
-      }
     }
   }
 
@@ -422,9 +418,11 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         yield currentState;
       }
       case WAITING_FOR_NOTES -> {
-        if (currentStep.isPresent() && currentStep.get().action() == AutoNoteAction.CLEANUP) {
+        if (currentStep.isPresent()
+            && currentStep.get().action() == AutoNoteAction.CLEANUP
+            && maybeNotePose.isPresent()) {
           DogLog.timestamp("AutoManager/IdleToCleanup");
-          yield NoteMapState.CLEANUP;
+          yield NoteMapState.INTAKING_PATHFINDING;
         } else if (currentStep.isPresent() && maybeNotePose.isPresent()) {
           DogLog.timestamp("AutoManager/IdleToIntakePathfinding");
 
@@ -557,97 +555,15 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           if (robotManager.getState().hasNote) {
             yield currentState;
           }
-          yield NoteMapState.CLEANUP;
+          if (maybeNotePose.isPresent()) {
+            yield NoteMapState.INTAKING_PATHFINDING;
+          }
         }
         if (robotManager.getState().hasNote) {
           yield currentState;
         }
 
         yield NoteMapState.WAITING_FOR_NOTES;
-      }
-      case CLEANUP ->
-          localization.getPose().getTranslation().getDistance(speakerPose.getTranslation()) < 4.0
-              ? NoteMapState.SEARCH_SPEAKER_FIRST
-              : NoteMapState.SEARCH_MIDLINE_FIRST;
-      case SEARCH_MIDLINE_FIRST -> {
-        if (noteTrackingManager.mapContainsNote() && !robotManager.getState().hasNote) {
-          yield NoteMapState.INTAKING_PATHFINDING;
-        }
-        if (robotManager.getState().hasNote) {
-          yield NoteMapState.PATHFIND_TO_SCORE;
-        }
-        if (localization.atTranslation(midlineCleanupPath.get(0).getTranslation(), 0.2)) {
-          yield NoteMapState.SEARCH_MIDLINE_SECOND;
-        }
-        if (timeout(3)) {
-          DogLog.timestamp("AutoManager/SearchMidline1Timeout");
-          yield NoteMapState.SEARCH_SPEAKER_THIRD;
-        }
-        yield currentState;
-      }
-      case SEARCH_MIDLINE_SECOND -> {
-        if (noteTrackingManager.mapContainsNote() && !robotManager.getState().hasNote) {
-          yield NoteMapState.INTAKING_PATHFINDING;
-        }
-        if (robotManager.getState().hasNote) {
-          yield NoteMapState.PATHFIND_TO_SCORE;
-        }
-        if (localization.atTranslation(midlineCleanupPath.get(1).getTranslation(), 0.2)) {
-          yield NoteMapState.WAITING_FOR_NOTES;
-        }
-        if (timeout(3)) {
-          DogLog.timestamp("AutoManager/SearchMidline2Timeout");
-          yield NoteMapState.WAITING_FOR_NOTES;
-        }
-        yield currentState;
-      }
-      case SEARCH_SPEAKER_FIRST -> {
-        if (noteTrackingManager.mapContainsNote() && !robotManager.getState().hasNote) {
-          yield NoteMapState.INTAKING_PATHFINDING;
-        }
-        if (robotManager.getState().hasNote) {
-          yield NoteMapState.PATHFIND_TO_SCORE;
-        }
-        if (localization.atTranslation(speakerCleanupPath.get(0).getTranslation(), 0.2)) {
-          yield NoteMapState.SEARCH_SPEAKER_SECOND;
-        }
-        if (timeout(2.5)) {
-          DogLog.timestamp("AutoManager/SearchSpeaker1Timeout");
-          yield NoteMapState.SEARCH_SPEAKER_THIRD;
-        }
-        yield currentState;
-      }
-      case SEARCH_SPEAKER_SECOND -> {
-        if (noteTrackingManager.mapContainsNote() && !robotManager.getState().hasNote) {
-          yield NoteMapState.INTAKING_PATHFINDING;
-        }
-        if (robotManager.getState().hasNote) {
-          yield NoteMapState.PATHFIND_TO_SCORE;
-        }
-        if (localization.atTranslation(speakerCleanupPath.get(1).getTranslation(), 0.2)) {
-          yield NoteMapState.SEARCH_SPEAKER_THIRD;
-        }
-        if (timeout(2)) {
-          DogLog.timestamp("AutoManager/SearchSpeaker2Timeout");
-          yield NoteMapState.SEARCH_SPEAKER_THIRD;
-        }
-        yield currentState;
-      }
-      case SEARCH_SPEAKER_THIRD -> {
-        if (noteTrackingManager.mapContainsNote() && !robotManager.getState().hasNote) {
-          yield NoteMapState.INTAKING_PATHFINDING;
-        }
-        if (robotManager.getState().hasNote) {
-          yield NoteMapState.PATHFIND_TO_SCORE;
-        }
-        if (localization.atTranslation(speakerCleanupPath.get(2).getTranslation(), 0.2)) {
-          yield NoteMapState.WAITING_FOR_NOTES;
-        }
-        if (timeout(3)) {
-          DogLog.timestamp("AutoManager/SearchSpeaker3Timeout");
-          yield NoteMapState.WAITING_FOR_NOTES;
-        }
-        yield currentState;
       }
     };
   }
