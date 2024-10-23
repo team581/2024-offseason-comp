@@ -17,7 +17,7 @@ public class HeuristicPathFollowing {
   // Truss is 12 in by 12 in, radius is around 8.5 in
   // Assumption is robot is 30 in by 30 in, radius is around 21.2 in
   // Each truss has radius of 29.7 in or 0.75438 m
-  private static final double TRUSS_RADIUS = 0.75438 + 0.1; //  (truss + robot) + fudge factor
+  private static final double TRUSS_RADIUS = 0.75438 + 0.3; //  (truss + robot) + fudge factor
 
   private static final List<CollisionPoint> BLUE_COLLISION_POINTS =
       List.of(
@@ -33,17 +33,17 @@ public class HeuristicPathFollowing {
 
   private static final List<Translation2d> BLUE_INTERMEDIARY_POINTS =
       List.of(
-          new Translation2d(3.28, 6.88),
-          new Translation2d(3.28, 0.9),
-          new Translation2d(6.97, 6.88),
-          new Translation2d(6.97, 0.9));
+          new Translation2d(3.28, 8.0),
+          new Translation2d(3.28, 0.4),
+          new Translation2d(6.97, 8.0),
+          new Translation2d(6.97, 0.4));
 
   private static final List<Translation2d> RED_INTERMEDIARY_POINTS =
       List.of(
-          new Translation2d(13.26, 6.88),
-          new Translation2d(13.26, 0.9),
-          new Translation2d(9.57, 6.88),
-          new Translation2d(9.57, 0.9));
+          new Translation2d(13.26, 8.0),
+          new Translation2d(13.26, 0.4),
+          new Translation2d(9.57, 8.0),
+          new Translation2d(9.57, 0.4));
 
   private static List<CollisionPoint> getCollisionPoints() {
     if (FmsSubsystem.isRedAlliance()) {
