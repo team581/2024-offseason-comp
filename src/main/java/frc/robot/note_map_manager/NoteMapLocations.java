@@ -26,7 +26,7 @@ public class NoteMapLocations {
           // Under stage
           new Pose2d(12.05, 4.69, Rotation2d.fromDegrees(11.84)),
           // Amp Side
-          new Pose2d(11.8, 6.38, Rotation2d.fromDegrees(-10.97)),
+          new Pose2d(12.8, 6.38, Rotation2d.fromDegrees(-10.97)),
           // Source side
           new Pose2d(13.25, 3.1, Rotation2d.fromDegrees(37.59)));
 
@@ -35,7 +35,7 @@ public class NoteMapLocations {
           // Under stage
           new Pose2d(4.66, 4.73, Rotation2d.fromDegrees(168.76)),
           // Amp Side
-          new Pose2d(4.77, 6.47, Rotation2d.fromDegrees(-168.48)),
+          new Pose2d(3.77, 6.47, Rotation2d.fromDegrees(-168.48)),
           // Source side
           new Pose2d(3.01, 3.32, Rotation2d.fromDegrees(142.77)));
 
