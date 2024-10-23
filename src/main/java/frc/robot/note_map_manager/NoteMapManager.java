@@ -246,7 +246,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
     if (currentStep.isPresent()) {
       if (currentStep.get().action() == AutoNoteAction.CLEANUP) {
         var maybeNote =
-            noteTrackingManager.getNoteNearPose(localization.getPose().getTranslation(), CLEANUP_SEARCH_THRESHOLD_METERS);
+            noteTrackingManager.getNoteNearPose(
+                localization.getPose().getTranslation(), CLEANUP_SEARCH_THRESHOLD_METERS);
         if (maybeNote.isPresent()) {
           var noteDistanceAngle =
               VisionSubsystem.distanceAngleToTarget(
@@ -521,14 +522,14 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
 
         // if we finished pathfinding, drop note
-        if (noteMapCommand.isFinished()) {
+        if (noteMapCommand.isFinished() || localization.atTranslation(droppingDestination.getTranslation(), 0.2)) {
           DogLog.timestamp("AutoManager/PathfindDropFinished");
           yield NoteMapState.DROP;
         }
 
         if (timeout(4)) {
           DogLog.timestamp("AutoManager/PathfindDropTimeout");
-          yield NoteMapState.WAITING_FOR_NOTES;
+          yield NoteMapState.DROP;
         }
 
         yield currentState;
@@ -540,7 +541,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
 
         // If we're already at location to score, score the note
-        if (noteMapCommand.isFinished()) {
+        if (noteMapCommand.isFinished() || localization.atTranslation(droppingDestination.getTranslation(), 0.2)) {
           DogLog.timestamp("AutoManager/PathfindScoreFinished");
           DogLog.log("AutoManager/PathfindToScore/Scheduled", noteMapCommand.isScheduled());
           DogLog.log("AutoManager/PathfindToScore/Finished", noteMapCommand.isFinished());
