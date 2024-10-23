@@ -101,9 +101,9 @@ public class AutoCommands {
     return Commands.runOnce(
         () -> {
           var steps = new LinkedList<AutoNoteStep>();
-          steps.add(AutoNoteStep.score(3));
           steps.add(AutoNoteStep.drop(4, 5));
           steps.add(AutoNoteStep.score(5, 6));
+          steps.add(AutoNoteStep.score(11));
           steps.add(AutoNoteStep.score(10));
           noteMapManager.setSteps(steps);
         });
