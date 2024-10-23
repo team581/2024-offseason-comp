@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 15.79,
-      "y": 6.7
+      "x": 15.12,
+      "y": 6.29
     },
-    "rotation": -58.55684349937042
+    "rotation": 0.0
   },
   "command": {
     "type": "sequential",
@@ -18,6 +18,12 @@
               {
                 "type": "named",
                 "data": {
+                  "name": "waitingDropRequest"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
                   "name": "homeClimber"
                 }
               },
@@ -25,12 +31,6 @@
                 "type": "named",
                 "data": {
                   "name": "resetNoteMap"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "preloadNote"
                 }
               }
             ]
@@ -45,7 +45,7 @@
         {
           "type": "named",
           "data": {
-            "name": "speakerShot"
+            "name": "dropNote"
           }
         },
         {
