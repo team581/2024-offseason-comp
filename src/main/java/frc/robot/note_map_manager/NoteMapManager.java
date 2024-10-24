@@ -206,6 +206,12 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   @Override
   public void robotPeriodic() {
     super.robotPeriodic();
+
+    var translation = new Translation2d(12.85, 6.33);
+    var translation1 = new Translation2d(12.8, 6.38);
+DogLog.log("aaaaaa;lrkjqeroijqty", translation.getDistance(translation1));
+
+
     if (currentStep.isPresent()) {
       DogLog.log("AutoManager/CurrentStep/Action", currentStep.get().action());
     } else {
@@ -535,7 +541,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
 
         // If we're already at location to score, score the note
-        if (noteMapCommand.isFinished() || localization.atTranslation(droppingDestination.getTranslation(), 0.2)) {
+        if (noteMapCommand.isFinished() || localization.atTranslation(closestScoringLocation.getTranslation(), 0.2)) {
           DogLog.timestamp("AutoManager/PathfindScoreFinished");
           DogLog.log("AutoManager/PathfindToScore/Scheduled", noteMapCommand.isScheduled());
           DogLog.log("AutoManager/PathfindToScore/Finished", noteMapCommand.isFinished());
