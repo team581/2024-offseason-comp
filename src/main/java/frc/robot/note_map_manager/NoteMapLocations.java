@@ -23,8 +23,6 @@ public class NoteMapLocations {
   public static final Pose2d MIDLINE_CLEANUP_POSE = new Pose2d(8.271, 4.106, new Rotation2d(0));
   public static final List<Pose2d> RED_SCORING_DESTINATIONS =
       List.of(
-          // Under stage
-          new Pose2d(12.05, 4.69, Rotation2d.fromDegrees(11.84)),
           // Amp Side
           new Pose2d(12.8, 6.38, Rotation2d.fromDegrees(-10.97)),
           // Source side
@@ -32,8 +30,6 @@ public class NoteMapLocations {
 
   public static final List<Pose2d> BLUE_SCORING_DESTINATIONS =
       List.of(
-          // Under stage
-          new Pose2d(4.66, 4.73, Rotation2d.fromDegrees(168.76)),
           // Amp Side
           new Pose2d(3.77, 6.47, Rotation2d.fromDegrees(-168.48)),
           // Source side
