@@ -45,12 +45,6 @@
         {
           "type": "named",
           "data": {
-            "name": "dropNote"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "redAmpOPNM"
           }
         }
