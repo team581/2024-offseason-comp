@@ -210,10 +210,6 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   public void robotPeriodic() {
     super.robotPeriodic();
 
-    var translation = new Translation2d(12.85, 6.33);
-    var translation1 = new Translation2d(12.8, 6.38);
-DogLog.log("aaaaaa;lrkjqeroijqty", translation.getDistance(translation1));
-
 
     if (currentStep.isPresent()) {
       DogLog.log("AutoManager/CurrentStep/Action", currentStep.get().action());
