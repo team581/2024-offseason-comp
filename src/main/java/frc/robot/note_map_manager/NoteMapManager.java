@@ -502,7 +502,7 @@ DogLog.log("aaaaaa;lrkjqeroijqty", translation.getDistance(translation1));
           yield NoteMapState.INTAKING_PID;
         }
 
-        if (timeout(4)) {
+        if (timeout(3)) {
           DogLog.timestamp("AutoManager/PathfindIntakeTimeout");
           yield NoteMapState.WAITING_FOR_NOTES;
         }
@@ -527,7 +527,7 @@ DogLog.log("aaaaaa;lrkjqeroijqty", translation.getDistance(translation1));
           yield NoteMapState.WAITING_FOR_NOTES;
         }
 
-        if (timeout(4)) {
+        if (timeout(2)) {
           DogLog.timestamp("AutoManager/PIDIntakeTimeout");
           yield NoteMapState.WAITING_FOR_NOTES;
         }
