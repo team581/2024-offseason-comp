@@ -24,7 +24,7 @@ public class NoteMapLocations {
   public static final List<Pose2d> RED_SCORING_DESTINATIONS =
       List.of(
           // Amp Side
-          new Pose2d(12.8, 6.38, Rotation2d.fromDegrees(-10.97)),
+          new Pose2d(12.8, 6.45, Rotation2d.fromDegrees(-10.97)),
           // Source side
           new Pose2d(13.25, 3.1, Rotation2d.fromDegrees(37.59)));
 
