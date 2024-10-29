@@ -49,7 +49,7 @@
   "eventMarkers": [
     {
       "name": "drop",
-      "waypointRelativePos": 1.6,
+      "waypointRelativePos": 1.45,
       "command": {
         "type": "parallel",
         "data": {
