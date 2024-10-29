@@ -4,7 +4,6 @@
 
 package frc.robot.note_map_manager;
 
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.filter.Debouncer;
@@ -210,7 +209,6 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   public void robotPeriodic() {
     super.robotPeriodic();
 
-
     if (currentStep.isPresent()) {
       DogLog.log("AutoManager/CurrentStep/Action", currentStep.get().action());
     } else {
@@ -343,7 +341,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
                 .plus(localization.getPose().getTranslation());
 
         DogLog.log("Debug/droppednotepose", new Pose2d(translationFieldRelative, new Rotation2d()));
-        noteTrackingManager.addNoteToMap(15 ,translationFieldRelative);
+        noteTrackingManager.addNoteToMap(15, translationFieldRelative);
         AutoNoteDropped.addDroppedNote(translationFieldRelative);
         robotManager.dropRequest();
       }
@@ -538,7 +536,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
 
         // if we finished pathfinding, drop note
-        if (noteMapCommand.isFinished() || localization.atTranslation(droppingDestination.getTranslation(), 0.2)) {
+        if (noteMapCommand.isFinished()
+            || localization.atTranslation(droppingDestination.getTranslation(), 0.2)) {
           DogLog.timestamp("AutoManager/PathfindDropFinished");
           yield NoteMapState.DROP;
         }
@@ -557,7 +556,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
 
         // If we're already at location to score, score the note
-        if (noteMapCommand.isFinished() || localization.atTranslation(closestScoringLocation.getTranslation(), 0.2)) {
+        if (noteMapCommand.isFinished()
+            || localization.atTranslation(closestScoringLocation.getTranslation(), 0.2)) {
           DogLog.timestamp("AutoManager/PathfindScoreFinished");
           DogLog.log("AutoManager/PathfindToScore/Scheduled", noteMapCommand.isScheduled());
           DogLog.log("AutoManager/PathfindToScore/Finished", noteMapCommand.isFinished());
