@@ -46,7 +46,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       new PathConstraints(5.0, 5.0, 2 * Math.PI, 4 * Math.PI);
   private static final double TARGET_NOTE_THRESHOLD_METERS = 1.5;
   private static final double INTAKE_PATHFIND_THRESHOLD_METERS = 2.0;
-  private static final double DROPPED_NOTE_DISTANCE_METERS = 0.95;
+  private static final double DROPPED_NOTE_DISTANCE_METERS = 0.8;
   private static final double CLEANUP_SEARCH_THRESHOLD_METERS = 15.00;
 
   public NoteMapManager(
@@ -160,7 +160,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
                           .rotateBy(localization.getPose().getRotation())
                           .plus(localization.getPose().getTranslation());
 
-                  noteTrackingManager.addNoteToMap(translationFieldRelative);
+                  noteTrackingManager.addNoteToMap(15, translationFieldRelative);
                   AutoNoteDropped.addDroppedNote(translationFieldRelative);
                 }));
   }
@@ -315,6 +315,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       }
       case WAITING_FOR_NOTES -> {
         noteMapCommand.cancel();
+        robotManager.swerve.setFieldRelativeSpeeds(new ChassisSpeeds(), true);
         snaps.setEnabled(false);
         DogLog.timestamp("AutoManager/IdleAction");
         if (steps.isEmpty()) {
@@ -342,7 +343,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
                 .plus(localization.getPose().getTranslation());
 
         DogLog.log("Debug/droppednotepose", new Pose2d(translationFieldRelative, new Rotation2d()));
-        noteTrackingManager.addNoteToMap(translationFieldRelative);
+        noteTrackingManager.addNoteToMap(15 ,translationFieldRelative);
         AutoNoteDropped.addDroppedNote(translationFieldRelative);
         robotManager.dropRequest();
       }
@@ -523,7 +524,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           yield NoteMapState.WAITING_FOR_NOTES;
         }
 
-        if (timeout(2)) {
+        if (timeout(2.5)) {
           DogLog.timestamp("AutoManager/PIDIntakeTimeout");
           yield NoteMapState.WAITING_FOR_NOTES;
         }

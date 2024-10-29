@@ -62,13 +62,13 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private static final BoundingBox ROBOT_RELATIVE_FOV_BOUNDS =
       new BoundingBox(
           // top left
-          new Translation2d(-2.350, -1),
+          new Translation2d(-2.350, -0.9),
           // top right
-          new Translation2d(-2.350, 1),
+          new Translation2d(-2.350, 0.9),
           // bottom left
-          new Translation2d(-0.825, -0.1),
+          new Translation2d(-1.2, -0.05),
           // bottom right
-          new Translation2d(-0.820, 0.1));
+          new Translation2d(-1.2, 0.05));
 
   public NoteTrackingManager(
       LocalizationSubsystem localization,
@@ -378,8 +378,8 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     return !noteMap.isEmpty();
   }
 
-  public void addNoteToMap(Translation2d pose) {
-    noteMap.add(new NoteMapElement(Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME_SECONDS, pose));
+  public void addNoteToMap(double liftetime, Translation2d pose) {
+    noteMap.add(new NoteMapElement(Timer.getFPGATimestamp() + liftetime, pose));
   }
 
   private void updateMap() {
