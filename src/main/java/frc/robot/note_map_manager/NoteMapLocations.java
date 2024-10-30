@@ -7,6 +7,8 @@ package frc.robot.note_map_manager;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import frc.robot.config.RobotConfig;
+import frc.robot.fms.FmsSubsystem;
 import java.util.List;
 
 public class NoteMapLocations {
@@ -45,11 +47,11 @@ public class NoteMapLocations {
 
   public static final List<Pose2d> RED_DROPPING_DESTINATIONS_HOME =
       List.of(
-          new Pose2d(9.8, 7.458, Rotation2d.fromDegrees(0.0)),
-          new Pose2d(9.8, 5.782, Rotation2d.fromDegrees(0.0)),
-          new Pose2d(9.8, 4.106, Rotation2d.fromDegrees(0.0)),
-          new Pose2d(9.8, 2.429, Rotation2d.fromDegrees(0.0)),
-          new Pose2d(9.8, 0.753, Rotation2d.fromDegrees(0.0)));
+          new Pose2d(10.0, 7.458, Rotation2d.fromDegrees(0.0)),
+          new Pose2d(10.0, 5.782, Rotation2d.fromDegrees(0.0)),
+          new Pose2d(10.0, 4.106, Rotation2d.fromDegrees(0.0)),
+          new Pose2d(10.0, 2.429, Rotation2d.fromDegrees(0.0)),
+          new Pose2d(10.0, 0.753, Rotation2d.fromDegrees(0.0)));
 
   public static final List<Pose2d> BLUE_DROPPING_DESTINATIONS =
       List.of(
@@ -85,4 +87,23 @@ public class NoteMapLocations {
       List.of(
           new Pose2d(6.66, 2.42, Rotation2d.fromDegrees(136.86)),
           new Pose2d(6.66, 5.69, Rotation2d.fromDegrees(-144.39)));
+
+  public static List<Pose2d> getScoringDestinations() {
+    if (FmsSubsystem.isRedAlliance()) {
+      return NoteMapLocations.RED_SCORING_DESTINATIONS;
+    } else {
+      return NoteMapLocations.BLUE_SCORING_DESTINATIONS;
+    }
+  }
+
+  public static List<Pose2d> getDroppingDestinations() {
+    if (FmsSubsystem.isRedAlliance()) {
+      if (RobotConfig.IS_HOME) {
+        return NoteMapLocations.RED_DROPPING_DESTINATIONS_HOME;
+      }
+      return NoteMapLocations.RED_DROPPING_DESTINATIONS;
+    } else {
+      return NoteMapLocations.BLUE_DROPPING_DESTINATIONS;
+    }
+  }
 }

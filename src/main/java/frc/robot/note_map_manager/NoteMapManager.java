@@ -14,8 +14,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.config.RobotConfig;
-import frc.robot.fms.FmsSubsystem;
 import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.note_map_manager.pathfinding.HeuristicPathFollowing;
 import frc.robot.note_tracking.NoteMapElement;
@@ -63,64 +61,14 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
     this.pathfinder = new HeuristicPathFollowing(localization);
   }
 
-  private static BoundingBox getScoringBox() {
-    if (FmsSubsystem.isRedAlliance()) {
-      return NoteMapLocations.RED_SCORING_BOX;
-    } else {
-      return NoteMapLocations.BLUE_SCORING_BOX;
-    }
-  }
-
-  private static List<Pose2d> getScoringDestinations() {
-    if (FmsSubsystem.isRedAlliance()) {
-      return NoteMapLocations.RED_SCORING_DESTINATIONS;
-    } else {
-      return NoteMapLocations.BLUE_SCORING_DESTINATIONS;
-    }
-  }
-
-  private static List<Pose2d> getDroppingDestinations() {
-    if (FmsSubsystem.isRedAlliance()) {
-      if (RobotConfig.IS_HOME) {
-        return NoteMapLocations.RED_DROPPING_DESTINATIONS_HOME;
-      }
-      return NoteMapLocations.RED_DROPPING_DESTINATIONS;
-    } else {
-      return NoteMapLocations.BLUE_DROPPING_DESTINATIONS;
-    }
-  }
-
-  private static List<Pose2d> getSpeakerCleanupPath() {
-    if (FmsSubsystem.isRedAlliance()) {
-      return NoteMapLocations.RED_SPEAKER_CLEANUP_PATH;
-    } else {
-      return NoteMapLocations.BLUE_SPEAKER_CLEANUP_PATH;
-    }
-  }
-
-  private static List<Pose2d> getMidlineCleanupPath() {
-    if (FmsSubsystem.isRedAlliance()) {
-      return NoteMapLocations.RED_MIDLINE_CLEANUP_PATH;
-    } else {
-      return NoteMapLocations.BLUE_MIDLINE_CLEANUP_PATH;
-    }
-  }
-
-  private static Pose2d getSpeakerPose() {
-    if (FmsSubsystem.isRedAlliance()) {
-      return VisionSubsystem.ORIGINAL_RED_SPEAKER;
-    } else {
-      return VisionSubsystem.ORIGINAL_BLUE_SPEAKER;
-    }
-  }
-
   private Pose2d getClosestScoringDestination() {
     Pose2d current = localization.getPose();
 
-    Pose2d closest = getScoringDestinations().get(0);
+    var locations = NoteMapLocations.getScoringDestinations();
+    Pose2d closest = locations.get(0);
     double currentDistance = Double.POSITIVE_INFINITY;
 
-    for (Pose2d target : getScoringDestinations()) {
+    for (Pose2d target : locations) {
       double distance = target.getTranslation().getDistance(current.getTranslation());
       if (distance < currentDistance) {
         closest = target;
@@ -133,11 +81,12 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
   private Pose2d getClosestDroppingDestination() {
     Pose2d current = localization.getPose();
+    var locations = NoteMapLocations.getDroppingDestinations();
 
-    Pose2d closest = getDroppingDestinations().get(0);
+    Pose2d closest = locations.get(0);
     double currentDistance = Double.POSITIVE_INFINITY;
 
-    for (Pose2d target : getDroppingDestinations()) {
+    for (Pose2d target : locations) {
       double distance = target.getTranslation().getDistance(current.getTranslation());
       if (distance < currentDistance) {
         closest = target;
@@ -154,10 +103,14 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         .andThen(
             Commands.runOnce(
                 () -> {
+                  DogLog.timestamp("AutoManager/DropNote/AddToMap");
                   var translationFieldRelative =
                       new Translation2d(DROPPED_NOTE_DISTANCE_METERS, 0)
                           .rotateBy(localization.getPose().getRotation())
                           .plus(localization.getPose().getTranslation());
+
+                  // confirm the translation is correct
+                  DogLog.log("AutoManager/DropNote/NotePose", translationFieldRelative);
 
                   noteTrackingManager.addNoteToMap(15, translationFieldRelative);
                   AutoNoteDropped.addDroppedNote(translationFieldRelative);
@@ -210,10 +163,11 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
     super.robotPeriodic();
 
     if (currentStep.isPresent()) {
-      DogLog.log("AutoManager/CurrentStep/Action", currentStep.get().action());
+      DogLog.log("AutoManager/Steps/CurrentAction", currentStep.get().action());
     } else {
-      DogLog.log("AutoManager/CurrentStep/Action", "NO_CURRENT_STEP");
+      DogLog.log("AutoManager/Steps/CurrentAction", "NO_CURRENT_STEP");
     }
+    DogLog.log("AutoManager/Steps/Size", steps.size());
     pathfinder.temporaryLogFunction();
 
     switch (getState()) {
@@ -222,7 +176,12 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           robotManager.waitSpeakerShotRequest();
         }
       }
-      case INTAKING_PATHFINDING -> {
+      case INTAKING -> {
+        if (maybeNotePose.isPresent()) {
+          snaps.setAngle(maybeNotePose.get().getRotation().getDegrees());
+        }
+      }
+      case INITIAL_AIM_TO_INTAKE -> {
         if (maybeNotePose.isPresent()) {
           snaps.setAngle(maybeNotePose.get().getRotation().getDegrees());
         }
@@ -244,31 +203,32 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   @Override
   protected void collectInputs() {
 
-    if (currentStep.isPresent()) {
-      if (currentStep.get().action() == AutoNoteAction.CLEANUP) {
-        var maybeNote =
-            noteTrackingManager.getNoteNearPose(
-                localization.getPose().getTranslation(), CLEANUP_SEARCH_THRESHOLD_METERS);
-        if (maybeNote.isPresent()) {
-          var noteDistanceAngle =
-              VisionSubsystem.distanceAngleToTarget(
-                  new Pose2d(maybeNote.get().noteTranslation(), new Rotation2d()),
-                  localization.getPose());
+    if (currentStep.isEmpty()) {
+      return;
+    }
+    if (currentStep.get().action() == AutoNoteAction.CLEANUP) {
+      var maybeNote =
+          noteTrackingManager.getNoteNearPose(
+              localization.getPose().getTranslation(), CLEANUP_SEARCH_THRESHOLD_METERS);
+      if (maybeNote.isPresent()) {
+        var noteDistanceAngle =
+            VisionSubsystem.distanceAngleToTarget(
+                new Pose2d(maybeNote.get().noteTranslation(), new Rotation2d()),
+                localization.getPose());
 
-          maybeNotePose =
-              Optional.of(
-                  new Pose2d(
-                      maybeNote.get().noteTranslation(),
-                      Rotation2d.fromDegrees(noteDistanceAngle.targetAngle() + 180)));
+        maybeNotePose =
+            Optional.of(
+                new Pose2d(
+                    maybeNote.get().noteTranslation(),
+                    Rotation2d.fromDegrees(noteDistanceAngle.targetAngle() + 180)));
 
-          if (maybeNotePose.isPresent()) {
-            DogLog.log("AutoManager/MaybeNotePose", maybeNotePose.get());
-          }
-        } else {
-          maybeNotePose = Optional.empty();
+        if (maybeNotePose.isPresent()) {
+          DogLog.log("AutoManager/MaybeNotePose", maybeNotePose.get());
         }
+      } else {
+        maybeNotePose = Optional.empty();
       }
-
+    } else {
       for (var maybeSearchPoseSupplier : currentStep.get().notes()) {
         var maybeSearchPose = maybeSearchPoseSupplier.get();
         if (maybeSearchPose.isEmpty()) {
@@ -276,29 +236,27 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
 
         var rawSearchLocation = maybeSearchPose.get();
-        var maybeCurrentTargetedNote =
+        var maybeFoundNote =
             noteTrackingManager.getNoteNearPose(rawSearchLocation, TARGET_NOTE_THRESHOLD_METERS);
 
-        if (maybeCurrentTargetedNote.isPresent()) {
-          var noteDistanceAngle =
-              VisionSubsystem.distanceAngleToTarget(
-                  new Pose2d(maybeCurrentTargetedNote.get().noteTranslation(), new Rotation2d()),
-                  localization.getPose());
-
-          maybeNotePose =
-              Optional.of(
-                  new Pose2d(
-                      maybeCurrentTargetedNote.get().noteTranslation(),
-                      Rotation2d.fromDegrees(noteDistanceAngle.targetAngle() + 180)));
-
-          if (maybeNotePose.isPresent()) {
-            DogLog.log("AutoManager/MaybeNotePose", maybeNotePose.get());
-          }
-          break;
-        } else {
+        if (maybeFoundNote.isEmpty()) {
           maybeNotePose = Optional.empty();
           continue;
         }
+
+        var noteDistanceAngle =
+            VisionSubsystem.distanceAngleToTarget(
+                new Pose2d(maybeFoundNote.get().noteTranslation(), new Rotation2d()),
+                localization.getPose());
+
+        maybeNotePose =
+            Optional.of(
+                new Pose2d(
+                    maybeFoundNote.get().noteTranslation(),
+                    Rotation2d.fromDegrees(noteDistanceAngle.targetAngle() + 180)));
+
+        DogLog.log("AutoManager/MaybeNotePose", maybeNotePose.get());
+        break;
       }
     }
   }
@@ -313,22 +271,13 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       }
       case WAITING_FOR_NOTES -> {
         noteMapCommand.cancel();
-        robotManager.swerve.setFieldRelativeSpeeds(new ChassisSpeeds(), true);
-        snaps.setEnabled(false);
-        DogLog.timestamp("AutoManager/IdleAction");
-        if (steps.isEmpty()) {
-          // Nothing new to do, keep idling
-          DogLog.timestamp("AutoManager/IdleStepsEmpty");
 
-        } else {
-          DogLog.timestamp("AutoManager/IdleStepsPresent");
-          currentStep = Optional.of(steps.poll());
-          if (currentStep.isEmpty()) {
-            DogLog.timestamp("AutoManager/IdleCurrentStepEmpty");
-          } else {
-            DogLog.timestamp("AutoManager/IdleCurrentStepPresent");
-          }
+        snaps.setEnabled(false);
+        currentStep = Optional.ofNullable(steps.poll());
+        if (currentStep.isEmpty()) {
+          robotManager.swerve.setFieldRelativeSpeeds(new ChassisSpeeds(), true);
         }
+        DogLog.timestamp("AutoManager/WaitingForNotesAction");
       }
       case DROP -> {
         noteMapCommand.cancel();
@@ -352,7 +301,15 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         robotManager.swerve.setFieldRelativeSpeeds(new ChassisSpeeds(), true);
         robotManager.speakerShotRequest();
       }
-      case INTAKING_PATHFINDING -> {
+      case INITIAL_AIM_TO_INTAKE -> {
+        noteMapCommand.cancel();
+        robotManager.intakeRequest();
+        snaps.setEnabled(true);
+        // Stop the swerve to avoid drifting slowly while we rotate
+        // Snaps will override the omega here
+        robotManager.swerve.setRobotRelativeSpeeds(new ChassisSpeeds(), true);
+      }
+      case INTAKING -> {
         noteMapCommand.cancel();
         robotManager.intakeRequest();
         snaps.setEnabled(true);
@@ -374,28 +331,6 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           noteMapCommand.schedule();
         } else {
           DogLog.timestamp("AutoManager/InPathActionNoNoteExists");
-        }
-      }
-      case INTAKING_PID -> {
-        noteMapCommand.cancel();
-        DogLog.log(
-            "AutoManager/IntakePid/OldPathfindCommandCancelled", noteMapCommand.isFinished());
-        DogLog.log(
-            "AutoManager/IntakePid/OldPathfindCommandScheduled", noteMapCommand.isScheduled());
-        snaps.setEnabled(false);
-        if (currentStep.isEmpty()) {
-          DogLog.timestamp("AutoManager/InPIDActionCurrentStepEmpty");
-          break;
-        }
-
-        if (maybeNotePose.isPresent()) {
-          DogLog.timestamp("AutoManager/InPIDActionNoteExists");
-          noteMapCommand =
-              noteTrackingManager
-                  .intakeNoteAtPose(
-                      maybeNotePose.get().getTranslation(), TARGET_NOTE_THRESHOLD_METERS)
-                  .withName("PIDIntake");
-          noteMapCommand.schedule();
         }
       }
       case PATHFIND_TO_DROP -> {
@@ -444,17 +379,44 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
             && currentStep.get().action() == AutoNoteAction.CLEANUP
             && maybeNotePose.isPresent()) {
           DogLog.timestamp("AutoManager/IdleToCleanup");
-          yield NoteMapState.INTAKING_PATHFINDING;
+          yield NoteMapState.INTAKING;
         } else if (currentStep.isPresent() && maybeNotePose.isPresent()) {
-          DogLog.timestamp("AutoManager/IdleToIntakePathfinding");
 
-          yield NoteMapState.INTAKING_PATHFINDING;
+          if (Math.abs(
+                  maybeNotePose.get().getRotation().getDegrees()
+                      - localization.getPose().getRotation().getDegrees())
+              >= 60) {
+            yield NoteMapState.INITIAL_AIM_TO_INTAKE;
+          }
+          yield NoteMapState.INTAKING;
         }
 
         DogLog.timestamp("AutoManager/IdleToIdle");
         yield currentState;
       }
-      case INTAKING_PATHFINDING -> {
+      case INITIAL_AIM_TO_INTAKE -> {
+        if (currentStep.isEmpty() || maybeNotePose.isEmpty()) {
+          yield NoteMapState.WAITING_FOR_NOTES;
+        }
+        // If we already have note go and score/drop
+        if (robotManager.getState().hasNote) {
+          DogLog.timestamp("AutoManager/IntakingPathfindRobotHasNote");
+          if (currentStep.isPresent() && currentStep.get().action() == AutoNoteAction.DROP) {
+            yield NoteMapState.PATHFIND_TO_DROP;
+          }
+          yield NoteMapState.PATHFIND_TO_SCORE;
+        }
+
+        if (maybeNotePose.isPresent()
+            && Math.abs(
+                    maybeNotePose.get().getRotation().getDegrees()
+                        - localization.getPose().getRotation().getDegrees())
+                <= 10) {
+          yield NoteMapState.INTAKING;
+        }
+        yield currentState;
+      }
+      case INTAKING -> {
         // If current step is empty
         if (currentStep.isEmpty()) {
           DogLog.timestamp("AutoManager/IntakingPathfindCurrentStepEmpty");
@@ -477,53 +439,13 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           yield NoteMapState.PATHFIND_TO_SCORE;
         }
 
-        // If the note is still there and we are close enough go to PID intake mode
-        if (maybeNotePose.isPresent()
-            && maybeNotePose
-                    .get()
-                    .getTranslation()
-                    .getDistance(localization.getPose().getTranslation())
-                < INTAKE_PATHFIND_THRESHOLD_METERS) {
-          DogLog.timestamp("AutoManager/CloseEnoughStopPathfinding");
 
-          yield NoteMapState.INTAKING_PID;
-        }
-
-        // Pathfinding might finish even though we are way off from where we want to be
-        // Which sucks but like, what're you gonna do
-        // So just try PID at that point
         if (noteMapCommand.isFinished()) {
-          DogLog.timestamp("AutoManager/IntakePathfindingFinished");
-          yield NoteMapState.INTAKING_PID;
+          yield NoteMapState.WAITING_FOR_NOTES;
         }
 
-        if (timeout(3)) {
+        if (timeout(5)) {
           DogLog.timestamp("AutoManager/PathfindIntakeTimeout");
-          yield NoteMapState.WAITING_FOR_NOTES;
-        }
-
-        yield currentState;
-      }
-      case INTAKING_PID -> {
-        // If current step is empty
-        if (currentStep.isEmpty()) {
-          yield NoteMapState.WAITING_FOR_NOTES;
-        }
-        // If we already have note go and score/drop
-        if (robotManager.getState().hasNote) {
-          if (currentStep.isPresent() && currentStep.get().action() == AutoNoteAction.DROP) {
-            yield NoteMapState.PATHFIND_TO_DROP;
-          }
-          yield NoteMapState.PATHFIND_TO_SCORE;
-        }
-
-        // If note doesn't exist on map
-        if (maybeNotePose.isEmpty()) {
-          yield NoteMapState.WAITING_FOR_NOTES;
-        }
-
-        if (timeout(2.5)) {
-          DogLog.timestamp("AutoManager/PIDIntakeTimeout");
           yield NoteMapState.WAITING_FOR_NOTES;
         }
 
@@ -580,7 +502,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
             yield currentState;
           }
           if (maybeNotePose.isPresent()) {
-            yield NoteMapState.INTAKING_PATHFINDING;
+            yield NoteMapState.INTAKING;
           }
         }
         if (robotManager.getState().hasNote) {

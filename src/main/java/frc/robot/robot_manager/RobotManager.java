@@ -478,7 +478,7 @@ public class RobotManager extends LifecycleSubsystem {
         }
         break;
       case DROPPING:
-        if (noteManager.getState() == NoteState.IDLE_NO_GP && evilDropTimer.hasElapsed(0.5)) {
+        if (noteManager.getState() == NoteState.IDLE_NO_GP && evilDropTimer.hasElapsed(0.7)) {
           state = RobotState.IDLE_NO_GP;
           evilDropTimer.reset();
         }

@@ -7,8 +7,8 @@ package frc.robot.note_map_manager;
 public enum NoteMapState {
   STOPPED,
   WAITING_FOR_NOTES,
-  INTAKING_PATHFINDING,
-  INTAKING_PID,
+  INITIAL_AIM_TO_INTAKE,
+  INTAKING,
   PATHFIND_TO_DROP,
   PATHFIND_TO_SCORE,
   DROP,
