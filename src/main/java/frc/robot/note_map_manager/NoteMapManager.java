@@ -11,9 +11,11 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.config.RobotConfig;
 import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.note_map_manager.pathfinding.HeuristicPathFollowing;
 import frc.robot.note_tracking.NoteMapElement;
@@ -160,6 +162,10 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
   @Override
   public void robotPeriodic() {
+    if (DriverStation.isTeleop() && !RobotConfig.get().perfToggles().noteMapInTeleop()) {
+      return;
+    }
+
     super.robotPeriodic();
 
     if (currentStep.isPresent()) {
