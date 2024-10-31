@@ -269,7 +269,31 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         noteMapCommand.cancel();
 
         snaps.setEnabled(false);
-        currentStep = Optional.ofNullable(steps.poll());
+
+        // Check if the current step has any notes we can intake
+        // If it does, stay on the step and try those
+        // If not, try the next step
+        if (currentStep.isPresent()
+            && currentStep.get().notes().stream()
+                .anyMatch(
+                    maybeSearchPoseSupplier -> {
+                      var maybeSearchPose = maybeSearchPoseSupplier.get();
+                      if (maybeSearchPose.isEmpty()) {
+                        return false;
+                      }
+
+                      var rawSearchLocation = maybeSearchPose.get();
+                      return noteTrackingManager
+                          .getNoteNearPose(rawSearchLocation, TARGET_NOTE_THRESHOLD_METERS)
+                          .isPresent();
+                    })) {
+          // We have a note to intake, stay on the current step
+        } else {
+          // No notes to intake, try the next step
+          currentStep = Optional.ofNullable(steps.poll());
+        }
+
+        // If there is no current step, stop the swerve
         if (currentStep.isEmpty()) {
           robotManager.swerve.setFieldRelativeSpeeds(new ChassisSpeeds(), true);
         }
