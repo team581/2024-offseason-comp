@@ -479,17 +479,23 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
 
         if (noteMapCommand.isFinished()) {
+          // We should have the note, but don't so we remove it from the map
+          noteTrackingManager.removeNote(maybeNoteTranslation.get(), 0.1);
           yield NoteMapState.WAITING_FOR_NOTES;
         }
 
         if (timeout(5)) {
           DogLog.timestamp("AutoManager/PathfindIntakeTimeout");
+          // We should have the note, but don't so we remove it from the map
+          noteTrackingManager.removeNote(maybeNoteTranslation.get(), 0.1);
           yield NoteMapState.WAITING_FOR_NOTES;
         }
 
         // Have a shorter timeout once we are about to get the note
         if (localization.atTranslation(maybeNoteTranslation.get(), 1) && timeout(1)) {
           DogLog.timestamp("AutoManager/PathfindIntakeFinalTimeout");
+          // We should have the note, but don't so we remove it from the map
+          noteTrackingManager.removeNote(maybeNoteTranslation.get(), 0.1);
           yield NoteMapState.WAITING_FOR_NOTES;
         }
 
