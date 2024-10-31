@@ -33,7 +33,7 @@
   "eventMarkers": [
     {
       "name": "dropNote",
-      "waypointRelativePos": 0.55,
+      "waypointRelativePos": 0.45,
       "command": {
         "type": "parallel",
         "data": {
