@@ -66,6 +66,13 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
     this.pathfinder = new HeuristicPathFollowing(localization);
   }
 
+  /**
+   * @return The angle the robot should be at to intake at the target pose
+   */
+  private double angleToIntake(Translation2d target) {
+    return 180.0 + VisionSubsystem.angleToTarget(localization.getPose().getTranslation(), target);
+  }
+
   private Pose2d getClosestScoringDestination() {
     Pose2d current = localization.getPose();
 
@@ -190,9 +197,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       }
       case INTAKING, INITIAL_AIM_TO_INTAKE -> {
         if (maybeNoteTranslation.isPresent()) {
-          snaps.setAngle(
-              VisionSubsystem.angleToTarget(
-                  localization.getPose().getTranslation(), maybeNoteTranslation.get()));
+          snaps.setAngle(angleToIntake(maybeNoteTranslation.get()));
         }
       }
       case PATHFIND_TO_DROP -> {
@@ -322,9 +327,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
                                   new Pose2d(
                                       maybeNoteTranslation.get(),
                                       Rotation2d.fromDegrees(
-                                          VisionSubsystem.angleToTarget(
-                                              localization.getPose().getTranslation(),
-                                              maybeNoteTranslation.get()))))),
+                                          angleToIntake(maybeNoteTranslation.get()))))),
                       localization::getPose,
                       false)
                   .withName("PathfindIntake");
@@ -378,8 +381,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       case WAITING_FOR_NOTES -> {
         if (currentStep.isPresent() && maybeNoteTranslation.isPresent()) {
           if (!MathUtil.isNear(
-              VisionSubsystem.angleToTarget(
-                  localization.getPose().getTranslation(), maybeNoteTranslation.get()),
+              angleToIntake(maybeNoteTranslation.get()),
               localization.getPose().getRotation().getDegrees(),
               MAX_ANGLE_TO_TARGET_BEFORE_DRIVING)) {
             yield NoteMapState.INITIAL_AIM_TO_INTAKE;
@@ -406,8 +408,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
         if (timeout(1)
             || MathUtil.isNear(
-                VisionSubsystem.angleToTarget(
-                    localization.getPose().getTranslation(), maybeNoteTranslation.get()),
+                angleToIntake(maybeNoteTranslation.get()),
                 localization.getPose().getRotation().getDegrees(),
                 MAX_ANGLE_TO_TARGET_BEFORE_DRIVING)) {
           yield NoteMapState.INTAKING;
