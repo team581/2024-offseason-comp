@@ -304,14 +304,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         snaps.setAngle(droppingDestination.getRotation().getDegrees());
         snaps.setEnabled(true);
         robotManager.swerve.setRobotRelativeSpeeds(new ChassisSpeeds(), true);
-        var translationFieldRelative =
-            new Translation2d(DROPPED_NOTE_DISTANCE_METERS, 0)
-                .rotateBy(localization.getPose().getRotation())
-                .plus(localization.getPose().getTranslation());
 
-        DogLog.log("Debug/droppednotepose", new Pose2d(translationFieldRelative, new Rotation2d()));
-        noteTrackingManager.addNoteToMap(15, translationFieldRelative);
-        AutoNoteDropped.addDroppedNote(translationFieldRelative);
         robotManager.dropRequest();
       }
       case SCORE -> {
@@ -554,6 +547,14 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         // Finished this step since we dropped the note
         // Pop it off the head of the steps array
         doNextStep();
+        // Add the dropped note to the map
+        var translationFieldRelative =
+            new Translation2d(DROPPED_NOTE_DISTANCE_METERS, 0)
+                .rotateBy(localization.getPose().getRotation())
+                .plus(localization.getPose().getTranslation());
+
+        noteTrackingManager.addNoteToMap(15, translationFieldRelative);
+        AutoNoteDropped.addDroppedNote(translationFieldRelative);
 
         yield NoteMapState.WAITING_FOR_NOTES;
       }
