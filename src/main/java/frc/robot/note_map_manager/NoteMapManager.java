@@ -6,6 +6,7 @@ package frc.robot.note_map_manager;
 
 import com.pathplanner.lib.path.PathConstraints;
 import dev.doglog.DogLog;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -34,6 +35,7 @@ import java.util.Optional;
 import java.util.Queue;
 
 public class NoteMapManager extends StateMachine<NoteMapState> {
+  private static final int MAX_ANGLE_TO_TARGET_BEFORE_DRIVING = 60;
   private final RobotCommands actions;
   private final NoteTrackingManager noteTrackingManager;
   private final RobotManager robotManager;
@@ -388,10 +390,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           yield NoteMapState.INTAKING;
         } else if (currentStep.isPresent() && maybeNotePose.isPresent()) {
 
-          if (Math.abs(
-                  maybeNotePose.get().getRotation().getDegrees()
-                      - localization.getPose().getRotation().getDegrees())
-              >= 60) {
+          if (MathUtil.isNear(maybeNotePose.get().getRotation().getDegrees(),localization.getPose().getRotation().getDegrees(),MAX_ANGLE_TO_TARGET_BEFORE_DRIVING)) {
             yield NoteMapState.INITIAL_AIM_TO_INTAKE;
           }
           yield NoteMapState.INTAKING;
@@ -420,6 +419,10 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
                 <= 10) {
           yield NoteMapState.INTAKING;
         }
+
+        if (timeout(1)) {
+          yield NoteMapState.INTAKING;
+        }
         yield currentState;
       }
       case INTAKING -> {
@@ -438,6 +441,9 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
         // If we already have note go and score/drop
         if (robotManager.getState().hasNote) {
+          if (maybeNotePose.isPresent() && localization.atTranslation(maybeNotePose.get().getTranslation(), 0.5)) {
+            noteTrackingManager.removeNote(maybeNotePose.get().getTranslation(), 0.5);
+          }
           DogLog.timestamp("AutoManager/IntakingPathfindRobotHasNote");
           if (currentStep.isPresent() && currentStep.get().action() == AutoNoteAction.DROP) {
             yield NoteMapState.PATHFIND_TO_DROP;
