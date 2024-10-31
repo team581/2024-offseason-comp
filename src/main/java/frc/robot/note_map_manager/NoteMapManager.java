@@ -70,7 +70,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
    * @return The angle the robot should be at to intake at the target pose
    */
   private double angleToIntake(Translation2d target) {
-    return VisionSubsystem.angleToTarget(localization.getPose().getTranslation(), target);
+    return 180 + VisionSubsystem.angleToTarget(localization.getPose().getTranslation(), target);
   }
 
   private Pose2d getClosestScoringDestination() {
