@@ -429,6 +429,18 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           yield NoteMapState.PATHFIND_TO_SCORE;
         }
 
+        DogLog.log("AutoManager/InitialAim/GoalAngle", angleToIntake(maybeNoteTranslation.get()));
+        DogLog.log(
+            "AutoManager/InitialAim/ActualAngle",
+            localization.getPose().getRotation().getDegrees());
+        DogLog.log("AutoManager/InitialAim/Tolerance", MAX_ANGLE_TO_TARGET_BEFORE_DRIVING);
+        DogLog.log(
+            "AutoManager/InitialAim/AtGoal",
+            MathUtil.isNear(
+                angleToIntake(maybeNoteTranslation.get()),
+                localization.getPose().getRotation().getDegrees(),
+                MAX_ANGLE_TO_TARGET_BEFORE_DRIVING));
+
         if (timeout(1)
             || MathUtil.isNear(
                 angleToIntake(maybeNoteTranslation.get()),
