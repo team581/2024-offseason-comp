@@ -525,10 +525,21 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
         yield currentState;
       }
-      case DROP ->
-          droppedNoteInRobotDebouncer.calculate(robotManager.getState().hasNote)
-              ? currentState
-              : NoteMapState.WAITING_FOR_NOTES;
+      case DROP -> {
+        var debouncedHasNoteAfterDrop =
+            droppedNoteInRobotDebouncer.calculate(robotManager.getState().hasNote);
+
+        if (debouncedHasNoteAfterDrop) {
+          // Still have note
+          yield currentState;
+        }
+
+        // Finished this step since we dropped the note
+        // Pop it off the head of the steps array
+        steps.poll();
+
+        yield NoteMapState.WAITING_FOR_NOTES;
+      }
       case SCORE -> {
         if (currentStep.isPresent() && currentStep.get().action().equals(AutoNoteAction.CLEANUP)) {
           if (robotManager.getState().hasNote) {
@@ -542,6 +553,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           yield currentState;
         }
 
+        // Finished scoring the note, remove this step
+        steps.poll();
         yield NoteMapState.WAITING_FOR_NOTES;
       }
     };
