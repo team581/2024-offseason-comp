@@ -289,7 +289,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           // We have a note to intake, stay on the current step
         } else {
           // No notes to intake, try the next step
-          currentStep = Optional.ofNullable(steps.poll());
+          doNextStep();
         }
 
         // If there is no current step, stop the swerve
@@ -535,7 +535,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
         // Finished this step since we dropped the note
         // Pop it off the head of the steps array
-        steps.poll();
+        doNextStep();
 
         yield NoteMapState.WAITING_FOR_NOTES;
       }
@@ -553,9 +553,14 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
 
         // Finished scoring the note, remove this step
-        steps.poll();
+        doNextStep();
         yield NoteMapState.WAITING_FOR_NOTES;
       }
     };
+  }
+
+  /** Pull next step from the array and use that as the current step. */
+  private void doNextStep() {
+    currentStep = Optional.ofNullable(steps.poll());
   }
 }
