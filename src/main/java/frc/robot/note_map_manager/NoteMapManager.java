@@ -70,7 +70,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
    * @return The angle the robot should be at to intake at the target pose
    */
   private double angleToIntake(Translation2d target) {
-    return 180.0 + VisionSubsystem.angleToTarget(localization.getPose().getTranslation(), target);
+    return VisionSubsystem.angleToTarget(localization.getPose().getTranslation(), target);
   }
 
   private Pose2d getClosestScoringDestination() {
@@ -449,6 +449,12 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
         if (timeout(5)) {
           DogLog.timestamp("AutoManager/PathfindIntakeTimeout");
+          yield NoteMapState.WAITING_FOR_NOTES;
+        }
+
+        // Have a shorter timeout once we are about to get the note
+        if (localization.atTranslation(maybeNoteTranslation.get(), 1) && timeout(1)) {
+          DogLog.timestamp("AutoManager/PathfindIntakeFinalTimeout");
           yield NoteMapState.WAITING_FOR_NOTES;
         }
 
