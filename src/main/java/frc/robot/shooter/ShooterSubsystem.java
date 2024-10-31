@@ -27,7 +27,7 @@ public class ShooterSubsystem extends LifecycleSubsystem {
   private final InterpolatingDoubleTreeMap floorSpotDistanceToRPM =
       new InterpolatingDoubleTreeMap();
 
-  private ShooterMode goalMode = ShooterMode.IDLE;
+  private ShooterMode goalMode = ShooterMode.FULLY_STOPPED;
 
   public ShooterSubsystem(TalonFX leftMotor, TalonFX rightMotor) {
     super(SubsystemPriority.SHOOTER);
