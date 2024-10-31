@@ -98,6 +98,10 @@ public class VisionSubsystem extends LifecycleSubsystem {
     return new DistanceAngle(distance, angle, false);
   }
 
+  public static double angleToTarget(Translation2d current, Translation2d target) {
+    return Math.atan2(target.getY() - current.getY(), target.getX() - current.getX());
+  }
+
   private Pose2d robotPose = new Pose2d();
 
   public VisionSubsystem(ImuSubsystem imu) {
