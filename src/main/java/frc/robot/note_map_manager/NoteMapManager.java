@@ -115,21 +115,20 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         // This logic is unfortunately duplicated between this command (used in autos), and the
         // state machine stuff (used during note map)
         .andThen(Commands.waitSeconds(TIME_TO_WAIT_AFTER_DROPPING_NOTE))
-        .andThen(
-            Commands.runOnce(
-                () -> {
-                  DogLog.timestamp("AutoManager/DropNote/AddToMap");
-                  var translationFieldRelative =
-                      new Translation2d(DROPPED_NOTE_DISTANCE_METERS, 0)
-                          .rotateBy(localization.getPose().getRotation())
-                          .plus(localization.getPose().getTranslation());
+        .finallyDo(
+            () -> {
+              DogLog.timestamp("AutoManager/DropNote/AddToMap");
+              var translationFieldRelative =
+                  new Translation2d(DROPPED_NOTE_DISTANCE_METERS, 0)
+                      .rotateBy(localization.getPose().getRotation())
+                      .plus(localization.getPose().getTranslation());
 
-                  // confirm the translation is correct
-                  DogLog.log("AutoManager/DropNote/NotePose", translationFieldRelative);
+              // confirm the translation is correct
+              DogLog.log("AutoManager/DropNote/NotePose", translationFieldRelative);
 
-                  noteTrackingManager.addNoteToMap(15, translationFieldRelative);
-                  AutoNoteDropped.addDroppedNote(translationFieldRelative);
-                }));
+              noteTrackingManager.addNoteToMap(15, translationFieldRelative);
+              AutoNoteDropped.addDroppedNote(translationFieldRelative);
+            });
   }
 
   public Command testCommand() {
