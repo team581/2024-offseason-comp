@@ -35,7 +35,8 @@ import java.util.Optional;
 import java.util.Queue;
 
 public class NoteMapManager extends StateMachine<NoteMapState> {
-  private static final int MAX_ANGLE_TO_TARGET_BEFORE_DRIVING = 60;
+  private static final double TIME_TO_WAIT_AFTER_DROPPING_NOTE = 0.5;
+  private static final int MAX_ANGLE_TO_TARGET_BEFORE_DRIVING = 20;
   private final RobotCommands actions;
   private final NoteTrackingManager noteTrackingManager;
   private final RobotManager robotManager;
@@ -104,6 +105,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   public Command dropNote() {
     return actions
         .dropCommand()
+        // This logic is unfortunately duplicated between this command (used in autos), and the state machine stuff (used during note map)
+        .andThen(Commands.waitSeconds(TIME_TO_WAIT_AFTER_DROPPING_NOTE))
         .andThen(
             Commands.runOnce(
                 () -> {
@@ -292,6 +295,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
         snaps.setAngle(droppingDestination.getRotation().getDegrees());
         snaps.setEnabled(true);
+        robotManager.swerve.setRobotRelativeSpeeds(new ChassisSpeeds(), true);
         var translationFieldRelative =
             new Translation2d(DROPPED_NOTE_DISTANCE_METERS, 0)
                 .rotateBy(localization.getPose().getRotation())
@@ -373,7 +377,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
     }
   }
 
-  private final Debouncer droppedNoteInRobotDebouncer = new Debouncer(0.5);
+  private final Debouncer droppedNoteInRobotDebouncer = new Debouncer(TIME_TO_WAIT_AFTER_DROPPING_NOTE);
 
   // State transitions
   @Override
@@ -383,16 +387,14 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         yield currentState;
       }
       case WAITING_FOR_NOTES -> {
-        if (currentStep.isPresent()
-            && currentStep.get().action() == AutoNoteAction.CLEANUP
-            && maybeNotePose.isPresent()) {
-          DogLog.timestamp("AutoManager/IdleToCleanup");
-          yield NoteMapState.INTAKING;
-        } else if (currentStep.isPresent() && maybeNotePose.isPresent()) {
-
-          if (MathUtil.isNear(maybeNotePose.get().getRotation().getDegrees(),localization.getPose().getRotation().getDegrees(),MAX_ANGLE_TO_TARGET_BEFORE_DRIVING)) {
+        if (currentStep.isPresent() && maybeNotePose.isPresent()) {
+          if (!MathUtil.isNear(
+              maybeNotePose.get().getRotation().getDegrees(),
+              localization.getPose().getRotation().getDegrees(),
+              MAX_ANGLE_TO_TARGET_BEFORE_DRIVING)) {
             yield NoteMapState.INITIAL_AIM_TO_INTAKE;
           }
+
           yield NoteMapState.INTAKING;
         }
 
@@ -412,17 +414,14 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           yield NoteMapState.PATHFIND_TO_SCORE;
         }
 
-        if (maybeNotePose.isPresent()
-            && Math.abs(
-                    maybeNotePose.get().getRotation().getDegrees()
-                        - localization.getPose().getRotation().getDegrees())
-                <= 10) {
+        if (timeout(1)
+            || MathUtil.isNear(
+                maybeNotePose.get().getRotation().getDegrees(),
+                localization.getPose().getRotation().getDegrees(),
+                MAX_ANGLE_TO_TARGET_BEFORE_DRIVING)) {
           yield NoteMapState.INTAKING;
         }
 
-        if (timeout(1)) {
-          yield NoteMapState.INTAKING;
-        }
         yield currentState;
       }
       case INTAKING -> {
@@ -441,7 +440,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
         // If we already have note go and score/drop
         if (robotManager.getState().hasNote) {
-          if (maybeNotePose.isPresent() && localization.atTranslation(maybeNotePose.get().getTranslation(), 0.5)) {
+          if (maybeNotePose.isPresent()
+              && localization.atTranslation(maybeNotePose.get().getTranslation(), 0.5)) {
             noteTrackingManager.removeNote(maybeNotePose.get().getTranslation(), 0.5);
           }
           DogLog.timestamp("AutoManager/IntakingPathfindRobotHasNote");
@@ -450,7 +450,6 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           }
           yield NoteMapState.PATHFIND_TO_SCORE;
         }
-
 
         if (noteMapCommand.isFinished()) {
           yield NoteMapState.WAITING_FOR_NOTES;
