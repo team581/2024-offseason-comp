@@ -99,7 +99,7 @@ public class VisionSubsystem extends LifecycleSubsystem {
   }
 
   public static double angleToTarget(Translation2d current, Translation2d target) {
-    return Math.atan2(target.getY() - current.getY(), target.getX() - current.getX());
+    return Units.radiansToDegrees(Math.atan2(target.getY() - current.getY(), target.getX() - current.getX()));
   }
 
   private Pose2d robotPose = new Pose2d();
