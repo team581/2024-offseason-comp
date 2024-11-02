@@ -7,7 +7,6 @@ package frc.robot.note_map_manager;
 import com.pathplanner.lib.path.PathConstraints;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -35,7 +34,6 @@ import java.util.Optional;
 import java.util.Queue;
 
 public class NoteMapManager extends StateMachine<NoteMapState> {
-  private static final double TIME_TO_WAIT_AFTER_DROPPING_NOTE = 0.5;
   private static final int MAX_ANGLE_TO_TARGET_BEFORE_DRIVING = 20;
   private final RobotCommands actions;
   private final NoteTrackingManager noteTrackingManager;
@@ -112,9 +110,6 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   public Command dropNote() {
     return actions
         .dropCommand()
-        // This logic is unfortunately duplicated between this command (used in autos), and the
-        // state machine stuff (used during note map)
-        .andThen(Commands.waitSeconds(TIME_TO_WAIT_AFTER_DROPPING_NOTE))
         .finallyDo(
             () -> {
               DogLog.timestamp("NoteMapManager/DropNote/AddToMap");
@@ -382,9 +377,6 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
     }
   }
 
-  private final Debouncer droppedNoteInRobotDebouncer =
-      new Debouncer(TIME_TO_WAIT_AFTER_DROPPING_NOTE);
-
   // State transitions
   @Override
   protected NoteMapState getNextState(NoteMapState currentState) {
@@ -532,10 +524,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         yield currentState;
       }
       case DROP -> {
-        var debouncedHasNoteAfterDrop =
-            droppedNoteInRobotDebouncer.calculate(robotManager.getState().hasNote);
-
-        if (debouncedHasNoteAfterDrop) {
+        if (robotManager.getState().hasNote) {
           // Still have note
           yield currentState;
         }

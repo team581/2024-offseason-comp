@@ -47,7 +47,7 @@ public class RobotManager extends LifecycleSubsystem {
   private RobotState state = RobotState.IDLE_NO_GP;
 
   private final FlagManager<RobotFlag> flags = new FlagManager<>("RobotManager", RobotFlag.class);
-  private final Timer evilDropTimer = new Timer();
+  private final Timer dropNoteSensorDebounce = new Timer();
 
   public RobotManager(
       WristSubsystem wrist,
@@ -478,9 +478,10 @@ public class RobotManager extends LifecycleSubsystem {
         }
         break;
       case DROPPING:
-        if (noteManager.getState() == NoteState.IDLE_NO_GP && evilDropTimer.hasElapsed(0.7)) {
+        if (noteManager.getState() == NoteState.IDLE_NO_GP
+            && dropNoteSensorDebounce.hasElapsed(1.25)) {
           state = RobotState.IDLE_NO_GP;
-          evilDropTimer.reset();
+          dropNoteSensorDebounce.reset();
         }
         break;
       case PRESET_LEFT:
@@ -596,7 +597,7 @@ public class RobotManager extends LifecycleSubsystem {
         shooter.setGoalMode(ShooterMode.DROPPING);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.idleInQueuerRequest();
-        evilDropTimer.reset();
+        dropNoteSensorDebounce.reset();
         break;
       case DROPPING:
         wrist.setAngle(WristPositions.OUTTAKING_SHOOTER);
@@ -604,7 +605,7 @@ public class RobotManager extends LifecycleSubsystem {
         shooter.setGoalMode(ShooterMode.DROPPING);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.dropRequest();
-        evilDropTimer.start();
+        dropNoteSensorDebounce.start();
         break;
       case WAITING_DROP:
         wrist.setAngle(WristPositions.OUTTAKING_SHOOTER);
