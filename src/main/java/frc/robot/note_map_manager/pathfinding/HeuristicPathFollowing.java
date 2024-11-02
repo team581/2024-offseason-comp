@@ -17,19 +17,21 @@ public class HeuristicPathFollowing {
   // Truss is 12 in by 12 in, radius is around 8.5 in
   // Assumption is robot is 30 in by 30 in, radius is around 21.2 in
   // Each truss has radius of 29.7 in or 0.75438 m
-  private static final double TRUSS_RADIUS = 0.75438 + 0.25; //  (truss + robot) + fudge factor
-
+  private static final double TRUSS_RADIUS = 0.75438 + 0.3; //  (truss + robot) + fudge factor
+  private static final double UNDER_STAGE_RADIUS = 2;
   private static final List<CollisionPoint> BLUE_COLLISION_POINTS =
       List.of(
           new CollisionPoint("SpeakerPodium", new Translation2d(3.3274, 4.106), TRUSS_RADIUS),
           new CollisionPoint("AmpPodium", new Translation2d(5.65658, 5.447374), TRUSS_RADIUS),
-          new CollisionPoint("SourcePodium", new Translation2d(5.65658, 2.764626), TRUSS_RADIUS));
+          new CollisionPoint("SourcePodium", new Translation2d(5.65658, 2.764626), TRUSS_RADIUS),
+          new CollisionPoint("UnderStage", new Translation2d(4.9, 4.1), UNDER_STAGE_RADIUS));
 
   private static final List<CollisionPoint> RED_COLLISION_POINTS =
       List.of(
           new CollisionPoint("SpeakerPodium", new Translation2d(13.2842, 4.106), TRUSS_RADIUS),
           new CollisionPoint("AmpPodium", new Translation2d(10.95502, 5.447374), TRUSS_RADIUS),
-          new CollisionPoint("SourcePodium", new Translation2d(10.95502, 2.764626), TRUSS_RADIUS));
+          new CollisionPoint("SourcePodium", new Translation2d(10.95502, 2.764626), TRUSS_RADIUS),
+          new CollisionPoint("UnderStage", new Translation2d(11.65, 4.1), UNDER_STAGE_RADIUS));
 
   private static final List<Translation2d> BLUE_INTERMEDIARY_POINTS =
       List.of(
