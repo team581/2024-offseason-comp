@@ -152,7 +152,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     noteMapManager.off();
     // var now = Timer.getFPGATimestamp();
-    // DogLog.timestamp("AutoManager/RobotInit");
+    // DogLog.timestamp("NoteMapManager/RobotInit");
     // noteTrackingManager.resetNoteMap(
     //     new ArrayList<>(
     //         List.of(

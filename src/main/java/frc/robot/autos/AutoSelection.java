@@ -6,7 +6,7 @@ package frc.robot.autos;
 
 public enum AutoSelection {
   DO_NOTHING("", ""),
-
+  OP("Red OP", ""),
   RED_AMP_OP_NM("Red Amp OP NM", ""),
   RED_MID_DROP_RACE_NM("Red Mid Drop Race NM", ""),
   RED_SOURCE_SIDE_RACE_NM("Red Source Side Race NM", "");

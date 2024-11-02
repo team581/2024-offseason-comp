@@ -48,6 +48,7 @@ public class RobotManager extends LifecycleSubsystem {
 
   private final FlagManager<RobotFlag> flags = new FlagManager<>("RobotManager", RobotFlag.class);
   private final Timer dropNoteSensorDebounce = new Timer();
+  public final double DROP_DEBOUNCE_TIME_SECONDS = 1.25;
 
   public RobotManager(
       WristSubsystem wrist,
@@ -479,7 +480,7 @@ public class RobotManager extends LifecycleSubsystem {
         break;
       case DROPPING:
         if (noteManager.getState() == NoteState.IDLE_NO_GP
-            && dropNoteSensorDebounce.hasElapsed(1.25)) {
+            && dropNoteSensorDebounce.hasElapsed(DROP_DEBOUNCE_TIME_SECONDS)) {
           state = RobotState.IDLE_NO_GP;
           dropNoteSensorDebounce.reset();
         }
@@ -598,8 +599,9 @@ public class RobotManager extends LifecycleSubsystem {
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.idleInQueuerRequest();
         dropNoteSensorDebounce.reset();
+        dropNoteSensorDebounce.stop();
         break;
-      case DROPPING:
+        case DROPPING:
         wrist.setAngle(WristPositions.OUTTAKING_SHOOTER);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.DROPPING);
@@ -607,11 +609,13 @@ public class RobotManager extends LifecycleSubsystem {
         noteManager.dropRequest();
         dropNoteSensorDebounce.start();
         break;
-      case WAITING_DROP:
+        case WAITING_DROP:
         wrist.setAngle(WristPositions.OUTTAKING_SHOOTER);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.DROPPING);
         climber.setGoalMode(ClimberMode.STOWED);
+        dropNoteSensorDebounce.reset();
+        dropNoteSensorDebounce.stop();
         break;
       case PREPARE_SHOOTER_AMP:
       case WAIT_SHOOTER_AMP:
@@ -912,6 +916,8 @@ public class RobotManager extends LifecycleSubsystem {
     flags.clear();
 
     SmartDashboard.putBoolean("HasNote", getState().hasNote);
+
+    DogLog.log("NoteMapManager/DropNoteTimerValue", dropNoteSensorDebounce.get());
   }
 
   public void waitPodiumShotRequest() {

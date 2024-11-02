@@ -127,12 +127,12 @@ public class HeuristicPathFollowing {
 
     for (var collisionPoint : getCollisionPoints()) {
       DogLog.log(
-          "AutoManager/Pathfinding/CollisionPoints/" + collisionPoint.label(),
+          "NoteMapManager/Pathfinding/CollisionPoints/" + collisionPoint.label(),
           new Pose2d(collisionPoint.point(), new Rotation2d()));
     }
 
     DogLog.log(
-        "AutoManager/Pathfinding/IntermediaryPoints",
+        "NoteMapManager/Pathfinding/IntermediaryPoints",
         getIntermediaryPoints().stream()
             .map(translation -> new Pose2d(translation, new Rotation2d()))
             .toArray(Pose2d[]::new));
@@ -140,11 +140,11 @@ public class HeuristicPathFollowing {
 
   public Pose2d getPoseToFollow(Pose2d end) {
     var robot = localization.getPose();
-    DogLog.log("AutoManager/Pathfinding/Input", robot);
+    DogLog.log("NoteMapManager/Pathfinding/Input", robot);
 
     if (!doesCollisionExist(robot.getTranslation(), end.getTranslation())) {
-      DogLog.log("AutoManager/Pathfinding/Status", "No collision");
-      DogLog.log("AutoManager/Pathfinding/Output", end);
+      DogLog.log("NoteMapManager/Pathfinding/Status", "No collision");
+      DogLog.log("NoteMapManager/Pathfinding/Output", end);
       return end;
     }
 
@@ -164,8 +164,8 @@ public class HeuristicPathFollowing {
       // Rio SD card if this happens.
 
       DogLog.logFault("Pathfinding failed to find valid intermediary point");
-      DogLog.log("AutoManager/Pathfinding/Status", "Unavoidable collision");
-      DogLog.log("AutoManager/Pathfinding/Output", end);
+      DogLog.log("NoteMapManager/Pathfinding/Status", "Unavoidable collision");
+      DogLog.log("NoteMapManager/Pathfinding/Output", end);
       return end;
     }
 
@@ -179,8 +179,8 @@ public class HeuristicPathFollowing {
         closestPoint = new Pose2d(intermediaryPoint, end.getRotation());
       }
     }
-    DogLog.log("AutoManager/Pathfinding/Status", "Collision avoided");
-    DogLog.log("AutoManager/Pathfinding/Output", closestPoint);
+    DogLog.log("NoteMapManager/Pathfinding/Status", "Collision avoided");
+    DogLog.log("NoteMapManager/Pathfinding/Output", closestPoint);
     return closestPoint;
   }
 }
