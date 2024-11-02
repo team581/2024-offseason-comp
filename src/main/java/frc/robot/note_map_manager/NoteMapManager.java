@@ -420,7 +420,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           yield NoteMapState.PATHFIND_TO_SCORE;
         }
 
-        DogLog.log("NoteMapManager/InitialAim/GoalAngle", angleToIntake(maybeNoteTranslation.get()));
+        DogLog.log(
+            "NoteMapManager/InitialAim/GoalAngle", angleToIntake(maybeNoteTranslation.get()));
         DogLog.log(
             "NoteMapManager/InitialAim/ActualAngle",
             localization.getPose().getRotation().getDegrees());
@@ -526,7 +527,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
         if (timeout(4)) {
           DogLog.log("NoteMapManager/Status", "PathfindToScoreTimeout");
-                    yield NoteMapState.SCORE;
+          yield NoteMapState.SCORE;
         }
         yield currentState;
       }
