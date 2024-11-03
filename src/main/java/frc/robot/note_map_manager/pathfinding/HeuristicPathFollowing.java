@@ -18,7 +18,7 @@ public class HeuristicPathFollowing {
   // Assumption is robot is 30 in by 30 in, radius is around 21.2 in
   // Each truss has radius of 29.7 in or 0.75438 m
   private static final double TRUSS_RADIUS = 0.75438 + 0.3; //  (truss + robot) + fudge factor
-  private static final double UNDER_STAGE_RADIUS = 2;
+  private static final double UNDER_STAGE_RADIUS = 1.5;
   private static final List<CollisionPoint> BLUE_COLLISION_POINTS =
       List.of(
           new CollisionPoint("SpeakerPodium", new Translation2d(3.3274, 4.106), TRUSS_RADIUS),
@@ -125,6 +125,8 @@ public class HeuristicPathFollowing {
   public void temporaryLogFunction() {
     // Temporarily log all the psoes
 
+      DogLog.log("NoteMapManager/Pathfinding/RobotInsideCollistion", doesCollisionExist(localization.getPose().getTranslation(), localization.getPose().getTranslation()));
+
     for (var collisionPoint : getCollisionPoints()) {
       DogLog.log(
           "NoteMapManager/Pathfinding/CollisionPoints/" + collisionPoint.label(),
@@ -150,7 +152,7 @@ public class HeuristicPathFollowing {
 
     ArrayList<Translation2d> validIntermediaryPoints = new ArrayList<>();
     for (Translation2d intermediaryPoint : getIntermediaryPoints()) {
-      if (doesCollisionExist(robot.getTranslation(), intermediaryPoint)) {
+      if (doesCollisionExist(robot.getTranslation(), intermediaryPoint) && !doesCollisionExist(robot.getTranslation(), robot.getTranslation())) {
         continue;
       }
       if (doesCollisionExist(end.getTranslation(), intermediaryPoint)) {
