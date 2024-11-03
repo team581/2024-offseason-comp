@@ -601,7 +601,7 @@ public class RobotManager extends LifecycleSubsystem {
         dropNoteSensorDebounce.reset();
         dropNoteSensorDebounce.stop();
         break;
-        case DROPPING:
+      case DROPPING:
         wrist.setAngle(WristPositions.OUTTAKING_SHOOTER);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.DROPPING);
@@ -609,7 +609,7 @@ public class RobotManager extends LifecycleSubsystem {
         noteManager.dropRequest();
         dropNoteSensorDebounce.start();
         break;
-        case WAITING_DROP:
+      case WAITING_DROP:
         wrist.setAngle(WristPositions.OUTTAKING_SHOOTER);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.DROPPING);

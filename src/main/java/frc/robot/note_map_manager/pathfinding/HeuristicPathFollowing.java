@@ -125,7 +125,10 @@ public class HeuristicPathFollowing {
   public void temporaryLogFunction() {
     // Temporarily log all the psoes
 
-      DogLog.log("NoteMapManager/Pathfinding/RobotInsideCollistion", doesCollisionExist(localization.getPose().getTranslation(), localization.getPose().getTranslation()));
+    DogLog.log(
+        "NoteMapManager/Pathfinding/RobotInsideCollistion",
+        doesCollisionExist(
+            localization.getPose().getTranslation(), localization.getPose().getTranslation()));
 
     for (var collisionPoint : getCollisionPoints()) {
       DogLog.log(
@@ -152,7 +155,8 @@ public class HeuristicPathFollowing {
 
     ArrayList<Translation2d> validIntermediaryPoints = new ArrayList<>();
     for (Translation2d intermediaryPoint : getIntermediaryPoints()) {
-      if (doesCollisionExist(robot.getTranslation(), intermediaryPoint) && !doesCollisionExist(robot.getTranslation(), robot.getTranslation())) {
+      if (doesCollisionExist(robot.getTranslation(), intermediaryPoint)
+          && !doesCollisionExist(robot.getTranslation(), robot.getTranslation())) {
         continue;
       }
       if (doesCollisionExist(end.getTranslation(), intermediaryPoint)) {

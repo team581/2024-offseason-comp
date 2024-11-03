@@ -23,11 +23,15 @@ public class NoteMapLocations {
           new Pose2d(2.57, 6.34, Rotation2d.fromDegrees(-7.35)),
           new Pose2d(2.34, 4.49, Rotation2d.fromDegrees(16.93)));
   public static final Pose2d MIDLINE_CLEANUP_POSE = new Pose2d(8.271, 4.106, new Rotation2d(0));
-  public static final Pose2d RED_AMP_SIDE_SCORING_LOCATION = new Pose2d(12.8, 6.45, Rotation2d.fromDegrees(-10.97));
-  public static final Pose2d RED_SOURCE_SIDE_SCORING_LOCATION = new Pose2d(13.25, 3.1, Rotation2d.fromDegrees(37.59));
+  public static final Pose2d RED_AMP_SIDE_SCORING_LOCATION =
+      new Pose2d(12.8, 6.45, Rotation2d.fromDegrees(-10.97));
+  public static final Pose2d RED_SOURCE_SIDE_SCORING_LOCATION =
+      new Pose2d(13.25, 3.1, Rotation2d.fromDegrees(37.59));
 
-  public static final Pose2d BLUE_AMP_SIDE_SCORING_LOCATION = new Pose2d(3.77, 6.47, Rotation2d.fromDegrees(-168.48));
-  public static final Pose2d BLUE_SOURCE_SIDE_SCORING_LOCATION = new Pose2d(3.01, 3.32, Rotation2d.fromDegrees(142.77));
+  public static final Pose2d BLUE_AMP_SIDE_SCORING_LOCATION =
+      new Pose2d(3.77, 6.47, Rotation2d.fromDegrees(-168.48));
+  public static final Pose2d BLUE_SOURCE_SIDE_SCORING_LOCATION =
+      new Pose2d(3.01, 3.32, Rotation2d.fromDegrees(142.77));
   public static final List<Pose2d> RED_SCORING_LOCATIONS =
       List.of(
           // Amp Side

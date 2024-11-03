@@ -4,14 +4,12 @@
 
 package frc.robot.note_map_manager;
 
-import com.pathplanner.lib.path.PathConstraints;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -132,8 +130,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           var now = Timer.getFPGATimestamp();
           noteTrackingManager.resetNoteMap(
               new ArrayList<>(
-                  List.of(
-                      new NoteMapElement(now + 20, AutoNoteStaged.noteIdToTranslation(5)))));
+                  List.of(new NoteMapElement(now + 20, AutoNoteStaged.noteIdToTranslation(5)))));
           var steps = new LinkedList<AutoNoteStep>();
           steps.add(AutoNoteStep.score(5));
           setSteps(steps);
@@ -236,7 +233,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
       // Take the search location, and check if we have a note there
       var rawSearchLocation = maybeSearchPose.get();
-      var maybeFoundNote = noteTrackingManager.getNoteNearPose(rawSearchLocation, TARGET_NOTE_THRESHOLD_METERS);
+      var maybeFoundNote =
+          noteTrackingManager.getNoteNearPose(rawSearchLocation, TARGET_NOTE_THRESHOLD_METERS);
 
       // If that search location didn't have a note near it, try the next one
       if (maybeFoundNote.isEmpty()) {
@@ -390,9 +388,9 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       case WAITING_FOR_NOTES -> {
         if (currentStep.isPresent() && maybeNoteTranslation.isPresent()) {
           if (!MathUtil.isNear(
-            angleToIntake(maybeNoteTranslation.get()),
-            MathUtil.inputModulus(localization.getPose().getRotation().getDegrees(), 0, 360),
-            MAX_ANGLE_TO_TARGET_BEFORE_DRIVING)) {
+              angleToIntake(maybeNoteTranslation.get()),
+              MathUtil.inputModulus(localization.getPose().getRotation().getDegrees(), 0, 360),
+              MAX_ANGLE_TO_TARGET_BEFORE_DRIVING)) {
             yield NoteMapState.INITIAL_AIM_TO_INTAKE;
           }
 
@@ -424,9 +422,9 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         DogLog.log(
             "NoteMapManager/InitialAim/AtGoal",
             MathUtil.isNear(
-              angleToIntake(maybeNoteTranslation.get()),
-              MathUtil.inputModulus(localization.getPose().getRotation().getDegrees(), 0, 360),
-              MAX_ANGLE_TO_TARGET_BEFORE_DRIVING));
+                angleToIntake(maybeNoteTranslation.get()),
+                MathUtil.inputModulus(localization.getPose().getRotation().getDegrees(), 0, 360),
+                MAX_ANGLE_TO_TARGET_BEFORE_DRIVING));
 
         if (timeout(1)
             || MathUtil.isNear(
@@ -447,9 +445,11 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         // If we already have note go and score/drop
         if (robotManager.getState().hasNote) {
           if (maybeNoteTranslation.isPresent()
-              && localization.atTranslation(maybeNoteTranslation.get(), REMOVE_NOTE_THRESHOLD_METERS)) {
-                DogLog.log("NoteMapManager/Status", "IntakingGotNoteRemoveNote");
-            noteTrackingManager.removeNote(maybeNoteTranslation.get(), REMOVE_NOTE_THRESHOLD_METERS);
+              && localization.atTranslation(
+                  maybeNoteTranslation.get(), REMOVE_NOTE_THRESHOLD_METERS)) {
+            DogLog.log("NoteMapManager/Status", "IntakingGotNoteRemoveNote");
+            noteTrackingManager.removeNote(
+                maybeNoteTranslation.get(), REMOVE_NOTE_THRESHOLD_METERS);
           }
           DogLog.log("NoteMapManager/Status", "IntakingGotNote");
           if (currentStep.isPresent() && currentStep.get().action() == AutoNoteAction.DROP) {
@@ -463,7 +463,6 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           DogLog.log("NoteMapManager/Status", "IntakingNoteGone");
           yield NoteMapState.WAITING_FOR_NOTES;
         }
-
 
         if (noteMapCommand.isFinished()) {
           // We should have the note, but don't so we remove it from the map
@@ -479,7 +478,9 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
 
         // Have a shorter timeout once we are about to get the note
-        if (localization.atTranslation(maybeNoteTranslation.get(), FINAL_INTAKING_TIMEOUT_DISTANCE_THRESHOLD_METERS) && timeout(1)) {
+        if (localization.atTranslation(
+                maybeNoteTranslation.get(), FINAL_INTAKING_TIMEOUT_DISTANCE_THRESHOLD_METERS)
+            && timeout(1)) {
           DogLog.log("NoteMapManager/Status", "IntakingFinalTimeout");
           // We should have the note, but don't so we remove it from the map
           noteTrackingManager.removeNote(maybeNoteTranslation.get(), REMOVE_NOTE_THRESHOLD_METERS);
@@ -496,7 +497,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
         // if we finished pathfinding, drop note
         if (noteMapCommand.isFinished()
-            || localization.atTranslation(droppingLocation.getTranslation(), PATHFINDING_AT_GOAL_THRESHOLD_METERS)) {
+            || localization.atTranslation(
+                droppingLocation.getTranslation(), PATHFINDING_AT_GOAL_THRESHOLD_METERS)) {
           DogLog.log("NoteMapManager/Status", "PathfindToDropDone");
           yield NoteMapState.DROP;
         }
@@ -516,7 +518,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
         // If we're already at location to score, score the note
         if (noteMapCommand.isFinished()
-            || localization.atTranslation(scoringLocation.getTranslation(), PATHFINDING_AT_GOAL_THRESHOLD_METERS)) {
+            || localization.atTranslation(
+                scoringLocation.getTranslation(), PATHFINDING_AT_GOAL_THRESHOLD_METERS)) {
           DogLog.log("NoteMapManager/Status", "PathfindToScoreDone");
           yield NoteMapState.SCORE;
         }
