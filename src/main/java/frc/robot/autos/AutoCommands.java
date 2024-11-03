@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.fms.FmsSubsystem;
 import frc.robot.note_map_manager.AutoNoteStaged;
 import frc.robot.note_map_manager.AutoNoteStep;
+import frc.robot.note_map_manager.NoteMapLocations;
 import frc.robot.note_map_manager.NoteMapManager;
 import frc.robot.note_tracking.NoteMapElement;
 import frc.robot.note_tracking.NoteTrackingManager;
@@ -105,6 +106,7 @@ public class AutoCommands {
           steps.add(AutoNoteStep.score(5, 6));
           steps.add(AutoNoteStep.score(11));
           steps.add(AutoNoteStep.score(10));
+          noteMapManager.setPreferredScoringLocation(NoteMapLocations.RED_AMP_SIDE_SCORING_LOCATION);
           noteMapManager.setSteps(steps);
         });
   }
@@ -117,6 +119,7 @@ public class AutoCommands {
           steps.add(AutoNoteStep.score(7, 8));
           steps.add(AutoNoteStep.score(11));
           steps.add(AutoNoteStep.score(10));
+          noteMapManager.setPreferredScoringLocation(NoteMapLocations.RED_SOURCE_SIDE_SCORING_LOCATION);
           noteMapManager.setSteps(steps);
         });
   }
@@ -129,6 +132,7 @@ public class AutoCommands {
           steps.add(AutoNoteStep.score(7, 6));
           steps.add(AutoNoteStep.score(11));
           steps.add(AutoNoteStep.score(10));
+          noteMapManager.setPreferredScoringLocation(NoteMapLocations.RED_SOURCE_SIDE_SCORING_LOCATION);
           noteMapManager.setSteps(steps);
         });
   }

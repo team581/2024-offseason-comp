@@ -68,7 +68,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
     return 180 + VisionSubsystem.angleToTarget(localization.getPose().getTranslation(), target);
   }
 
-  private Pose2d getClosestScoringDestination() {
+  private Pose2d getClosestScoringLocation() {
     Pose2d current = localization.getPose();
 
     var locations = NoteMapLocations.getScoringDestinations();
@@ -86,7 +86,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
     return closest;
   }
 
-  private Pose2d getClosestDroppingDestination() {
+  private Pose2d getClosestDroppingLocation() {
     Pose2d current = localization.getPose();
     var locations = NoteMapLocations.getDroppingDestinations();
 
@@ -130,10 +130,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           noteTrackingManager.resetNoteMap(
               new ArrayList<>(
                   List.of(
-                      new NoteMapElement(now + 20, AutoNoteStaged.noteIdToTranslation(4)),
                       new NoteMapElement(now + 20, AutoNoteStaged.noteIdToTranslation(5)))));
           var steps = new LinkedList<AutoNoteStep>();
-          steps.add(AutoNoteStep.score(4));
           steps.add(AutoNoteStep.score(5));
           setSteps(steps);
         });
@@ -144,8 +142,9 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   private Queue<AutoNoteStep> steps = new LinkedList<>();
   private Optional<AutoNoteStep> currentStep = Optional.empty();
 
-  private Pose2d closestScoringLocation = new Pose2d();
-  private Pose2d droppingDestination = new Pose2d();
+  private Pose2d scoringLocation = new Pose2d();
+  private Pose2d droppingLocation = new Pose2d();
+  private boolean preferredScoringLocationEnabled = false;
 
   // TODO: Remove this if we end up using triggers
   private Command noteMapCommand = Commands.none();
@@ -153,6 +152,11 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   public void setSteps(LinkedList<AutoNoteStep> newSteps) {
     steps = newSteps;
     setStateFromRequest(NoteMapState.WAITING_FOR_NOTES);
+  }
+
+  public void setPreferredScoringLocation(Pose2d preferredScoringLocation) {
+    scoringLocation = preferredScoringLocation;
+    preferredScoringLocationEnabled = true;
   }
 
   public void off() {
@@ -197,11 +201,9 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       }
       default -> {}
     }
-
-    // todo: log target score pose, drop pose, etc.
-    // log always, even when it's not relevant
-    DogLog.log("NoteMapManager/ScoringPose", closestScoringLocation);
-    DogLog.log("NoteMapManager/DroppingPose", droppingDestination);
+    DogLog.log("NoteMapManager/ScoringPose", scoringLocation);
+    DogLog.log("NoteMapManager/DroppingPose", droppingLocation);
+    DogLog.log("NoteMapManager/PrefferedScoring", preferredScoringLocationEnabled);
   }
 
   @Override
@@ -231,8 +233,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
       // Take the search location, and check if we have a note there
       var rawSearchLocation = maybeSearchPose.get();
-      var maybeFoundNote =
-          noteTrackingManager.getNoteNearPose(rawSearchLocation, TARGET_NOTE_THRESHOLD_METERS);
+      var maybeFoundNote = noteTrackingManager.getNoteNearPose(rawSearchLocation, TARGET_NOTE_THRESHOLD_METERS);
 
       // If that search location didn't have a note near it, try the next one
       if (maybeFoundNote.isEmpty()) {
@@ -292,7 +293,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       case DROP -> {
         noteMapCommand.cancel();
 
-        snaps.setAngle(droppingDestination.getRotation().getDegrees());
+        snaps.setAngle(droppingLocation.getRotation().getDegrees());
         snaps.setEnabled(true);
         robotManager.swerve.setRobotRelativeSpeeds(new ChassisSpeeds(), true);
 
@@ -346,12 +347,12 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         noteMapCommand.cancel();
         snaps.setEnabled(false);
 
-        droppingDestination = getClosestDroppingDestination();
+        droppingLocation = getClosestDroppingLocation();
         noteMapCommand =
             robotManager
                 .swerve
                 .driveToPoseCommand(
-                    () -> Optional.of(pathfinder.getPoseToFollow(droppingDestination)),
+                    () -> Optional.of(pathfinder.getPoseToFollow(droppingLocation)),
                     localization::getPose,
                     false)
                 .withName("PathfindDrop");
@@ -360,12 +361,14 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       case PATHFIND_TO_SCORE -> {
         noteMapCommand.cancel();
         snaps.setEnabled(false);
-        closestScoringLocation = getClosestScoringDestination();
+        if (!preferredScoringLocationEnabled) {
+          scoringLocation = getClosestScoringLocation();
+        }
         noteMapCommand =
             robotManager
                 .swerve
                 .driveToPoseCommand(
-                    () -> Optional.of(pathfinder.getPoseToFollow(closestScoringLocation)),
+                    () -> Optional.of(pathfinder.getPoseToFollow(scoringLocation)),
                     localization::getPose,
                     false)
                 .withName("PathfindScore");
@@ -489,7 +492,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
         // if we finished pathfinding, drop note
         if (noteMapCommand.isFinished()
-            || localization.atTranslation(droppingDestination.getTranslation(), 0.2)) {
+            || localization.atTranslation(droppingLocation.getTranslation(), 0.2)) {
           DogLog.log("NoteMapManager/Status", "PathfindToDropDone");
           yield NoteMapState.DROP;
         }
@@ -509,7 +512,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
         // If we're already at location to score, score the note
         if (noteMapCommand.isFinished()
-            || localization.atTranslation(closestScoringLocation.getTranslation(), 0.2)) {
+            || localization.atTranslation(scoringLocation.getTranslation(), 0.2)) {
           DogLog.log("NoteMapManager/Status", "PathfindToScoreDone");
           yield NoteMapState.SCORE;
         }
