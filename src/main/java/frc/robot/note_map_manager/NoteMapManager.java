@@ -45,6 +45,9 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
   private static final double TARGET_NOTE_THRESHOLD_METERS = 1.5;
   private static final double DROPPED_NOTE_DISTANCE_METERS = 0.8;
+  private static final double FINAL_INTAKING_TIMEOUT_DISTANCE_THRESHOLD_METERS = 0.5;
+  private static final double REMOVE_NOTE_THRESHOLD_METERS = 0.3;
+  private static final double PATHFINDING_AT_GOAL_THRESHOLD_METERS = 0.2;
 
   public NoteMapManager(
       RobotCommands actions,
@@ -444,8 +447,9 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         // If we already have note go and score/drop
         if (robotManager.getState().hasNote) {
           if (maybeNoteTranslation.isPresent()
-              && localization.atTranslation(maybeNoteTranslation.get(), 0.5)) {
-            noteTrackingManager.removeNote(maybeNoteTranslation.get(), 0.5);
+              && localization.atTranslation(maybeNoteTranslation.get(), REMOVE_NOTE_THRESHOLD_METERS)) {
+                DogLog.log("NoteMapManager/Status", "IntakingGotNoteRemoveNote");
+            noteTrackingManager.removeNote(maybeNoteTranslation.get(), REMOVE_NOTE_THRESHOLD_METERS);
           }
           DogLog.log("NoteMapManager/Status", "IntakingGotNote");
           if (currentStep.isPresent() && currentStep.get().action() == AutoNoteAction.DROP) {
@@ -463,22 +467,22 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
         if (noteMapCommand.isFinished()) {
           // We should have the note, but don't so we remove it from the map
-          noteTrackingManager.removeNote(maybeNoteTranslation.get(), 0.1);
+          noteTrackingManager.removeNote(maybeNoteTranslation.get(), REMOVE_NOTE_THRESHOLD_METERS);
           yield NoteMapState.WAITING_FOR_NOTES;
         }
 
         if (timeout(5)) {
           DogLog.log("NoteMapManager/Status", "IntakingTimeout");
           // We should have the note, but don't so we remove it from the map
-          noteTrackingManager.removeNote(maybeNoteTranslation.get(), 0.1);
+          noteTrackingManager.removeNote(maybeNoteTranslation.get(), REMOVE_NOTE_THRESHOLD_METERS);
           yield NoteMapState.WAITING_FOR_NOTES;
         }
 
         // Have a shorter timeout once we are about to get the note
-        if (localization.atTranslation(maybeNoteTranslation.get(), 1) && timeout(1)) {
+        if (localization.atTranslation(maybeNoteTranslation.get(), FINAL_INTAKING_TIMEOUT_DISTANCE_THRESHOLD_METERS) && timeout(1)) {
           DogLog.log("NoteMapManager/Status", "IntakingFinalTimeout");
           // We should have the note, but don't so we remove it from the map
-          noteTrackingManager.removeNote(maybeNoteTranslation.get(), 0.1);
+          noteTrackingManager.removeNote(maybeNoteTranslation.get(), REMOVE_NOTE_THRESHOLD_METERS);
           yield NoteMapState.WAITING_FOR_NOTES;
         }
 
@@ -492,7 +496,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
         // if we finished pathfinding, drop note
         if (noteMapCommand.isFinished()
-            || localization.atTranslation(droppingLocation.getTranslation(), 0.2)) {
+            || localization.atTranslation(droppingLocation.getTranslation(), PATHFINDING_AT_GOAL_THRESHOLD_METERS)) {
           DogLog.log("NoteMapManager/Status", "PathfindToDropDone");
           yield NoteMapState.DROP;
         }
@@ -512,7 +516,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
         // If we're already at location to score, score the note
         if (noteMapCommand.isFinished()
-            || localization.atTranslation(scoringLocation.getTranslation(), 0.2)) {
+            || localization.atTranslation(scoringLocation.getTranslation(), PATHFINDING_AT_GOAL_THRESHOLD_METERS)) {
           DogLog.log("NoteMapManager/Status", "PathfindToScoreDone");
           yield NoteMapState.SCORE;
         }
