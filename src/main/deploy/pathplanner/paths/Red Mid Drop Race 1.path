@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 14.838348762364742,
-        "y": 2.172194455591546
+        "x": 14.810983032180234,
+        "y": 2.093584018304775
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 11.403526987449363,
-        "y": 3.6659512528250757
+        "x": 10.676908738496223,
+        "y": 3.9228615730707572
       },
       "prevControl": {
-        "x": 11.725998835028973,
-        "y": 3.5859144164746324
+        "x": 11.87497829279019,
+        "y": 4.0359697358603945
       },
       "nextControl": null,
       "isLocked": false,
@@ -33,7 +33,7 @@
   "eventMarkers": [
     {
       "name": "dropNote",
-      "waypointRelativePos": 0.75,
+      "waypointRelativePos": 0.45,
       "command": {
         "type": "sequential",
         "data": {
@@ -57,7 +57,7 @@
   },
   "goalEndState": {
     "velocity": 3.0,
-    "rotation": -12.662982309707278,
+    "rotation": 0.0,
     "rotateFast": false
   },
   "reversed": false,
