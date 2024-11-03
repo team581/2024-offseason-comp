@@ -1,0 +1,56 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.3889000355265928,
+      "y": 2.122534636337806
+    },
+    "rotation": 180.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "waitingDropRequest"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "homeClimber"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "resetNoteMap"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Mid Drop Race 1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "blueMidDropRaceNM"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}

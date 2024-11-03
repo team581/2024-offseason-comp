@@ -1,0 +1,56 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.42,
+      "y": 6.29
+    },
+    "rotation": 180.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "waitingDropRequest"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "homeClimber"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "resetNoteMap"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Blue Amp OP NM 1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "blueAmpOPNM"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}

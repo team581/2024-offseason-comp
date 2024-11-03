@@ -1,27 +1,43 @@
 {
-  "version": 1,
+  "version": 1.0,
   "waypoints": [
     {
       "anchor": {
-        "x": 15.151099964473406,
-        "y": 2.122534636337806
+        "x": 1.42,
+        "y": 6.29
       },
       "prevControl": null,
       "nextControl": {
-        "x": 14.810983032180234,
-        "y": 2.093584018304775
+        "x": 1.8440269960276314,
+        "y": 6.344728694399729
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 10.676908738496223,
-        "y": 3.9228615730707572
+        "x": 3.14205014396849,
+        "y": 6.29
       },
       "prevControl": {
-        "x": 11.87497829279019,
-        "y": 4.0359697358603945
+        "x": 2.3412591437044465,
+        "y": 6.155545914880957
+      },
+      "nextControl": {
+        "x": 4.91393003803703,
+        "y": 6.587501457957519
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 6.2412983317564645,
+        "y": 7.533870047147014
+      },
+      "prevControl": {
+        "x": 4.942746887866097,
+        "y": 7.56979417171355
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,10 +48,10 @@
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "dropNote",
-      "waypointRelativePos": 0.45,
+      "name": "drop",
+      "waypointRelativePos": 1.15,
       "command": {
-        "type": "sequential",
+        "type": "parallel",
         "data": {
           "commands": [
             {
@@ -57,13 +73,13 @@
   },
   "goalEndState": {
     "velocity": 3,
-    "rotation": 0,
+    "rotation": 180.0,
     "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": 179.29903424296674,
     "velocity": 0
   },
   "useDefaultConstraints": true
