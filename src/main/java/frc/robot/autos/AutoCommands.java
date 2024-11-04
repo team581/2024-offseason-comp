@@ -106,8 +106,8 @@ public class AutoCommands {
           steps.add(AutoNoteStep.score(5, 6));
           steps.add(AutoNoteStep.score(11));
           steps.add(AutoNoteStep.score(10));
-          noteMapManager.setPreferredScoringLocation(
-              NoteMapLocations.RED_AMP_SIDE_SCORING_LOCATION);
+          noteMapManager.setPreferredScoringLocations(
+              List.of(NoteMapLocations.RED_AMP_SIDE_SCORING_LOCATION));
           noteMapManager.setSteps(steps);
         });
   }
@@ -120,8 +120,8 @@ public class AutoCommands {
           steps.add(AutoNoteStep.score(5, 6));
           steps.add(AutoNoteStep.score(11));
           steps.add(AutoNoteStep.score(10));
-          noteMapManager.setPreferredScoringLocation(
-              NoteMapLocations.BLUE_AMP_SIDE_SCORING_LOCATION);
+          noteMapManager.setPreferredScoringLocations(
+              List.of(NoteMapLocations.BLUE_AMP_SIDE_SCORING_LOCATION));
           noteMapManager.setSteps(steps);
         });
   }
@@ -134,8 +134,8 @@ public class AutoCommands {
           steps.add(AutoNoteStep.score(7, 8));
           steps.add(AutoNoteStep.score(11));
           steps.add(AutoNoteStep.score(10));
-          noteMapManager.setPreferredScoringLocation(
-              NoteMapLocations.RED_SOURCE_SIDE_SCORING_LOCATION);
+          noteMapManager.setPreferredScoringLocations(
+              List.of(NoteMapLocations.RED_SOURCE_SIDE_SCORING_LOCATION));
           noteMapManager.setSteps(steps);
         });
   }
@@ -148,8 +148,8 @@ public class AutoCommands {
           steps.add(AutoNoteStep.score(7, 8));
           steps.add(AutoNoteStep.score(11));
           steps.add(AutoNoteStep.score(10));
-          noteMapManager.setPreferredScoringLocation(
-              NoteMapLocations.BLUE_SOURCE_SIDE_SCORING_LOCATION);
+          noteMapManager.setPreferredScoringLocations(
+              List.of(NoteMapLocations.BLUE_SOURCE_SIDE_SCORING_LOCATION));
           noteMapManager.setSteps(steps);
         });
   }
@@ -162,8 +162,8 @@ public class AutoCommands {
           steps.add(AutoNoteStep.score(7, 6));
           steps.add(AutoNoteStep.score(11));
           steps.add(AutoNoteStep.score(10));
-          noteMapManager.setPreferredScoringLocation(
-              NoteMapLocations.RED_SOURCE_SIDE_SCORING_LOCATION);
+          noteMapManager.setPreferredScoringLocations(
+              List.of(NoteMapLocations.RED_SOURCE_SIDE_SCORING_LOCATION));
           noteMapManager.setSteps(steps);
         });
   }
@@ -176,8 +176,8 @@ public class AutoCommands {
           steps.add(AutoNoteStep.score(7, 6));
           steps.add(AutoNoteStep.score(11));
           steps.add(AutoNoteStep.score(10));
-          noteMapManager.setPreferredScoringLocation(
-              NoteMapLocations.BLUE_SOURCE_SIDE_SCORING_LOCATION);
+          noteMapManager.setPreferredScoringLocations(
+              List.of(NoteMapLocations.BLUE_SOURCE_SIDE_SCORING_LOCATION));
           noteMapManager.setSteps(steps);
         });
   }

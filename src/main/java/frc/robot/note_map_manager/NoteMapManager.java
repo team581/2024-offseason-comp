@@ -73,6 +73,9 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
     Pose2d current = localization.getPose();
 
     var locations = NoteMapLocations.getScoringDestinations();
+    if (preferredScoringLocations.size()>0) {
+       locations = preferredScoringLocations;
+    }
     Pose2d closest = locations.get(0);
     double currentDistance = Double.POSITIVE_INFINITY;
 
@@ -142,11 +145,9 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   private Queue<AutoNoteStep> steps = new LinkedList<>();
   private Optional<AutoNoteStep> currentStep = Optional.empty();
 
+  private List<Pose2d> preferredScoringLocations = List.of();
   private Pose2d scoringLocation = new Pose2d();
   private Pose2d droppingLocation = new Pose2d();
-  private boolean preferredScoringLocationEnabled = false;
-
-  // TODO: Remove this if we end up using triggers
   private Command noteMapCommand = Commands.none();
 
   public void setSteps(LinkedList<AutoNoteStep> newSteps) {
@@ -154,9 +155,12 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
     setStateFromRequest(NoteMapState.WAITING_FOR_NOTES);
   }
 
-  public void setPreferredScoringLocation(Pose2d preferredScoringLocation) {
-    scoringLocation = preferredScoringLocation;
-    preferredScoringLocationEnabled = true;
+  public void setPreferredScoringLocations(List<Pose2d> scoringLocations) {
+    preferredScoringLocations = scoringLocations;
+  }
+
+  public void clearPreferredScoringLocations() {
+    preferredScoringLocations = List.of();
   }
 
   public void off() {
@@ -203,7 +207,6 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
     }
     DogLog.log("NoteMapManager/ScoringPose", scoringLocation);
     DogLog.log("NoteMapManager/DroppingPose", droppingLocation);
-    DogLog.log("NoteMapManager/PrefferedScoring", preferredScoringLocationEnabled);
   }
 
   @Override
@@ -362,9 +365,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       case PATHFIND_TO_SCORE -> {
         noteMapCommand.cancel();
         snaps.setEnabled(false);
-        if (!preferredScoringLocationEnabled) {
           scoringLocation = getClosestScoringLocation();
-        }
+
         noteMapCommand =
             robotManager
                 .swerve
