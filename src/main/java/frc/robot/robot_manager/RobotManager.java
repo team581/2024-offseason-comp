@@ -48,7 +48,7 @@ public class RobotManager extends LifecycleSubsystem {
 
   private final FlagManager<RobotFlag> flags = new FlagManager<>("RobotManager", RobotFlag.class);
   private final Timer dropNoteSensorDebounce = new Timer();
-  public final double DROP_DEBOUNCE_TIME_SECONDS = 1.25;
+  public final double DROP_DEBOUNCE_TIME_SECONDS = 1.0;
 
   public RobotManager(
       WristSubsystem wrist,
