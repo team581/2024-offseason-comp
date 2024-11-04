@@ -63,9 +63,20 @@ public class HeuristicPathFollowing {
     }
   }
 
+  private static boolean isPointInsideCircle(Translation2d point, CollisionPoint circle) {
+    var distance = point.getDistance(circle.point());
+    return distance < circle.radius();
+  }
+
   private static boolean doesLineCollideWithCircle(
       Translation2d start, Translation2d end, CollisionPoint circle) {
     // Return True if there is a collision, False if not
+
+    // Special logic for if the start and/or end point are inside a collision zone (happens in
+    // matches from bad localization data)
+    if (isPointInsideCircle(start, circle) || isPointInsideCircle(end, circle)) {
+      return true;
+    }
 
     // If start to end dot start to circle is less than 0, use start as closest point.
     double startToEndDotStartToCircle =
