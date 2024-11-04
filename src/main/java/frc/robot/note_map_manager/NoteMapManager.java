@@ -205,8 +205,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       }
       default -> {}
     }
-    DogLog.log("NoteMapManager/ScoringPose", scoringLocation);
-    DogLog.log("NoteMapManager/DroppingPose", droppingLocation);
+    DogLog.log("NoteMapManager/Locations/ScoringLocation", scoringLocation);
+    DogLog.log("NoteMapManager/Locations/DroppingLocation", droppingLocation);
   }
 
   @Override
