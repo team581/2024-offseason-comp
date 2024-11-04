@@ -73,8 +73,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
     Pose2d current = localization.getPose();
 
     var locations = NoteMapLocations.getScoringDestinations();
-    if (preferredScoringLocations.size()>0) {
-       locations = preferredScoringLocations;
+    if (preferredScoringLocations.size() > 0) {
+      locations = preferredScoringLocations;
     }
     Pose2d closest = locations.get(0);
     double currentDistance = Double.POSITIVE_INFINITY;
@@ -365,7 +365,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       case PATHFIND_TO_SCORE -> {
         noteMapCommand.cancel();
         snaps.setEnabled(false);
-          scoringLocation = getClosestScoringLocation();
+        scoringLocation = getClosestScoringLocation();
 
         noteMapCommand =
             robotManager
