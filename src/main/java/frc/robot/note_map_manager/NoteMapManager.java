@@ -110,7 +110,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
     return actions
         .dropCommand()
         .finallyDo(
-            () -> {
+            (interrupted) -> {
               DogLog.timestamp("NoteMapManager/DropNote/AddToMap");
               var translationFieldRelative =
                   new Translation2d(DROPPED_NOTE_DISTANCE_METERS, 0)
@@ -122,6 +122,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
               noteTrackingManager.addNoteToMap(15, translationFieldRelative);
               AutoNoteDropped.addDroppedNote(translationFieldRelative);
+
+              DogLog.logFault("DropCommandInterrupted");
             });
   }
 
@@ -229,6 +231,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       // Dropped notes might note have a search pose if we didn't drop them successfully
       var maybeSearchPose = maybeSearchPoseSupplier.get();
       if (maybeSearchPose.isEmpty()) {
+        DogLog.log("NoteMapManager/Status", "CurrentStepNoteEmpty");
         continue;
       }
 
@@ -239,6 +242,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
       // If that search location didn't have a note near it, try the next one
       if (maybeFoundNote.isEmpty()) {
+        DogLog.log("NoteMapManager/Status", "FoundNoteEmpty");
         continue;
       }
 
@@ -347,9 +351,10 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       }
       case PATHFIND_TO_DROP -> {
         noteMapCommand.cancel();
-        snaps.setEnabled(false);
-
         droppingLocation = getClosestDroppingLocation();
+        snaps.setAngle(droppingLocation.getRotation().getDegrees());
+        snaps.setEnabled(true);
+
         noteMapCommand =
             robotManager
                 .swerve
@@ -480,7 +485,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         // Have a shorter timeout once we are about to get the note
         if (localization.atTranslation(
                 maybeNoteTranslation.get(), ROBOT_AT_POSE_THESHOLD_METERS)
-            && timeout(1)) {
+            && timeout(1.5)) {
           DogLog.log("NoteMapManager/Status", "IntakingFinalTimeout");
           // We should have the note, but don't so we remove it from the map
           noteTrackingManager.removeNote(maybeNoteTranslation.get(), ROBOT_AT_POSE_THESHOLD_METERS);

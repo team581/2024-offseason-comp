@@ -24,12 +24,12 @@ public class NoteMapLocations {
           new Pose2d(2.34, 4.49, Rotation2d.fromDegrees(16.93)));
   public static final Pose2d MIDLINE_CLEANUP_POSE = new Pose2d(8.271, 4.106, new Rotation2d(0));
   public static final Pose2d RED_AMP_SIDE_SCORING_LOCATION =
-      new Pose2d(12.8, 6.45, Rotation2d.fromDegrees(-10.97));
+      new Pose2d(12.8, 5.9, Rotation2d.fromDegrees(-10.97));
   public static final Pose2d RED_SOURCE_SIDE_SCORING_LOCATION =
       new Pose2d(13.25, 3.1, Rotation2d.fromDegrees(37.59));
 
   public static final Pose2d BLUE_AMP_SIDE_SCORING_LOCATION =
-      new Pose2d(3.77, 6.47, Rotation2d.fromDegrees(-168.48));
+      new Pose2d(3.77, 5.9, Rotation2d.fromDegrees(-168.48));
   public static final Pose2d BLUE_SOURCE_SIDE_SCORING_LOCATION =
       new Pose2d(3.01, 3.32, Rotation2d.fromDegrees(142.77));
   public static final List<Pose2d> RED_SCORING_LOCATIONS =
@@ -56,11 +56,11 @@ public class NoteMapLocations {
 
   public static final List<Pose2d> RED_DROPPING_DESTINATIONS_HOME =
       List.of(
-          new Pose2d(10.0, 7.458, Rotation2d.fromDegrees(0.0)),
-          new Pose2d(10.0, 5.782, Rotation2d.fromDegrees(0.0)),
-          new Pose2d(10.0, 4.106, Rotation2d.fromDegrees(0.0)),
-          new Pose2d(10.0, 2.429, Rotation2d.fromDegrees(0.0)),
-          new Pose2d(10.0, 0.753, Rotation2d.fromDegrees(0.0)));
+          new Pose2d(10.5, 7.458, Rotation2d.fromDegrees(0.0)),
+          new Pose2d(10.5, 5.782, Rotation2d.fromDegrees(0.0)),
+          new Pose2d(10.5, 4.106, Rotation2d.fromDegrees(0.0)),
+          new Pose2d(10.5, 2.429, Rotation2d.fromDegrees(0.0)),
+          new Pose2d(10.5, 0.753, Rotation2d.fromDegrees(0.0)));
 
   public static final List<Pose2d> BLUE_DROPPING_DESTINATIONS =
       List.of(

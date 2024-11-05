@@ -32,15 +32,15 @@ public class AutoNoteStaged {
 
         // TODO: MAKE X 8.271 FOR REAL FIELDS
       case 4:
-        return new Translation2d(9.9, 7.458);
+        return new Translation2d(9.0, 7.458);
       case 5:
-        return new Translation2d(9.9, 5.782);
+        return new Translation2d(9.0, 5.782);
       case 6:
-        return new Translation2d(9.9, 4.106);
+        return new Translation2d(9.0, 4.106);
       case 7:
-        return new Translation2d(9.9, 2.429);
+        return new Translation2d(9.0, 2.429);
       case 8:
-        return new Translation2d(9.9, 0.753);
+        return new Translation2d(9.0, 0.753);
       default:
         throw new IllegalArgumentException("Expected a note ID from between 1 and 8");
     }
