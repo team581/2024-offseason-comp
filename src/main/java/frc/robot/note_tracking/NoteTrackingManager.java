@@ -280,54 +280,54 @@ public class NoteTrackingManager extends LifecycleSubsystem {
           return (element.expiresAt() < Timer.getFPGATimestamp());
         });
 
-    if (RobotConfig.get().perfToggles().noteMapBoundingBox()
-        && !staleNoteCorners
-        && safeToTrack()) {
+    if (!staleNoteCorners) {
+      if (RobotConfig.get().perfToggles().noteMapBoundingBox() && safeToTrack()) {
 
-      var filteredNotesInBox =
-          noteMap.stream()
-              .filter(
-                  element -> {
-                    return (noteInView(element.noteTranslation()));
-                  })
-              .toList();
+        var filteredNotesInBox =
+            noteMap.stream()
+                .filter(
+                    element -> {
+                      return (noteInView(element.noteTranslation()));
+                    })
+                .toList();
 
-      for (NoteMapElement noteMapElement : filteredNotesInBox) {
-        noteMap.remove(noteMapElement);
-        if (noteMapElement.health() > 1) {
-          noteMap.add(
-              new NoteMapElement(
-                  noteMapElement.expiresAt(),
-                  noteMapElement.noteTranslation(),
-                  noteMapElement.health() - 1));
+        for (NoteMapElement noteMapElement : filteredNotesInBox) {
+          noteMap.remove(noteMapElement);
+          if (noteMapElement.health() > 1) {
+            noteMap.add(
+                new NoteMapElement(
+                    noteMapElement.expiresAt(),
+                    noteMapElement.noteTranslation(),
+                    noteMapElement.health() - 1));
+          }
         }
       }
-    }
 
-    double newNoteExpiry = Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME_SECONDS;
+      double newNoteExpiry = Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME_SECONDS;
 
-    for (var visionNote : visionNotes) {
-      Optional<NoteMapElement> match =
-          noteMap.stream()
-              .filter(
-                  rememberedNote -> {
-                    return rememberedNote.expiresAt() != newNoteExpiry
-                        && (rememberedNote
-                                .noteTranslation()
-                                .getDistance(visionNote.getTranslation())
-                            < 1.0);
-                  })
-              .min(
-                  (a, b) ->
-                      Double.compare(
-                          a.noteTranslation().getDistance(visionNote.getTranslation()),
-                          b.noteTranslation().getDistance(visionNote.getTranslation())));
+      for (var visionNote : visionNotes) {
+        Optional<NoteMapElement> match =
+            noteMap.stream()
+                .filter(
+                    rememberedNote -> {
+                      return rememberedNote.expiresAt() != newNoteExpiry
+                          && (rememberedNote
+                                  .noteTranslation()
+                                  .getDistance(visionNote.getTranslation())
+                              < 1.0);
+                    })
+                .min(
+                    (a, b) ->
+                        Double.compare(
+                            a.noteTranslation().getDistance(visionNote.getTranslation()),
+                            b.noteTranslation().getDistance(visionNote.getTranslation())));
 
-      if (match.isPresent()) {
-        noteMap.remove(match.get());
+        if (match.isPresent()) {
+          noteMap.remove(match.get());
+        }
+
+        noteMap.add(new NoteMapElement(newNoteExpiry, visionNote.getTranslation()));
       }
-
-      noteMap.add(new NoteMapElement(newNoteExpiry, visionNote.getTranslation()));
     }
   }
 }
