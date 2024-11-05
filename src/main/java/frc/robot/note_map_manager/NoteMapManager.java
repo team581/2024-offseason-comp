@@ -454,13 +454,13 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
         // If we already have note go and score/drop
         if (robotManager.getState().hasNote) {
-          if (maybeNoteTranslation.isPresent()
-              && localization.atTranslation(
-                  maybeNoteTranslation.get(), ROBOT_AT_INTAKE_POSE_THESHOLD_METERS)) {
-            DogLog.log("NoteMapManager/Status", "IntakingGotNoteRemoveNote");
-            noteTrackingManager.removeNote(
-                maybeNoteTranslation.get(), ROBOT_AT_INTAKE_POSE_THESHOLD_METERS);
-          }
+          DogLog.log("NoteMapManager/Status", "IntakingGotNoteRemoveNote");
+          // Potentially this has a false positive where we have intaked some random other note
+          // which is unrelated to the current note. So this would remove that unrelated note. But
+          // that shouldn't ever really happen unless some timeouts trigger.
+          noteTrackingManager.removeNote(
+              localization.getPose().getTranslation(), ROBOT_AT_INTAKE_POSE_THESHOLD_METERS);
+
           DogLog.log("NoteMapManager/Status", "IntakingGotNote");
           if (currentStep.isPresent() && currentStep.get().action() == AutoNoteAction.DROP) {
             yield NoteMapState.PATHFIND_TO_DROP;
