@@ -48,7 +48,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   private static final double ROBOT_AT_DROP_POSE_THRESHOLD = 0.3;
   private static final double ROBOT_AT_SCORING_POSE_THRESHOLD = 0.3;
 
-  private final Debouncer robotShouldHaveIntakedNoteDebouncer = new Debouncer(1.0);
+  private final Debouncer robotShouldHaveIntakedNoteDebouncer = new Debouncer(0.5);
 
   public NoteMapManager(
       RobotCommands actions,
@@ -396,7 +396,13 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         yield currentState;
       }
       case WAITING_FOR_NOTES -> {
-        if (currentStep.isPresent() && maybeNoteTranslation.isPresent()) {
+        if (currentStep.isPresent()) {
+          if (maybeNoteTranslation.isEmpty()) {
+            // If there is truly not a single thing we can do for this step, exit the step
+            doNextStep();
+            yield currentState;
+          }
+
           if (!MathUtil.isNear(
               angleToIntake(maybeNoteTranslation.get()),
               MathUtil.inputModulus(localization.getPose().getRotation().getDegrees(), 0, 360),
@@ -407,6 +413,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           yield NoteMapState.INTAKING;
         }
 
+        // This should only happen when every step is completed
         DogLog.log("NoteMapManager/Status", "IdleToIdle");
         yield currentState;
       }
@@ -415,7 +422,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           yield NoteMapState.WAITING_FOR_NOTES;
         }
         // If we already have note go and score/drop
-        if (robotManager.getState().hasNote) {
+        if (hasNote()) {
           DogLog.log("NoteMapManager/Status", "InitialAimHasNote");
           if (currentStep.isPresent() && currentStep.get().action() == AutoNoteAction.DROP) {
             yield NoteMapState.PATHFIND_TO_DROP;
@@ -453,7 +460,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           yield NoteMapState.WAITING_FOR_NOTES;
         }
         // If we already have note go and score/drop
-        if (robotManager.getState().hasNote) {
+        if (hasNote()) {
           DogLog.log("NoteMapManager/Status", "IntakingGotNoteRemoveNote");
           // Potentially this has a false positive where we have intaked some random other note
           // which is unrelated to the current note. So this would remove that unrelated note. But
@@ -504,7 +511,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       }
       case PATHFIND_TO_DROP -> {
         // If robot doesn't have a note, give up (go to next step)
-        if (!robotManager.getState().hasNote) {
+        if (!hasNote()) {
           yield NoteMapState.WAITING_FOR_NOTES;
         }
 
@@ -525,7 +532,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       }
       case PATHFIND_TO_SCORE -> {
         // If robot doesn't have a note, give up (go to next step)
-        if (!robotManager.getState().hasNote) {
+        if (!hasNote()) {
           yield NoteMapState.WAITING_FOR_NOTES;
         }
 
@@ -544,7 +551,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         yield currentState;
       }
       case DROP -> {
-        if (robotManager.getState().hasNote) {
+        if (hasNote()) {
           // Still have note
           yield currentState;
         }
@@ -565,14 +572,14 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       }
       case SCORE -> {
         if (currentStep.isPresent() && currentStep.get().action().equals(AutoNoteAction.CLEANUP)) {
-          if (robotManager.getState().hasNote) {
+          if (hasNote()) {
             yield currentState;
           }
           if (maybeNoteTranslation.isPresent()) {
             yield NoteMapState.INTAKING;
           }
         }
-        if (robotManager.getState().hasNote) {
+        if (hasNote()) {
           yield currentState;
         }
 
@@ -581,6 +588,10 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         yield NoteMapState.WAITING_FOR_NOTES;
       }
     };
+  }
+
+  private boolean hasNote() {
+    return robotManager.noteManager.queuer.hasNote() || robotManager.noteManager.intake.hasNote();
   }
 
   /** Pull next step from the array and use that as the current step. */
