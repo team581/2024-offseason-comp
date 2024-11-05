@@ -43,6 +43,8 @@ public class NoteTrackingManager extends LifecycleSubsystem {
       NetworkTableInstance.getDefault().getTable(LIMELIGHT_NAME).getEntry("tcornxy");
   private final InterpolatingDoubleTreeMap tyToDistance = new InterpolatingDoubleTreeMap();
   private ArrayList<NoteMapElement> noteMap = new ArrayList<>();
+  private int rememberedHashCode = 0;
+  private boolean staleNoteCorners = false;
 
   private static final double FOV_VERTICAL = 48.823;
   private static final double FOV_HORIZONTAL = 62.074;
@@ -71,7 +73,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private boolean noteInView(Translation2d fieldRelativeNote) {
     var robotRelativeNote = getRobotRelativeNote(fieldRelativeNote);
     DogLog.log(
-        "NoteTracking/Debug/BoxContainsNote",
+        "NoteTrackingManager/Debug/BoxContainsNote",
         ROBOT_RELATIVE_FOV_BOUNDS.contains(robotRelativeNote));
     return ROBOT_RELATIVE_FOV_BOUNDS.contains(robotRelativeNote);
   }
@@ -154,10 +156,14 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private List<Pose2d> getRawNotePoses() {
     List<Pose2d> notePoses = new ArrayList<>();
     double[] corners = LL_TCORNXY.getDoubleArray(new double[0]);
+    if (rememberedHashCode == corners.hashCode()) {
+      DogLog.timestamp("NoteTrackingManager/SkipStaleNoteCorners");
+      staleNoteCorners = true;
+      return List.of();
+    }
+
     // Loop through 4 points
-
     // Delete 3 point note data
-
     if (corners.length >= 8 && corners[0] != 0.0 && corners.length % 8 == 0) {
 
       for (int i = 0; i < corners.length; i = i + 8) {
@@ -175,6 +181,8 @@ public class NoteTrackingManager extends LifecycleSubsystem {
         }
       }
     }
+    rememberedHashCode = corners.hashCode();
+    staleNoteCorners = false;
     return notePoses;
   }
 
@@ -232,10 +240,10 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     }
 
     updateMap();
-
+    DogLog.log("NoteTrackingManager/StaleNoteCorners", staleNoteCorners);
     try {
       DogLog.log(
-          "NoteTracking/NoteMap",
+          "NoteTrackingManager/NoteMap",
           noteMap.stream()
               .map(element -> new Pose2d(element.noteTranslation(), new Rotation2d()))
               .toArray(Pose2d[]::new));
@@ -245,7 +253,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     }
 
     var fieldRelativeBounds = getFieldRelativeBounds();
-    DogLog.log("NoteTracking/CameraBounds", fieldRelativeBounds.toArray(Pose2d[]::new));
+    DogLog.log("NoteTrackingManager/CameraBounds", fieldRelativeBounds.toArray(Pose2d[]::new));
   }
 
   private List<Pose2d> getFieldRelativeBounds() {
@@ -272,7 +280,9 @@ public class NoteTrackingManager extends LifecycleSubsystem {
           return (element.expiresAt() < Timer.getFPGATimestamp());
         });
 
-    if (RobotConfig.get().perfToggles().noteMapBoundingBox() && safeToTrack()) {
+    if (RobotConfig.get().perfToggles().noteMapBoundingBox()
+        && !staleNoteCorners
+        && safeToTrack()) {
 
       var filteredNotesInBox =
           noteMap.stream()
