@@ -19,9 +19,6 @@ import frc.robot.config.RobotConfig;
 import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.note_map_manager.AutoNoteDropped;
 import frc.robot.note_map_manager.BoundingBox;
-import frc.robot.robot_manager.RobotCommands;
-import frc.robot.robot_manager.RobotManager;
-import frc.robot.snaps.SnapManager;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
@@ -41,9 +38,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private static final double NOTE_MAP_LIFETIME_SECONDS = 10.0;
   private final LocalizationSubsystem localization;
   private final SwerveSubsystem swerve;
-  private final RobotCommands actions;
-  private final RobotManager robot;
-  private final SnapManager snaps;
   private static final String LIMELIGHT_NAME = "limelight-note";
   private static final NetworkTableEntry LL_TCORNXY =
       NetworkTableInstance.getDefault().getTable(LIMELIGHT_NAME).getEntry("tcornxy");
@@ -66,18 +60,11 @@ public class NoteTrackingManager extends LifecycleSubsystem {
           // bottom right
           new Translation2d(-1.2, 0.05));
 
-  public NoteTrackingManager(
-      LocalizationSubsystem localization,
-      SwerveSubsystem swerve,
-      RobotCommands actions,
-      RobotManager robot) {
+  public NoteTrackingManager(LocalizationSubsystem localization, SwerveSubsystem swerve) {
     super(SubsystemPriority.NOTE_TRACKING);
 
     this.localization = localization;
     this.swerve = swerve;
-    this.actions = actions;
-    this.robot = robot;
-    this.snaps = robot.snaps;
     RobotConfig.get().vision().tyToNoteDistance().accept(tyToDistance);
   }
 

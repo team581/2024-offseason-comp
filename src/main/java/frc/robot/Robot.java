@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import com.ctre.phoenix.led.CANdle;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
@@ -28,7 +27,6 @@ import frc.robot.fms.FmsSubsystem;
 import frc.robot.generated.BuildConstants;
 import frc.robot.imu.ImuSubsystem;
 import frc.robot.intake.IntakeSubsystem;
-import frc.robot.lights.LightsSubsystem;
 import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.note_manager.NoteManager;
 import frc.robot.note_map_manager.NoteMapManager;
@@ -99,11 +97,8 @@ public class Robot extends TimedRobot {
       new RobotManager(
           wrist, elevator, shooter, localization, vision, climber, swerve, snaps, imu, noteManager);
   private final RobotCommands actions = new RobotCommands(robotManager);
-  private final LightsSubsystem lightsSubsystem =
-      new LightsSubsystem(
-          new CANdle(RobotConfig.get().lights().deviceID(), "rio"), robotManager, vision, intake);
   private final NoteTrackingManager noteTrackingManager =
-      new NoteTrackingManager(localization, swerve, actions, robotManager);
+      new NoteTrackingManager(localization, swerve);
   private final NoteMapManager noteMapManager =
       new NoteMapManager(actions, noteTrackingManager, robotManager, localization, snaps);
   private final Autos autos =
