@@ -27,7 +27,7 @@ public enum RobotState {
   PREPARE_DROPPING(true, false, false, new LightsState(Color.kGreen, BlinkPattern.BLINK_FAST)),
   DROPPING(true, false, false, new LightsState(Color.kGreen, BlinkPattern.BLINK_FAST)),
 
-  WAIT_SHOOTER_AMP(true, false, false, new LightsState(Color.kGreen, BlinkPattern.BLINK_FAST)),
+  WAITING_SHOOTER_AMP(true, false, false, new LightsState(Color.kGreen, BlinkPattern.BLINK_FAST)),
   PREPARE_SHOOTER_AMP(true, false, false, new LightsState(Color.kGreen, BlinkPattern.BLINK_FAST)),
   SHOOTER_AMP(true, false, true, new LightsState(Color.kGreen, BlinkPattern.BLINK_FAST)),
   /** Outtaking via the intake. Game piece should be in queuer at start. */

@@ -23,16 +23,15 @@ import frc.robot.shooter.ShooterMode;
 import frc.robot.shooter.ShooterSubsystem;
 import frc.robot.snaps.SnapManager;
 import frc.robot.swerve.SwerveSubsystem;
-import frc.robot.util.FlagManager;
-import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
+import frc.robot.util.state_machines.StateMachine;
 import frc.robot.vision.DistanceAngle;
 import frc.robot.vision.VisionState;
 import frc.robot.vision.VisionSubsystem;
 import frc.robot.wrist.WristPositions;
 import frc.robot.wrist.WristSubsystem;
 
-public class RobotManager extends LifecycleSubsystem {
+public class RobotManager extends StateMachine<RobotState> {
   public final WristSubsystem wrist;
   public final ElevatorSubsystem elevator;
   public final ShooterSubsystem shooter;
@@ -44,9 +43,11 @@ public class RobotManager extends LifecycleSubsystem {
   private final ImuSubsystem imu;
   public final NoteManager noteManager;
 
-  private RobotState state = RobotState.IDLE_NO_GP;
+  private DistanceAngle fieldRelativeDistanceAngleToSpeaker = new DistanceAngle(0, 0, false);
+  private DistanceAngle fieldRelativeDistanceAngleToFeedSpot = new DistanceAngle(0, 0, false);
+  private double wristAngleForSpeaker = 0.0;
+  private double wristAngleForFloorSpot = 0.0;
 
-  private final FlagManager<RobotFlag> flags = new FlagManager<>("RobotManager", RobotFlag.class);
   private final Timer dropNoteSensorDebounce = new Timer();
   public final double DROP_DEBOUNCE_TIME_SECONDS = 0.4;
 
@@ -61,7 +62,7 @@ public class RobotManager extends LifecycleSubsystem {
       SnapManager snaps,
       ImuSubsystem imu,
       NoteManager noteManager) {
-    super(SubsystemPriority.ROBOT_MANAGER);
+    super(SubsystemPriority.ROBOT_MANAGER, RobotState.IDLE_NO_GP);
     this.wrist = wrist;
     this.elevator = elevator;
     this.shooter = shooter;
@@ -75,524 +76,263 @@ public class RobotManager extends LifecycleSubsystem {
   }
 
   @Override
-  public void robotPeriodic() {
-    DogLog.log("RobotManager/State", state);
-    flags.log();
-    DistanceAngle speakerDistanceAngle = vision.getDistanceAngleSpeaker();
+  protected void collectInputs() {
+    fieldRelativeDistanceAngleToSpeaker = vision.getDistanceAngleSpeaker();
+    fieldRelativeDistanceAngleToFeedSpot = vision.getDistanceAngleFloorShot();
+    wristAngleForSpeaker =
+        wrist.getAngleFromDistanceToSpeaker(fieldRelativeDistanceAngleToSpeaker.distance());
+    wristAngleForFloorSpot =
+        wrist.getAngleFromDistanceToFloorSpot(fieldRelativeDistanceAngleToFeedSpot.distance());
+  }
 
-    // change to Speaker or MovedSpeaker
-    DistanceAngle polarSpeakerCoordinate = vision.getDistanceAngleSpeaker();
-    DistanceAngle polarFloorShotCoordinate = vision.getDistanceAngleFloorShot();
-    DistanceAngle floorSpotVisionTargets = vision.getDistanceAngleFloorShot();
-    double speakerDistance = speakerDistanceAngle.distance();
-    double floorSpotDistance = floorSpotVisionTargets.distance();
-    double wristAngleForSpeaker = wrist.getAngleFromDistanceToSpeaker(speakerDistance);
-    double wristAngleForFloorSpot = wrist.getAngleFromDistanceToFloorSpot(floorSpotDistance);
-    shooter.setSpeakerDistance(speakerDistance);
-    shooter.setFloorSpotDistance(floorSpotDistance);
+  @Override
+  protected RobotState getNextState(RobotState currentState) {
+    return switch (currentState) {
+      case IDLE_NO_GP,
+              IDLE_WITH_GP,
+              WAITING_SPEAKER_SHOT,
+              WAITING_AMP_SHOT,
+              WAITING_FLOOR_SHOT,
+              WAITING_DROP,
+              WAITING_SUBWOOFER_SHOT,
+              WAITING_PODIUM_SHOT,
+              WAITING_SHOOTER_AMP,
+              OUTTAKING,
+              UNJAM,
+              SHOOTER_STOPPED_UNJAM,
+              CLIMB_1_LINEUP_OUTER,
+              CLIMB_2_LINEUP_INNER,
+              CLIMB_3_LINEUP_FINAL,
+              CLIMB_4_HANGING,
+              CLIMB_6_HANGING_FINISHED,
+              PREPARE_PRESET_3,
+              PREPARE_PRESET_AMP,
+              PREPARE_PRESET_SOURCE,
+              PREPARE_PRESET_MIDDLE ->
+          currentState;
+      case PREPARE_WAITING_AMP_SHOT ->
+          (noteManager.getState() == NoteState.IDLE_IN_CONVEYOR
+                  && wrist.atAngle(WristPositions.FULLY_STOWED))
+              ? RobotState.WAITING_AMP_SHOT
+              : currentState;
+      case INTAKING ->
+          (noteManager.getState() == NoteState.INTAKE_TO_QUEUER
+                  ||
 
-    // TODO: Remove when done tuning shots
-    DogLog.log("Debug/FeedDistance", floorSpotDistance);
+                  // Already have a note
+                  noteManager.getState() == NoteState.IDLE_IN_QUEUER)
+              ? RobotState.FINISH_INTAKING
+              : currentState;
 
-    // State transitions from requests
-    for (RobotFlag flag : flags.getChecked()) {
-      switch (flag) {
-        case STOW:
-          if (state.hasNote) {
-            if (state == RobotState.WAITING_AMP_SHOT) {
-              state = RobotState.AMP_SHOT;
-            } else {
-              state = RobotState.IDLE_WITH_GP;
-            }
-          } else {
-            state = RobotState.IDLE_NO_GP;
-          }
-          break;
-        case INTAKE:
-          if (!state.climbing) {
-            // Reset note manager state so that we don't instantly think we're done intaking
-            // Need to force set the state, rather than doing a state request, due to order of
-            // subsystems executing
-            noteManager.evilStateOverride(NoteState.IDLE_NO_GP);
-            state = RobotState.INTAKING;
-          }
-          break;
-        case STOP_INTAKING:
-          if (!state.climbing) {
-            if (state == RobotState.FINISH_INTAKING) {
-              // Ignore the request, we should finish intaking the note fully
-            } else if (state == RobotState.IDLE_WITH_GP) {
-              // You released the button after fully intaking the game piece
-            } else {
-              // The note might be partially in the intake, but hasn't triggered the sensor, so we
-              // enter LAZY_INTAKING to ensure it's fully intaked
-              state = RobotState.LAZY_INTAKING;
-            }
-          }
-          break;
-        case CLIMB_1_LINEUP_OUTER:
-          state = RobotState.CLIMB_1_LINEUP_OUTER;
-          break;
-        case CLIMB_2_LINEUP_INNER:
-          if (state == RobotState.CLIMB_1_LINEUP_OUTER
-              || state == RobotState.CLIMB_3_LINEUP_FINAL) {
-            state = RobotState.CLIMB_2_LINEUP_INNER;
-          }
-          break;
-        case CLIMB_3_LINEUP_FINAL:
-          if (state == RobotState.CLIMB_2_LINEUP_INNER || state == RobotState.CLIMB_4_HANGING) {
-            state = RobotState.CLIMB_3_LINEUP_FINAL;
-          }
-          break;
-        case IDLE_NO_GP:
-          state = RobotState.IDLE_NO_GP;
-          break;
-        case CLIMB_4_HANGING:
-          if (state == RobotState.CLIMB_3_LINEUP_FINAL
-              || state == RobotState.CLIMB_5_HANGING_TRAP_SCORE) {
-            state = RobotState.PREPARE_CLIMB_4_HANGING;
-          }
-          break;
-        case CLIMB_5_HANGING_TRAP_SCORE:
-          if (state == RobotState.CLIMB_4_HANGING || state == RobotState.CLIMB_6_HANGING_FINISHED) {
-            state = RobotState.CLIMB_5_HANGING_TRAP_SCORE;
-          }
-          break;
-        case CLIMB_6_HANGING_ELEVATOR_FINISH:
-          if (state == RobotState.CLIMB_5_HANGING_TRAP_SCORE) {
-            state = RobotState.CLIMB_6_HANGING_FINISHED;
-          }
-          break;
-        case WAIT_SPEAKER_SHOT:
-          if (!state.climbing) {
-            state = RobotState.WAITING_SPEAKER_SHOT;
-          }
-          break;
-        case WAIT_SUBWOOFER_SHOT:
-          if (!state.climbing) {
-            state = RobotState.WAITING_SUBWOOFER_SHOT;
-          }
-          break;
-        case WAIT_PODIUM_SHOT:
-          if (!state.climbing) {
-            state = RobotState.WAITING_PODIUM_SHOT;
-          }
-          break;
-        case OUTTAKE:
-          if (!state.climbing) {
-            state = RobotState.OUTTAKING;
-          }
-          break;
-        case OUTTAKE_SHOOTER:
-          if (!state.climbing) {
-            state = RobotState.PREPARE_PASS_LOW;
-          }
-          break;
-        case WAIT_SHOOTER_AMP:
-          if (!state.climbing) {
-            state = RobotState.WAIT_SHOOTER_AMP;
-          }
-          break;
-        case SHOOTER_AMP:
-          if (!state.climbing) {
-            state = RobotState.PREPARE_SHOOTER_AMP;
-          }
-          break;
-        case SPEAKER_SHOT:
-          if (!state.climbing) {
-            state = RobotState.PREPARE_SPEAKER_SHOT;
-          }
-          break;
-        case FORCE_SPEAKER_SHOT:
-          if (!state.climbing) {
-            state = RobotState.SPEAKER_SHOOT;
-          }
-          break;
-        case WAIT_AMP_SHOT:
-          if (!state.climbing) {
-            state = RobotState.PREPARE_WAITING_AMP_SHOT;
-          }
-          break;
-        case AMP_SHOT:
-          if (!state.climbing) {
-            state = RobotState.AMP_SHOT;
-          }
-          break;
-        case DROP:
-          if (!state.climbing) {
-            state = RobotState.PREPARE_DROPPING;
-          }
-          break;
-        case WAITING_DROP:
-          if (!state.climbing) {
-            state = RobotState.WAITING_DROP;
-          }
-          break;
-        case SUBWOOFER_SHOT:
-          if (!state.climbing) {
-            state = RobotState.PREPARE_SUBWOOFER_SHOT;
-          }
-          break;
-        case PODIUM_SHOT:
-          if (!state.climbing) {
-            state = RobotState.PREPARE_PODIUM_SHOT;
-          }
-          break;
-        case PRELOAD_NOTE:
-          if (!state.climbing) {
-            state = RobotState.IDLE_WITH_GP;
-          }
-          break;
-        case WAIT_FLOOR_SHOT:
-          if (!state.climbing) {
-            state = RobotState.WAITING_FLOOR_SHOT;
-          }
-          break;
-        case FLOOR_SHOT:
-          if (!state.climbing) {
-            state = RobotState.PREPARE_FLOOR_SHOT;
-          }
-          break;
-        case STOP_SHOOTING:
-          if (!state.climbing
-              && state != RobotState.IDLE_NO_GP
-              && state != RobotState.WAITING_PODIUM_SHOT
-              && state != RobotState.WAITING_SUBWOOFER_SHOT
-              && !state.shootingMode) {
-            if (state.hasNote) {
-              state = RobotState.IDLE_WITH_GP;
-            } else {
-              state = RobotState.IDLE_NO_GP;
-            }
-          }
-          break;
-        case UNJAM:
-          if (!state.climbing) {
-            state = RobotState.UNJAM;
-          }
-          break;
-        case SHOOTER_STOP_UNJAM:
-          if (!state.climbing) {
-            state = RobotState.SHOOTER_STOPPED_UNJAM;
-          }
-          break;
-        case PRESET_3:
-          if (!state.climbing) {
-            state = RobotState.PRESET_3;
-          }
-          break;
-        case PRESET_RIGHT:
-          if (!state.climbing) {
-            state = RobotState.PRESET_AMP;
-          }
-          break;
-        case PRESET_LEFT:
-          if (!state.climbing) {
-            state = RobotState.PRESET_LEFT;
-          }
-          break;
-        case PRESET_MIDDLE:
-          if (!state.climbing) {
-            state = RobotState.PRESET_MIDDLE;
-          }
-          break;
-        case PREPARE_PRESET_3:
-          if (!state.climbing) {
-            state = RobotState.PREPARE_PRESET_3;
-          }
-          break;
-        case PREPARE_PRESET_MIDDLE:
-          if (!state.climbing) {
-            state = RobotState.PREPARE_PRESET_MIDDLE;
-          }
-          break;
-        case PREPARE_PRESET_RIGHT:
-          if (!state.climbing) {
-            state = RobotState.PREPARE_PRESET_AMP;
-          }
-          break;
-        case PREPARE_PRESET_LEFT:
-          if (!state.climbing) {
-            state = RobotState.PREPARE_PRESET_SOURCE;
-          }
-          break;
+      case FINISH_INTAKING, LAZY_INTAKING ->
+          (noteManager.getState() == NoteState.IDLE_IN_QUEUER)
+              ? RobotState.IDLE_WITH_GP
+              : currentState;
+      case PREPARE_FLOOR_SHOT -> {
+        var wristAtGoal =
+            wrist.atAngleForFloorSpot(fieldRelativeDistanceAngleToFeedSpot.distance());
+        var shooterAtGoal = shooter.atGoal(ShooterMode.FLOOR_SHOT);
+        var headingAtGoal =
+            imu.atAngleForFloorSpot(fieldRelativeDistanceAngleToFeedSpot.targetAngle());
+        var swerveAtGoal = swerve.movingSlowEnoughForFloorShot();
+        var angularVelocityAtGoal = Math.abs(imu.getRobotAngularVelocity()) < 360.0;
+        DogLog.log("RobotManager/FloorShot/WristAtGoal", wristAtGoal);
+        DogLog.log("RobotManager/FloorShot/ShooterAtGoal", shooterAtGoal);
+        DogLog.log("RobotManager/FloorShot/HeadingAtGoal", headingAtGoal);
+        DogLog.log("RobotManager/FloorShot/SwerveAtGoal", swerveAtGoal);
+        DogLog.log("RobotManager/FloorShot/AngularVelocityAtGoal", angularVelocityAtGoal);
+
+        if (wristAtGoal
+            && shooterAtGoal
+            && headingAtGoal
+            // && jitterAtGoal
+            && swerveAtGoal
+            && angularVelocityAtGoal) {
+          yield RobotState.FLOOR_SHOOT;
+        }
+        yield currentState;
       }
-    }
-
-    DogLog.log("RobotManager/StateAfterFlags", state);
-
-    // Automatic state transitions
-    switch (state) {
-      case IDLE_NO_GP:
-      case IDLE_WITH_GP:
-      case WAITING_SPEAKER_SHOT:
-      case WAITING_AMP_SHOT:
-      case WAITING_FLOOR_SHOT:
-      case WAITING_DROP:
-      case WAITING_SUBWOOFER_SHOT:
-      case WAITING_PODIUM_SHOT:
-      case WAIT_SHOOTER_AMP:
-      case OUTTAKING:
-      case PREPARE_PRESET_3:
-      case PREPARE_PRESET_AMP:
-      case PREPARE_PRESET_SOURCE:
-      case PREPARE_PRESET_MIDDLE:
-        // Do nothing
-        break;
-      case PREPARE_WAITING_AMP_SHOT:
-        if (noteManager.getState() == NoteState.IDLE_IN_CONVEYOR
-            && wrist.atAngle(WristPositions.FULLY_STOWED)) {
-          state = RobotState.WAITING_AMP_SHOT;
-        }
-        break;
-      case INTAKING:
-        if (noteManager.getState() == NoteState.INTAKE_TO_QUEUER
-            ||
-
-            // Already have a note
-            noteManager.getState() == NoteState.IDLE_IN_QUEUER) {
-          state = RobotState.FINISH_INTAKING;
-        }
-        break;
-      case FINISH_INTAKING:
-      case LAZY_INTAKING:
-        if (noteManager.getState() == NoteState.IDLE_IN_QUEUER) {
-          state = RobotState.IDLE_WITH_GP;
-        }
-        break;
-      case PREPARE_FLOOR_SHOT:
-        {
-          var wristAtGoal = wrist.atAngleForFloorSpot(floorSpotVisionTargets.distance());
-          var shooterAtGoal = shooter.atGoal(ShooterMode.FLOOR_SHOT);
-          var headingAtGoal = imu.atAngleForFloorSpot(floorSpotVisionTargets.targetAngle());
-          var swerveAtGoal = swerve.movingSlowEnoughForFloorShot();
-          var angularVelocityAtGoal = Math.abs(imu.getRobotAngularVelocity()) < 360.0;
-          DogLog.log("RobotManager/FloorShot/WristAtGoal", wristAtGoal);
-          DogLog.log("RobotManager/FloorShot/ShooterAtGoal", shooterAtGoal);
-          DogLog.log("RobotManager/FloorShot/HeadingAtGoal", headingAtGoal);
-          DogLog.log("RobotManager/FloorShot/SwerveAtGoal", swerveAtGoal);
-          DogLog.log("RobotManager/FloorShot/AngularVelocityAtGoal", angularVelocityAtGoal);
-
-          if (wristAtGoal
-              && shooterAtGoal
-              && headingAtGoal
-              // && jitterAtGoal
-              && swerveAtGoal
-              && angularVelocityAtGoal) {
-            state = RobotState.FLOOR_SHOOT;
-          }
-          break;
-        }
-      case PREPARE_DROPPING:
+      case PREPARE_DROPPING -> {
         var shooterAtDropSpeed = shooter.atGoal(ShooterMode.DROPPING);
         if (shooterAtDropSpeed) {
-          state = RobotState.DROPPING;
+          yield RobotState.DROPPING;
         }
-        break;
-      case PREPARE_PODIUM_SHOT:
-        if (wrist.atAngle(WristPositions.PODIUM_SHOT)
-            && shooter.atGoal(ShooterMode.PODIUM_SHOT)
-            && noteManager.getState() == NoteState.IDLE_IN_QUEUER) {
-          state = RobotState.PODIUM_SHOOT;
-        }
-        break;
-      case PREPARE_SUBWOOFER_SHOT:
-        if (wrist.atAngle(WristPositions.SUBWOOFER_SHOT)
-            && shooter.atGoal(ShooterMode.SUBWOOFER_SHOT)
-            && noteManager.getState() == NoteState.IDLE_IN_QUEUER) {
-          state = RobotState.SUBWOOFER_SHOOT;
-        }
-        break;
-      case PREPARE_AMP_SHOT:
-        if (noteManager.getState() == NoteState.IDLE_IN_CONVEYOR
-            && wrist.atAngle(WristPositions.STOWED)) {
-          state = RobotState.AMP_SHOT;
-        }
-        break;
-      case PREPARE_SHOOTER_AMP:
-        if (noteManager.getState() == NoteState.IDLE_IN_QUEUER
-            && wrist.atAngle(WristPositions.SHOOTER_AMP)
-            && shooter.atGoal(ShooterMode.SHOOTER_AMP)
-            && elevator.atPosition(ElevatorPositions.STOWED)) {
-          state = RobotState.SHOOTER_AMP;
-        }
-        break;
-      case PREPARE_SPEAKER_SHOT:
-        {
-          boolean wristAtGoal = wrist.atAngleForSpeaker(speakerDistance);
-          boolean shooterAtGoal = shooter.atGoal(ShooterMode.SPEAKER_SHOT);
-          boolean swerveSlowEnough = swerve.movingSlowEnoughForSpeakerShot();
-          boolean angularVelocitySlowEnough = imu.belowVelocityForVision(speakerDistance);
-          boolean robotHeadingAtGoal =
-              imu.atAngleForSpeaker(speakerDistanceAngle.targetAngle(), speakerDistance);
-          boolean limelightWorking = false;
+        yield currentState;
+      }
+      case PREPARE_PODIUM_SHOT ->
+          (wrist.atAngle(WristPositions.PODIUM_SHOT)
+                  && shooter.atGoal(ShooterMode.PODIUM_SHOT)
+                  && noteManager.getState() == NoteState.IDLE_IN_QUEUER)
+              ? RobotState.PODIUM_SHOOT
+              : currentState;
+      case PREPARE_SUBWOOFER_SHOT ->
+          (wrist.atAngle(WristPositions.SUBWOOFER_SHOT)
+                  && shooter.atGoal(ShooterMode.SUBWOOFER_SHOT)
+                  && noteManager.getState() == NoteState.IDLE_IN_QUEUER)
+              ? RobotState.SUBWOOFER_SHOOT
+              : currentState;
+      case PREPARE_AMP_SHOT ->
+          (noteManager.getState() == NoteState.IDLE_IN_CONVEYOR
+                  && wrist.atAngle(WristPositions.STOWED))
+              ? RobotState.AMP_SHOT
+              : currentState;
+      case PREPARE_SHOOTER_AMP ->
+          (noteManager.getState() == NoteState.IDLE_IN_QUEUER
+                  && wrist.atAngle(WristPositions.SHOOTER_AMP)
+                  && shooter.atGoal(ShooterMode.SHOOTER_AMP)
+                  && elevator.atPosition(ElevatorPositions.STOWED))
+              ? RobotState.SHOOTER_AMP
+              : currentState;
+      case PREPARE_SPEAKER_SHOT -> {
+        boolean wristAtGoal =
+            wrist.atAngleForSpeaker(fieldRelativeDistanceAngleToSpeaker.distance());
+        boolean shooterAtGoal = shooter.atGoal(ShooterMode.SPEAKER_SHOT);
+        boolean swerveSlowEnough = swerve.movingSlowEnoughForSpeakerShot();
+        boolean angularVelocitySlowEnough =
+            imu.belowVelocityForVision(fieldRelativeDistanceAngleToSpeaker.distance());
+        boolean robotHeadingAtGoal =
+            imu.atAngleForSpeaker(
+                fieldRelativeDistanceAngleToSpeaker.targetAngle(),
+                fieldRelativeDistanceAngleToSpeaker.distance());
+        boolean limelightWorking = false;
 
-          if (DriverStation.isAutonomous() && vision.getState() == VisionState.OFFLINE) {
-            limelightWorking = true;
-          } else {
-            limelightWorking = vision.getState() == VisionState.SEES_TAGS;
-          }
+        if (DriverStation.isAutonomous() && vision.getState() == VisionState.OFFLINE) {
+          limelightWorking = true;
+        } else {
+          limelightWorking = vision.getState() == VisionState.SEES_TAGS;
+        }
 
-          DogLog.log("RobotManager/SpeakerShot/LimelightWorking", limelightWorking);
-          DogLog.log("RobotManager/SpeakerShot/WristAtGoal", wristAtGoal);
-          DogLog.log("RobotManager/SpeakerShot/ShooterAtGoal", shooterAtGoal);
-          DogLog.log("RobotManager/SpeakerShot/SwerveSlowEnough", swerveSlowEnough);
-          DogLog.log(
-              "RobotManager/SpeakerShot/AngularVelocitySlowEnough", angularVelocitySlowEnough);
-          DogLog.log("RobotManager/SpeakerShot/RobotHeadingAtGoal", robotHeadingAtGoal);
-          if (limelightWorking
-              && wristAtGoal
-              && shooterAtGoal
-              && swerveSlowEnough
-              && angularVelocitySlowEnough
-              && robotHeadingAtGoal) {
-            state = RobotState.SPEAKER_SHOOT;
-          }
+        DogLog.log("RobotManager/SpeakerShot/LimelightWorking", limelightWorking);
+        DogLog.log("RobotManager/SpeakerShot/WristAtGoal", wristAtGoal);
+        DogLog.log("RobotManager/SpeakerShot/ShooterAtGoal", shooterAtGoal);
+        DogLog.log("RobotManager/SpeakerShot/SwerveSlowEnough", swerveSlowEnough);
+        DogLog.log("RobotManager/SpeakerShot/AngularVelocitySlowEnough", angularVelocitySlowEnough);
+        DogLog.log("RobotManager/SpeakerShot/RobotHeadingAtGoal", robotHeadingAtGoal);
+        if (limelightWorking
+            && wristAtGoal
+            && shooterAtGoal
+            && swerveSlowEnough
+            && angularVelocitySlowEnough
+            && robotHeadingAtGoal) {
+          yield RobotState.SPEAKER_SHOOT;
         }
-        break;
-      case PREPARE_PASS_LOW:
-        if (noteManager.getState() == NoteState.IDLE_IN_QUEUER
-            && shooter.atGoal(ShooterMode.OUTTAKE)) {
-          state = RobotState.PASS_LOW;
-        }
-        break;
-      case WAITING_MULTI_SPEAKER_SHOT:
-        if (noteManager.getState() == NoteState.IDLE_IN_QUEUER) {
-          state = RobotState.PREPARE_SPEAKER_SHOT;
-        }
-        break;
-      case WAITING_MULTI_FLOOR_SHOT:
-        if (noteManager.getState() == NoteState.IDLE_IN_QUEUER) {
-          state = RobotState.PREPARE_FLOOR_SHOT;
-        }
-        break;
-      case PASS_LOW:
-      case SHOOTER_AMP:
-      case SUBWOOFER_SHOOT:
-      case PODIUM_SHOOT:
-      case AMP_SHOT:
-      case PRESET_3:
-      case PRESET_MIDDLE:
-      case PRESET_AMP:
-        if (noteManager.getState() == NoteState.IDLE_NO_GP) {
-          state = RobotState.IDLE_NO_GP;
-        }
-        break;
-      case DROPPING:
+        yield currentState;
+      }
+      case PREPARE_PASS_LOW ->
+          (noteManager.getState() == NoteState.IDLE_IN_QUEUER
+                  && shooter.atGoal(ShooterMode.OUTTAKE))
+              ? RobotState.PASS_LOW
+              : currentState;
+      case WAITING_MULTI_SPEAKER_SHOT ->
+          (noteManager.getState() == NoteState.IDLE_IN_QUEUER)
+              ? RobotState.PREPARE_SPEAKER_SHOT
+              : currentState;
+      case WAITING_MULTI_FLOOR_SHOT ->
+          (noteManager.getState() == NoteState.IDLE_IN_QUEUER)
+              ? RobotState.PREPARE_FLOOR_SHOT
+              : currentState;
+      case PASS_LOW,
+              SHOOTER_AMP,
+              SUBWOOFER_SHOOT,
+              PODIUM_SHOOT,
+              AMP_SHOT,
+              PRESET_3,
+              PRESET_MIDDLE,
+              PRESET_AMP ->
+          (noteManager.getState() == NoteState.IDLE_NO_GP) ? RobotState.IDLE_NO_GP : currentState;
+
+      case DROPPING -> {
         if (noteManager.getState() == NoteState.IDLE_NO_GP
             && dropNoteSensorDebounce.hasElapsed(DROP_DEBOUNCE_TIME_SECONDS)) {
-          state = RobotState.IDLE_NO_GP;
           dropNoteSensorDebounce.reset();
+          yield RobotState.IDLE_NO_GP;
         }
-        break;
-      case PRESET_LEFT:
-        if (noteManager.getState() == NoteState.IDLE_NO_GP) {
-          state = RobotState.IDLE_NO_GP;
-        }
-        break;
-      case FLOOR_SHOOT:
-        if (noteManager.getState() == NoteState.IDLE_NO_GP) {
-          state = RobotState.WAITING_MULTI_FLOOR_SHOT;
-        }
-        break;
-      case SPEAKER_SHOOT:
+        yield currentState;
+      }
+      case PRESET_LEFT ->
+          (noteManager.getState() == NoteState.IDLE_NO_GP) ? RobotState.IDLE_NO_GP : currentState;
+      case FLOOR_SHOOT ->
+          (noteManager.getState() == NoteState.IDLE_NO_GP)
+              ? RobotState.WAITING_MULTI_FLOOR_SHOT
+              : currentState;
+      case SPEAKER_SHOOT -> {
         if (noteManager.getState()
                 == NoteState
                     .IDLE_NO_GP // TODO: Super hacky workaround for not being able to exit after
             // multi speaker shot
             || !(noteManager.intake.hasNote() && noteManager.queuer.hasNote())) {
           if (DriverStation.isAutonomous()) {
-            state = RobotState.IDLE_NO_GP;
+            yield RobotState.IDLE_NO_GP;
           } else {
-            state = RobotState.WAITING_MULTI_SPEAKER_SHOT;
+            yield RobotState.WAITING_MULTI_SPEAKER_SHOT;
           }
         }
-        break;
-      case UNJAM:
-      case SHOOTER_STOPPED_UNJAM:
-      case CLIMB_1_LINEUP_OUTER:
-      case CLIMB_2_LINEUP_INNER:
-      case CLIMB_3_LINEUP_FINAL:
-      case CLIMB_4_HANGING:
-      case CLIMB_6_HANGING_FINISHED:
-        break;
-      case PREPARE_CLIMB_4_HANGING:
-        if (climber.atGoal(ClimberMode.HANGING)
-            && elevator.atPosition(ElevatorPositions.CLIMBING)) {
-          state = RobotState.CLIMB_4_HANGING;
-        }
-        break;
-      case PREPARE_CLIMB_5_HANGING_TRAP_SCORE:
-        if (elevator.atPosition(ElevatorPositions.TRAP_SHOT)
-            && climber.atGoal(ClimberMode.HANGING)) {
-          state = RobotState.CLIMB_5_HANGING_TRAP_SCORE;
-        }
-        break;
-      case CLIMB_5_HANGING_TRAP_SCORE:
-        if (noteManager.getState() == NoteState.IDLE_NO_GP) {
-          state = RobotState.CLIMB_4_HANGING;
-        }
-        break;
-      default:
-        // Should never happen
-        break;
-    }
+        yield currentState;
+      }
 
-    DogLog.log("RobotManager/StateAfterTransitions", state);
+      case PREPARE_CLIMB_4_HANGING ->
+          (climber.atGoal(ClimberMode.HANGING) && elevator.atPosition(ElevatorPositions.CLIMBING))
+              ? RobotState.CLIMB_4_HANGING
+              : currentState;
+      case PREPARE_CLIMB_5_HANGING_TRAP_SCORE ->
+          (elevator.atPosition(ElevatorPositions.TRAP_SHOT) && climber.atGoal(ClimberMode.HANGING))
+              ? RobotState.CLIMB_5_HANGING_TRAP_SCORE
+              : currentState;
+      case CLIMB_5_HANGING_TRAP_SCORE ->
+          (noteManager.getState() == NoteState.IDLE_NO_GP)
+              ? RobotState.CLIMB_4_HANGING
+              : currentState;
+    };
+  }
 
-    // State actions
-    switch (state) {
-      case IDLE_NO_GP:
-        wrist.setAngle(wristAngleForSpeaker);
+  @Override
+  protected void afterTransition(RobotState newState) {
+    switch (newState) {
+      case IDLE_NO_GP -> {
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.FULLY_STOPPED);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.idleNoGPRequest();
-        break;
-      case IDLE_WITH_GP:
-        wrist.setAngle(wristAngleForSpeaker);
+      }
+      case IDLE_WITH_GP -> {
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.IDLE);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.idleInQueuerRequest();
-        break;
-      case LAZY_INTAKING:
-        wrist.setAngle(wristAngleForSpeaker);
+      }
+      case LAZY_INTAKING -> {
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.IDLE);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.lazyIntakeRequest();
-        break;
-      case FINISH_INTAKING:
-      case INTAKING:
-        wrist.setAngle(wristAngleForSpeaker);
+      }
+      case FINISH_INTAKING, INTAKING -> {
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.IDLE);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.intakeRequest();
-        break;
-      case OUTTAKING:
-        wrist.setAngle(wristAngleForSpeaker);
+      }
+      case OUTTAKING -> {
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.IDLE);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.outtakeRequest();
-        break;
-      case PREPARE_PASS_LOW:
+      }
+      case PREPARE_PASS_LOW -> {
         wrist.setAngle(WristPositions.OUTTAKING_SHOOTER);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.OUTTAKE);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.idleInQueuerRequest();
-        break;
-      case PASS_LOW:
+      }
+      case PASS_LOW -> {
         wrist.setAngle(WristPositions.OUTTAKING_SHOOTER);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.OUTTAKE);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.shooterOuttakeRequest();
-        break;
-      case PREPARE_DROPPING:
+      }
+      case PREPARE_DROPPING -> {
         wrist.setAngle(WristPositions.OUTTAKING_SHOOTER);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.DROPPING);
@@ -600,61 +340,56 @@ public class RobotManager extends LifecycleSubsystem {
         noteManager.idleInQueuerRequest();
         dropNoteSensorDebounce.reset();
         dropNoteSensorDebounce.stop();
-        break;
-      case DROPPING:
+      }
+      case DROPPING -> {
         wrist.setAngle(WristPositions.OUTTAKING_SHOOTER);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.DROPPING);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.dropRequest();
         dropNoteSensorDebounce.start();
-        break;
-      case WAITING_DROP:
+      }
+      case WAITING_DROP -> {
         wrist.setAngle(WristPositions.OUTTAKING_SHOOTER);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.DROPPING);
         climber.setGoalMode(ClimberMode.STOWED);
         dropNoteSensorDebounce.reset();
         dropNoteSensorDebounce.stop();
-        break;
-      case PREPARE_SHOOTER_AMP:
-      case WAIT_SHOOTER_AMP:
+      }
+      case PREPARE_SHOOTER_AMP, WAITING_SHOOTER_AMP -> {
         wrist.setAngle(WristPositions.SHOOTER_AMP);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.SHOOTER_AMP);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.idleInQueuerRequest();
-        break;
-      case SHOOTER_AMP:
+      }
+      case SHOOTER_AMP -> {
         wrist.setAngle(WristPositions.SHOOTER_AMP);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.SHOOTER_AMP);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.shooterScoreRequest();
-        break;
-      case WAITING_FLOOR_SHOT:
-      case PREPARE_FLOOR_SHOT:
-        wrist.setAngle(wristAngleForFloorSpot);
+      }
+      case WAITING_FLOOR_SHOT, PREPARE_FLOOR_SHOT -> {
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.FLOOR_SHOT);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.intakeRequest();
-        snaps.setAngle(polarFloorShotCoordinate.targetAngle());
+
         snaps.setEnabled(true);
         snaps.cancelCurrentCommand();
-        break;
-      case FLOOR_SHOOT:
-        wrist.setAngle(wristAngleForFloorSpot);
+      }
+      case FLOOR_SHOOT -> {
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.FLOOR_SHOT);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.shooterScoreRequest();
-        snaps.setAngle(polarFloorShotCoordinate.targetAngle());
+
         snaps.setEnabled(true);
         snaps.cancelCurrentCommand();
-        break;
-      case WAITING_PODIUM_SHOT:
-      case PREPARE_PODIUM_SHOT:
+      }
+      case WAITING_PODIUM_SHOT, PREPARE_PODIUM_SHOT -> {
         wrist.setAngle(WristPositions.PODIUM_SHOT);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.PODIUM_SHOT);
@@ -663,8 +398,8 @@ public class RobotManager extends LifecycleSubsystem {
         snaps.setAngle(SnapManager.getPodiumAngle());
         snaps.setEnabled(true);
         snaps.cancelCurrentCommand();
-        break;
-      case PODIUM_SHOOT:
+      }
+      case PODIUM_SHOOT -> {
         wrist.setAngle(WristPositions.PODIUM_SHOT);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.PODIUM_SHOT);
@@ -673,9 +408,8 @@ public class RobotManager extends LifecycleSubsystem {
         snaps.setAngle(SnapManager.getPodiumAngle());
         snaps.setEnabled(true);
         snaps.cancelCurrentCommand();
-        break;
-      case WAITING_SUBWOOFER_SHOT:
-      case PREPARE_SUBWOOFER_SHOT:
+      }
+      case WAITING_SUBWOOFER_SHOT, PREPARE_SUBWOOFER_SHOT -> {
         if (DriverStation.isAutonomous()) {
           wrist.setAngle(WristPositions.AUTO_SUBWOOFER_SHOT);
         } else {
@@ -685,8 +419,8 @@ public class RobotManager extends LifecycleSubsystem {
         shooter.setGoalMode(ShooterMode.SUBWOOFER_SHOT);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.idleInQueuerRequest();
-        break;
-      case SUBWOOFER_SHOOT:
+      }
+      case SUBWOOFER_SHOOT -> {
         if (DriverStation.isAutonomous()) {
           wrist.setAngle(WristPositions.AUTO_SUBWOOFER_SHOT);
         } else {
@@ -696,101 +430,96 @@ public class RobotManager extends LifecycleSubsystem {
         shooter.setGoalMode(ShooterMode.SUBWOOFER_SHOT);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.shooterScoreRequest();
-        break;
-      case WAITING_SPEAKER_SHOT:
-      case PREPARE_SPEAKER_SHOT:
-        wrist.setAngle(wristAngleForSpeaker);
+      }
+      case WAITING_SPEAKER_SHOT, PREPARE_SPEAKER_SHOT -> {
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.SPEAKER_SHOT);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.idleInQueuerRequest();
-        snaps.setAngle(polarSpeakerCoordinate.targetAngle());
+
         snaps.setEnabled(true);
         snaps.cancelCurrentCommand();
-        break;
-      case SPEAKER_SHOOT:
-        wrist.setAngle(wristAngleForSpeaker);
+      }
+      case SPEAKER_SHOOT -> {
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.SPEAKER_SHOT);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.shooterScoreRequest();
-        snaps.setAngle(polarSpeakerCoordinate.targetAngle());
+
         snaps.setEnabled(true);
         snaps.cancelCurrentCommand();
-        break;
-      case PREPARE_WAITING_AMP_SHOT:
+      }
+      case PREPARE_WAITING_AMP_SHOT -> {
         wrist.setAngle(WristPositions.FULLY_STOWED);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.IDLE);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.ampWaitRequest();
-        break;
-      case WAITING_AMP_SHOT:
-      case PREPARE_AMP_SHOT:
+      }
+      case WAITING_AMP_SHOT, PREPARE_AMP_SHOT -> {
         wrist.setAngle(WristPositions.FULLY_STOWED);
         elevator.setGoalHeight(ElevatorPositions.AMP_OUTTAKE);
         shooter.setGoalMode(ShooterMode.IDLE);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.ampWaitRequest();
-        break;
-      case AMP_SHOT:
+      }
+      case AMP_SHOT -> {
         wrist.setAngle(WristPositions.STOWED);
         elevator.setGoalHeight(ElevatorPositions.AMP_OUTTAKE);
         shooter.setGoalMode(ShooterMode.IDLE);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.ampScoreRequest();
-        break;
-      case UNJAM:
+      }
+      case UNJAM -> {
         wrist.setAngle(WristPositions.STOWED);
         elevator.setGoalHeight(ElevatorPositions.ANTI_JAM);
         shooter.setGoalMode(ShooterMode.OUTTAKE);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.unjamRequest();
-        break;
-      case SHOOTER_STOPPED_UNJAM:
+      }
+      case SHOOTER_STOPPED_UNJAM -> {
         wrist.setAngle(WristPositions.SUBWOOFER_SHOT);
         elevator.setGoalHeight(ElevatorPositions.ANTI_JAM);
         shooter.setGoalMode(ShooterMode.FULLY_STOPPED);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.unjamRequest();
-        break;
-      case CLIMB_1_LINEUP_OUTER:
+      }
+      case CLIMB_1_LINEUP_OUTER -> {
         wrist.setAngle(WristPositions.FULLY_STOWED);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.FULLY_STOPPED);
         climber.setGoalMode(ClimberMode.LINEUP_OUTER);
         noteManager.trapWaitRequest();
-        break;
-      case CLIMB_2_LINEUP_INNER:
+      }
+      case CLIMB_2_LINEUP_INNER -> {
         wrist.setAngle(WristPositions.FULLY_STOWED);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.FULLY_STOPPED);
         climber.setGoalMode(ClimberMode.LINEUP_INNER);
         noteManager.trapWaitRequest();
-        break;
-      case CLIMB_3_LINEUP_FINAL:
+      }
+      case CLIMB_3_LINEUP_FINAL -> {
         wrist.setAngle(WristPositions.FULLY_STOWED);
         elevator.setGoalHeight(ElevatorPositions.CLIMBING);
         shooter.setGoalMode(ShooterMode.FULLY_STOPPED);
         climber.setGoalMode(ClimberMode.LINEUP_INNER);
         noteManager.trapWaitRequest();
-        break;
-      case PREPARE_CLIMB_4_HANGING:
-      case CLIMB_4_HANGING:
+      }
+      case PREPARE_CLIMB_4_HANGING, CLIMB_4_HANGING -> {
         wrist.setAngle(WristPositions.FULLY_STOWED);
         elevator.setGoalHeight(ElevatorPositions.CLIMBING);
         shooter.setGoalMode(ShooterMode.FULLY_STOPPED);
         climber.setGoalMode(ClimberMode.HANGING);
         noteManager.trapWaitRequest();
-        break;
-      case PREPARE_CLIMB_5_HANGING_TRAP_SCORE:
+      }
+      case PREPARE_CLIMB_5_HANGING_TRAP_SCORE -> {
         wrist.setAngle(WristPositions.FULLY_STOWED);
         elevator.setGoalHeight(ElevatorPositions.TRAP_SHOT);
         shooter.setGoalMode(ShooterMode.FULLY_STOPPED);
         climber.setGoalMode(ClimberMode.HANGING);
         noteManager.trapWaitRequest();
-        break;
-      case CLIMB_5_HANGING_TRAP_SCORE:
+      }
+      case CLIMB_5_HANGING_TRAP_SCORE -> {
         wrist.setAngle(WristPositions.FULLY_STOWED);
         elevator.setGoalHeight(ElevatorPositions.TRAP_SHOT);
         elevator.setPulsing(false);
@@ -802,16 +531,16 @@ public class RobotManager extends LifecycleSubsystem {
         // elevator is up
         // So, just try scoring regardless of robot state
         noteManager.evilStateOverride(NoteState.TRAP_SCORING);
-        break;
-      case CLIMB_6_HANGING_FINISHED:
+      }
+      case CLIMB_6_HANGING_FINISHED -> {
         wrist.setAngle(WristPositions.FULLY_STOWED);
         elevator.setGoalHeight(ElevatorPositions.CLIMBING_FINISHED);
         elevator.setPulsing(false);
         shooter.setGoalMode(ShooterMode.FULLY_STOPPED);
         climber.setGoalMode(ClimberMode.HANGING);
         noteManager.idleNoGPRequest();
-        break;
-      case PRESET_AMP:
+      }
+      case PRESET_AMP -> {
         wrist.setAngle(WristPositions.PRESET_AMP);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.PRESET_RIGHT);
@@ -820,8 +549,8 @@ public class RobotManager extends LifecycleSubsystem {
         snaps.setAngle(SnapManager.getPresetAmpAngle());
         snaps.setEnabled(true);
         snaps.cancelCurrentCommand();
-        break;
-      case PRESET_LEFT:
+      }
+      case PRESET_LEFT -> {
         wrist.setAngle(WristPositions.PRESET_SOURCE);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.PRESET_SOURCE);
@@ -830,8 +559,8 @@ public class RobotManager extends LifecycleSubsystem {
         snaps.setAngle(vision.getDistanceAngleSpeaker().targetAngle());
         snaps.setEnabled(true);
         snaps.cancelCurrentCommand();
-        break;
-      case PRESET_MIDDLE:
+      }
+      case PRESET_MIDDLE -> {
         wrist.setAngle(WristPositions.PRESET_MIDDLE);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.PRESET_MIDDLE);
@@ -840,8 +569,8 @@ public class RobotManager extends LifecycleSubsystem {
         snaps.setAngle(vision.getDistanceAngleSpeaker().targetAngle());
         snaps.setEnabled(true);
         snaps.cancelCurrentCommand();
-        break;
-      case PRESET_3:
+      }
+      case PRESET_3 -> {
         wrist.setAngle(WristPositions.PRESET_3);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.PRESET_3);
@@ -850,8 +579,8 @@ public class RobotManager extends LifecycleSubsystem {
         snaps.setAngle(vision.getDistanceAngleSpeaker().targetAngle());
         snaps.setEnabled(true);
         snaps.cancelCurrentCommand();
-        break;
-      case PREPARE_PRESET_3:
+      }
+      case PREPARE_PRESET_3 -> {
         wrist.setAngle(WristPositions.PRESET_3);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.PRESET_3);
@@ -860,8 +589,8 @@ public class RobotManager extends LifecycleSubsystem {
         snaps.setAngle(vision.getDistanceAngleSpeaker().targetAngle());
         snaps.setEnabled(true);
         snaps.cancelCurrentCommand();
-        break;
-      case PREPARE_PRESET_AMP:
+      }
+      case PREPARE_PRESET_AMP -> {
         wrist.setAngle(WristPositions.PRESET_AMP);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.PRESET_RIGHT);
@@ -870,8 +599,8 @@ public class RobotManager extends LifecycleSubsystem {
         snaps.setAngle(SnapManager.getPresetAmpAngle());
         snaps.setEnabled(true);
         snaps.cancelCurrentCommand();
-        break;
-      case PREPARE_PRESET_SOURCE:
+      }
+      case PREPARE_PRESET_SOURCE -> {
         wrist.setAngle(WristPositions.PRESET_SOURCE);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.PRESET_SOURCE);
@@ -880,8 +609,8 @@ public class RobotManager extends LifecycleSubsystem {
         snaps.setAngle(vision.getDistanceAngleSpeaker().targetAngle());
         snaps.setEnabled(true);
         snaps.cancelCurrentCommand();
-        break;
-      case PREPARE_PRESET_MIDDLE:
+      }
+      case PREPARE_PRESET_MIDDLE -> {
         wrist.setAngle(WristPositions.PRESET_MIDDLE);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.PRESET_MIDDLE);
@@ -890,297 +619,365 @@ public class RobotManager extends LifecycleSubsystem {
         snaps.setAngle(vision.getDistanceAngleSpeaker().targetAngle());
         snaps.setEnabled(true);
         snaps.cancelCurrentCommand();
-        break;
-      case WAITING_MULTI_SPEAKER_SHOT:
-        wrist.setAngle(wristAngleForSpeaker);
+      }
+      case WAITING_MULTI_SPEAKER_SHOT -> {
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.SPEAKER_SHOT);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.intakeRequest();
-        break;
-      case WAITING_MULTI_FLOOR_SHOT:
-        wrist.setAngle(wristAngleForFloorSpot);
+      }
+      case WAITING_MULTI_FLOOR_SHOT -> {
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.FLOOR_SHOT);
         climber.setGoalMode(ClimberMode.STOWED);
         noteManager.intakeRequest();
-        break;
-      default:
-        // Should never happen
-        break;
+      }
     }
-
-    swerve.setShootingMode(state.shootingMode);
-
-    // Reset all flags
-    flags.clear();
-
+    swerve.setShootingMode(newState.shootingMode);
     SmartDashboard.putBoolean("HasNote", getState().hasNote);
-
     DogLog.log("NoteMapManager/DropNoteTimerValue", dropNoteSensorDebounce.get());
   }
 
+  @Override
+  public void robotPeriodic() {
+    // TODO: Remove when done tuning shots
+    DogLog.log("Debug/FeedDistance", fieldRelativeDistanceAngleToFeedSpot.distance());
+    switch (getState()) {
+      case WAITING_SPEAKER_SHOT, PREPARE_SPEAKER_SHOT, SPEAKER_SHOOT -> {
+        snaps.setAngle(fieldRelativeDistanceAngleToSpeaker.targetAngle());
+        wrist.setAngle(wristAngleForSpeaker);
+      }
+      case IDLE_NO_GP,
+          IDLE_WITH_GP,
+          LAZY_INTAKING,
+          FINISH_INTAKING,
+          INTAKING,
+          OUTTAKING,
+          WAITING_MULTI_SPEAKER_SHOT -> {
+        wrist.setAngle(wristAngleForSpeaker);
+      }
+      case WAITING_FLOOR_SHOT, PREPARE_FLOOR_SHOT, FLOOR_SHOOT, WAITING_MULTI_FLOOR_SHOT -> {
+        snaps.setAngle(fieldRelativeDistanceAngleToFeedSpot.targetAngle());
+        wrist.setAngle(wristAngleForFloorSpot);
+      }
+    }
+  }
+
   public void waitPodiumShotRequest() {
-    flags.check(RobotFlag.WAIT_PODIUM_SHOT);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.WAITING_PODIUM_SHOT);
+    }
   }
 
   public void podiumShotRequest() {
-    flags.check(RobotFlag.PODIUM_SHOT);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.PREPARE_PODIUM_SHOT);
+    }
   }
 
   public void waitSubwooferShotRequest() {
-    flags.check(RobotFlag.WAIT_SUBWOOFER_SHOT);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.WAITING_SUBWOOFER_SHOT);
+    }
   }
 
   public void subwooferShotRequest() {
-    flags.check(RobotFlag.SUBWOOFER_SHOT);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.PREPARE_SUBWOOFER_SHOT);
+    }
   }
 
   public void waitSpeakerShotRequest() {
-    flags.check(RobotFlag.WAIT_SPEAKER_SHOT);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.WAITING_SPEAKER_SHOT);
+    }
   }
 
   public void speakerShotRequest() {
-    flags.check(RobotFlag.SPEAKER_SHOT);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.PREPARE_SPEAKER_SHOT);
+    }
   }
 
   public void forceSpeakerShotRequest() {
-    flags.check(RobotFlag.FORCE_SPEAKER_SHOT);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.SPEAKER_SHOOT);
+    }
   }
 
   public void waitAmpShotRequest() {
-    flags.check(RobotFlag.WAIT_AMP_SHOT);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.WAITING_AMP_SHOT);
+    }
   }
 
   public void ampShotRequest() {
-    flags.check(RobotFlag.AMP_SHOT);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.PREPARE_AMP_SHOT);
+    }
+  }
+
+  public void waitShooterAmpRequest() {
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.WAITING_SHOOTER_AMP);
+    }
   }
 
   public void shooterAmpRequest() {
-    flags.check(RobotFlag.SHOOTER_AMP);
-  }
-
-  public void dropRequest() {
-    // Prevent command from instantly ending if robot doesn't think it has a note
-    noteManager.evilStateOverride(NoteState.IDLE_IN_QUEUER);
-    flags.check(RobotFlag.DROP);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.PREPARE_SHOOTER_AMP);
+    }
   }
 
   public void waitingDropRequest() {
     // Prevent command from instantly ending if robot doesn't think it has a note
     noteManager.evilStateOverride(NoteState.IDLE_IN_QUEUER);
-    flags.check(RobotFlag.WAITING_DROP);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.WAITING_DROP);
+    }
   }
 
-  public void waitShooterAmpRequest() {
-    flags.check(RobotFlag.WAIT_SHOOTER_AMP);
+  public void dropRequest() {
+    // Prevent command from instantly ending if robot doesn't think it has a note
+    noteManager.evilStateOverride(NoteState.IDLE_IN_QUEUER);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.PREPARE_DROPPING);
+    }
   }
 
   public void preparePresetRightRequest() {
-    flags.check(RobotFlag.PREPARE_PRESET_RIGHT);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.PREPARE_PRESET_AMP);
+    }
   }
 
   public void preparePresetLeftRequest() {
-    flags.check(RobotFlag.PREPARE_PRESET_LEFT);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.PREPARE_PRESET_SOURCE);
+    }
   }
 
   public void preparePresetMiddleRequest() {
-    flags.check(RobotFlag.PREPARE_PRESET_MIDDLE);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.PREPARE_PRESET_MIDDLE);
+    }
   }
 
   public void preparePreset3Request() {
-    flags.check(RobotFlag.PREPARE_PRESET_3);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.PREPARE_PRESET_3);
+    }
   }
 
   public void presetRightRequest() {
-    flags.check(RobotFlag.PRESET_RIGHT);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.PRESET_AMP);
+    }
   }
 
   public void presetLeftRequest() {
-    flags.check(RobotFlag.PRESET_LEFT);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.PRESET_LEFT);
+    }
   }
 
   public void presetMiddleRequest() {
-    flags.check(RobotFlag.PRESET_MIDDLE);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.PRESET_MIDDLE);
+    }
   }
 
   public void preset3Request() {
-    flags.check(RobotFlag.PRESET_3);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.PRESET_3);
+    }
   }
 
   public void waitFloorShotRequest() {
-    flags.check(RobotFlag.WAIT_FLOOR_SHOT);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.WAITING_FLOOR_SHOT);
+    }
   }
 
   public void floorShotRequest() {
-    flags.check(RobotFlag.FLOOR_SHOT);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.PREPARE_FLOOR_SHOT);
+    }
   }
 
   public void intakeRequest() {
-    flags.check(RobotFlag.INTAKE);
+    if (!getState().climbing) {
+      // Reset note manager state so that we don't instantly think we're done intaking
+      // Need to force set the state, rather than doing a state request, due to order of
+      // subsystems executing
+      noteManager.evilStateOverride(NoteState.IDLE_NO_GP);
+      setStateFromRequest(RobotState.INTAKING);
+    }
   }
 
   public void outtakeRequest() {
-    flags.check(RobotFlag.OUTTAKE);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.OUTTAKING);
+    }
   }
 
   public void outtakeShooterRequest() {
-    flags.check(RobotFlag.OUTTAKE_SHOOTER);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.PREPARE_PASS_LOW);
+    }
   }
 
   public void stowRequest() {
-    flags.check(RobotFlag.STOW);
+    if (getState().hasNote) {
+      switch (getState()) {
+        case WAITING_AMP_SHOT -> setStateFromRequest(RobotState.AMP_SHOT);
+        default -> setStateFromRequest(RobotState.IDLE_WITH_GP);
+      }
+    } else {
+      setStateFromRequest(RobotState.IDLE_NO_GP);
+    }
   }
 
   public void idleNoGPRequest() {
-    flags.check(RobotFlag.IDLE_NO_GP);
+    setStateFromRequest(RobotState.IDLE_NO_GP);
   }
 
   public void unjamRequest() {
-    flags.check(RobotFlag.UNJAM);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.UNJAM);
+    }
   }
 
   public void shooterStoppedUnjamRequest() {
-    flags.check(RobotFlag.SHOOTER_STOP_UNJAM);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.SHOOTER_STOPPED_UNJAM);
+    }
   }
 
   public void stopShootingRequest() {
-    if (state == RobotState.PREPARE_PODIUM_SHOT || state == RobotState.WAITING_PODIUM_SHOT) {
-      waitPodiumShotRequest();
-    } else if (state == RobotState.PREPARE_FLOOR_SHOT || state == RobotState.WAITING_FLOOR_SHOT) {
-      waitFloorShotRequest();
-    } else if (state == RobotState.PREPARE_SUBWOOFER_SHOT
-        || state == RobotState.WAITING_SUBWOOFER_SHOT) {
-      waitSubwooferShotRequest();
-    } else {
-      // Otherwise do generic stop shooting request
-      flags.check(RobotFlag.STOP_SHOOTING);
+
+    switch (getState()) {
+      case PREPARE_PODIUM_SHOT, WAITING_PODIUM_SHOT -> waitPodiumShotRequest();
+      case PREPARE_FLOOR_SHOT, WAITING_FLOOR_SHOT -> waitFloorShotRequest();
+      case PREPARE_SUBWOOFER_SHOT, WAITING_SUBWOOFER_SHOT -> waitSubwooferShotRequest();
+      default -> {
+        if (!getState().climbing
+            && getState() != RobotState.IDLE_NO_GP
+            && getState() != RobotState.WAITING_PODIUM_SHOT
+            && getState() != RobotState.WAITING_SUBWOOFER_SHOT
+            && !getState().shootingMode) {
+          if (getState().hasNote) {
+            setStateFromRequest(RobotState.IDLE_WITH_GP);
+          } else {
+            setStateFromRequest(RobotState.IDLE_NO_GP);
+          }
+        }
+      }
     }
   }
 
   public void cancelWaitingFloorShotRequest() {
-    if (state == RobotState.FLOOR_SHOOT) {
-      // You are actively making the shot, ignore
-    } else {
-      // Do a regular stow request otherwise
-      stowRequest();
+
+    switch (getState()) {
+      case FLOOR_SHOOT -> {}
+      default -> stowRequest();
     }
   }
 
   public void preloadNoteRequest() {
-    flags.check(RobotFlag.PRELOAD_NOTE);
+    if (!getState().climbing) {
+      setStateFromRequest(RobotState.IDLE_WITH_GP);
+    }
   }
 
   public void confirmShotRequest() {
-    if (state == RobotState.WAITING_SUBWOOFER_SHOT) {
-      subwooferShotRequest();
-    } else if (state == RobotState.WAITING_PODIUM_SHOT) {
-      podiumShotRequest();
-    } else if (state == RobotState.WAITING_AMP_SHOT) {
-      ampShotRequest();
-    } else if (state == RobotState.WAITING_FLOOR_SHOT) {
-      floorShotRequest();
-    } else if (state == RobotState.WAIT_SHOOTER_AMP) {
-      shooterAmpRequest();
-    } else {
-      speakerShotRequest();
+    switch (getState()) {
+      case WAITING_SUBWOOFER_SHOT -> subwooferShotRequest();
+      case WAITING_PODIUM_SHOT -> podiumShotRequest();
+      case WAITING_AMP_SHOT -> ampShotRequest();
+      case WAITING_FLOOR_SHOT -> floorShotRequest();
+      case WAITING_SHOOTER_AMP -> shooterAmpRequest();
+      default -> speakerShotRequest();
     }
   }
 
   public void stopIntakingRequest() {
-    if (state == RobotState.WAITING_FLOOR_SHOT) {
-      // We are switching back & forth between intaking on driver controller & floor shot on
-      // operator controller
-      // So, ignore this request, stay in the floor shot state
-    } else {
-      flags.check(RobotFlag.STOP_INTAKING);
+    switch (getState()) {
+      case WAITING_FLOOR_SHOT -> {}
+      default -> {
+        if (!getState().climbing) {
+
+          switch (getState()) {
+            case FINISH_INTAKING, IDLE_WITH_GP -> {}
+            default -> {
+              setStateFromRequest(RobotState.LAZY_INTAKING);
+            }
+          }
+        }
+      }
     }
   }
 
   public void climb1LineupOutterRequest() {
-    flags.check(RobotFlag.CLIMB_1_LINEUP_OUTER);
+    setStateFromRequest(RobotState.CLIMB_1_LINEUP_OUTER);
   }
 
   public void climb2LineupInnerRequest() {
-    flags.check(RobotFlag.CLIMB_2_LINEUP_INNER);
+    setStateFromRequest(RobotState.CLIMB_2_LINEUP_INNER);
   }
 
   public void climb3LineupFinalRequest() {
-    flags.check(RobotFlag.CLIMB_3_LINEUP_FINAL);
+    setStateFromRequest(RobotState.CLIMB_3_LINEUP_FINAL);
   }
 
   public void climb4HangingRequest() {
-    flags.check(RobotFlag.CLIMB_4_HANGING);
+    setStateFromRequest(RobotState.CLIMB_4_HANGING);
   }
 
   public void climb5HangingTrapScoreRequest() {
-    flags.check(RobotFlag.CLIMB_5_HANGING_TRAP_SCORE);
+    setStateFromRequest(RobotState.CLIMB_5_HANGING_TRAP_SCORE);
   }
 
   public void climb6HangingElevatorFinishRequest() {
-    flags.check(RobotFlag.CLIMB_6_HANGING_ELEVATOR_FINISH);
+    setStateFromRequest(RobotState.CLIMB_6_HANGING_FINISHED);
   }
 
   public void getClimberForwardRequest() {
-    switch (state) {
-      case CLIMB_1_LINEUP_OUTER:
-        climb2LineupInnerRequest();
-        break;
-      case CLIMB_2_LINEUP_INNER:
-        climb3LineupFinalRequest();
-        break;
-      case CLIMB_3_LINEUP_FINAL:
-        climb4HangingRequest();
-        break;
-      case PREPARE_CLIMB_4_HANGING:
-      case CLIMB_4_HANGING:
-        climb5HangingTrapScoreRequest();
-        break;
-      case CLIMB_5_HANGING_TRAP_SCORE:
-        climb6HangingElevatorFinishRequest();
-        break;
-      case CLIMB_6_HANGING_FINISHED:
-        // Do nothing, already at end of climb sequence
-        break;
-      default:
-        // Start climb sequence
-        climb1LineupOutterRequest();
-        break;
+    switch (getState()) {
+      case CLIMB_1_LINEUP_OUTER -> climb2LineupInnerRequest();
+
+      case CLIMB_2_LINEUP_INNER -> climb3LineupFinalRequest();
+
+      case CLIMB_3_LINEUP_FINAL -> climb4HangingRequest();
+
+      case PREPARE_CLIMB_4_HANGING, CLIMB_4_HANGING -> climb5HangingTrapScoreRequest();
+
+      case CLIMB_5_HANGING_TRAP_SCORE -> climb6HangingElevatorFinishRequest();
+
+      case CLIMB_6_HANGING_FINISHED -> {}
+      default ->
+          // Start climb sequence
+          climb1LineupOutterRequest();
     }
   }
 
   public void getClimberBackwardRequest() {
-    switch (state) {
-      case CLIMB_1_LINEUP_OUTER:
-        stowRequest();
-        break;
-      case CLIMB_2_LINEUP_INNER:
-        climb1LineupOutterRequest();
-        break;
-      case CLIMB_3_LINEUP_FINAL:
-        climb2LineupInnerRequest();
-        break;
-      case CLIMB_4_HANGING:
-        climb3LineupFinalRequest();
-        break;
-      case CLIMB_5_HANGING_TRAP_SCORE:
-        climb4HangingRequest();
-        break;
-      case CLIMB_6_HANGING_FINISHED:
-        climb5HangingTrapScoreRequest();
-        break;
-      default:
-        // Do nothing if climb sequence isn't started
-        break;
+    switch (getState()) {
+      case CLIMB_1_LINEUP_OUTER -> stowRequest();
+
+      case CLIMB_2_LINEUP_INNER -> climb1LineupOutterRequest();
+
+      case CLIMB_3_LINEUP_FINAL -> climb2LineupInnerRequest();
+
+      case CLIMB_4_HANGING -> climb3LineupFinalRequest();
+      case CLIMB_5_HANGING_TRAP_SCORE -> climb4HangingRequest();
+      case CLIMB_6_HANGING_FINISHED -> climb5HangingTrapScoreRequest();
+      default -> {}
     }
   }
 
   public Command waitForStateCommand(RobotState goalState) {
-    return Commands.waitUntil(() -> this.state == goalState);
-  }
-
-  public RobotState getState() {
-    return state;
+    return Commands.waitUntil(() -> getState() == goalState);
   }
 
   @Override
