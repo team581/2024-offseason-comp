@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.led.CANdle;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
@@ -27,6 +28,7 @@ import frc.robot.fms.FmsSubsystem;
 import frc.robot.generated.BuildConstants;
 import frc.robot.imu.ImuSubsystem;
 import frc.robot.intake.IntakeSubsystem;
+import frc.robot.lights.LightsSubsystem;
 import frc.robot.localization.LocalizationSubsystem;
 import frc.robot.note_manager.NoteManager;
 import frc.robot.note_map_manager.NoteMapManager;
@@ -50,41 +52,41 @@ public class Robot extends TimedRobot {
   private final CommandXboxController operatorController = new CommandXboxController(1);
 
   private final RumbleControllerSubsystem driverRumble =
-      new RumbleControllerSubsystem(driverController, false);
+  new RumbleControllerSubsystem(driverController, false);
   private final RumbleControllerSubsystem operatorRumble =
-      new RumbleControllerSubsystem(operatorController, true);
+  new RumbleControllerSubsystem(operatorController, true);
 
   private final WristSubsystem wrist =
-      new WristSubsystem(
-          new TalonFX(RobotConfig.get().wrist().motorID(), RobotConfig.get().canivoreName()));
-  private final ShooterSubsystem shooter =
-      new ShooterSubsystem(
-          new TalonFX(RobotConfig.get().shooter().leftMotorID(), RobotConfig.get().canivoreName()),
-          new TalonFX(
-              RobotConfig.get().shooter().rightMotorID(), RobotConfig.get().canivoreName()));
+  new WristSubsystem(
+    new TalonFX(RobotConfig.get().wrist().motorID(), RobotConfig.get().canivoreName()));
+    private final ShooterSubsystem shooter =
+    new ShooterSubsystem(
+      new TalonFX(RobotConfig.get().shooter().leftMotorID(), RobotConfig.get().canivoreName()),
+      new TalonFX(
+        RobotConfig.get().shooter().rightMotorID(), RobotConfig.get().canivoreName()));
 
-  private final ClimberSubsystem climber =
-      new ClimberSubsystem(
+        private final ClimberSubsystem climber =
+        new ClimberSubsystem(
           new TalonFX(RobotConfig.get().climber().leftMotorID(), RobotConfig.get().canivoreName()),
           new TalonFX(
-              RobotConfig.get().climber().rightMotorID(), RobotConfig.get().canivoreName()));
-  private final RedirectSubsystem redirect =
-      new RedirectSubsystem(new TalonFX(RobotConfig.get().redirect().motorID(), "rio"));
-  private final IntakeSubsystem intake =
-      new IntakeSubsystem(
-          new TalonFX(RobotConfig.get().intake().mainMotorID(), RobotConfig.get().canivoreName()),
-          new CANSparkMax(RobotConfig.get().intake().centeringMotorID(), MotorType.kBrushed),
-          new DigitalInput(RobotConfig.get().intake().sensorID()));
-  private final SwerveSubsystem swerve = new SwerveSubsystem(driverController);
-  private final ImuSubsystem imu = new ImuSubsystem(swerve);
-  private final FmsSubsystem fms = new FmsSubsystem();
-  private final ElevatorSubsystem elevator =
-      new ElevatorSubsystem(
-          new TalonFX(RobotConfig.get().elevator().motorID(), RobotConfig.get().canivoreName()));
-  private final QueuerSubsystem queuer =
-      new QueuerSubsystem(
-          new TalonFX(RobotConfig.get().queuer().motorID(), RobotConfig.get().canivoreName()),
-          new DigitalInput(RobotConfig.get().queuer().sensorID()));
+            RobotConfig.get().climber().rightMotorID(), RobotConfig.get().canivoreName()));
+            private final RedirectSubsystem redirect =
+            new RedirectSubsystem(new TalonFX(RobotConfig.get().redirect().motorID(), "rio"));
+            private final IntakeSubsystem intake =
+            new IntakeSubsystem(
+              new TalonFX(RobotConfig.get().intake().mainMotorID(), RobotConfig.get().canivoreName()),
+              new CANSparkMax(RobotConfig.get().intake().centeringMotorID(), MotorType.kBrushed),
+              new DigitalInput(RobotConfig.get().intake().sensorID()));
+              private final SwerveSubsystem swerve = new SwerveSubsystem(driverController);
+              private final ImuSubsystem imu = new ImuSubsystem(swerve);
+              private final FmsSubsystem fms = new FmsSubsystem();
+              private final ElevatorSubsystem elevator =
+              new ElevatorSubsystem(
+                new TalonFX(RobotConfig.get().elevator().motorID(), RobotConfig.get().canivoreName()));
+                private final QueuerSubsystem queuer =
+                new QueuerSubsystem(
+                  new TalonFX(RobotConfig.get().queuer().motorID(), RobotConfig.get().canivoreName()),
+           new DigitalInput(RobotConfig.get().queuer().sensorID()));
   private final ConveyorSubsystem conveyor =
       new ConveyorSubsystem(
           new TalonFX(RobotConfig.get().conveyor().motorID(), "rio"),
@@ -103,6 +105,9 @@ public class Robot extends TimedRobot {
       new NoteMapManager(actions, noteTrackingManager, robotManager, localization, snaps);
   private final Autos autos =
       new Autos(swerve, localization, actions, robotManager, noteMapManager, noteTrackingManager);
+      private final LightsSubsystem lightsSubsystem =
+      new LightsSubsystem(
+          new CANdle(RobotConfig.get().lights().deviceID(), "rio"), robotManager, vision, intake);
 
   public Robot() {
     System.out.println("roboRIO serial number: " + RobotConfig.SERIAL_NUMBER);
