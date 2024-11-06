@@ -7,6 +7,7 @@ package frc.robot.note_map_manager;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -48,7 +49,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   private static final double ROBOT_AT_DROP_POSE_THRESHOLD = 0.3;
   private static final double ROBOT_AT_SCORING_POSE_THRESHOLD = 0.3;
 
-  private final Debouncer robotShouldHaveIntakedNoteDebouncer = new Debouncer(0.5);
+  private final Debouncer robotShouldHaveIntakedNoteDebouncer = new Debouncer(0.5, DebounceType.kBoth);
 
   public NoteMapManager(
       RobotCommands actions,
