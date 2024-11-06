@@ -24,6 +24,7 @@ import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
 import frc.robot.vision.LimelightHelpers;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,7 +44,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
       NetworkTableInstance.getDefault().getTable(LIMELIGHT_NAME).getEntry("tcornxy");
   private final InterpolatingDoubleTreeMap tyToDistance = new InterpolatingDoubleTreeMap();
   private ArrayList<NoteMapElement> noteMap = new ArrayList<>();
-  private int rememberedHashCode = 0;
+  private double[] previousCornersArray = new double[0];
   private boolean staleNoteCorners = false;
 
   private static final double FOV_VERTICAL = 48.823;
@@ -156,9 +157,14 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private List<Pose2d> getRawNotePoses() {
     List<Pose2d> notePoses = new ArrayList<>();
     double[] corners = LL_TCORNXY.getDoubleArray(new double[0]);
-    if (rememberedHashCode == corners.hashCode()) {
+
+    // Check if the result array has changed
+    staleNoteCorners = Arrays.equals(previousCornersArray, corners);
+    previousCornersArray = corners;
+
+    if (staleNoteCorners) {
       DogLog.timestamp("NoteTrackingManager/SkipStaleNoteCorners");
-      staleNoteCorners = true;
+
       return List.of();
     }
 
@@ -181,8 +187,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
         }
       }
     }
-    rememberedHashCode = corners.hashCode();
-    staleNoteCorners = false;
+
     return notePoses;
   }
 
@@ -280,7 +285,9 @@ public class NoteTrackingManager extends LifecycleSubsystem {
           return (element.expiresAt() < Timer.getFPGATimestamp());
         });
 
-    if (!staleNoteCorners) {
+    if (staleNoteCorners) {
+      return;
+    }
       if (RobotConfig.get().perfToggles().noteMapBoundingBox() && safeToTrack()) {
 
         var filteredNotesInBox =
@@ -328,6 +335,5 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
         noteMap.add(new NoteMapElement(newNoteExpiry, visionNote.getTranslation()));
       }
-    }
   }
 }
