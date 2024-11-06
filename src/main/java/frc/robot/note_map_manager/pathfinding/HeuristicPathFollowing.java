@@ -136,11 +136,6 @@ public class HeuristicPathFollowing {
   public void temporaryLogFunction() {
     // Temporarily log all the psoes
 
-    DogLog.log(
-        "NoteMapManager/Pathfinding/RobotInsideCollistion",
-        doesCollisionExist(
-            localization.getPose().getTranslation(), localization.getPose().getTranslation()));
-
     for (var collisionPoint : getCollisionPoints()) {
       DogLog.log(
           "NoteMapManager/Pathfinding/CollisionPoints/" + collisionPoint.label(),

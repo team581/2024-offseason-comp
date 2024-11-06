@@ -91,9 +91,6 @@ public class RobotManager extends LifecycleSubsystem {
     shooter.setSpeakerDistance(speakerDistance);
     shooter.setFloorSpotDistance(floorSpotDistance);
 
-    // TODO: Remove when done tuning shots
-    DogLog.log("Debug/FeedDistance", floorSpotDistance);
-
     // State transitions from requests
     for (RobotFlag flag : flags.getChecked()) {
       switch (flag) {
@@ -916,8 +913,6 @@ public class RobotManager extends LifecycleSubsystem {
     flags.clear();
 
     SmartDashboard.putBoolean("HasNote", getState().hasNote);
-
-    DogLog.log("NoteMapManager/DropNoteTimerValue", dropNoteSensorDebounce.get());
   }
 
   public void waitPodiumShotRequest() {

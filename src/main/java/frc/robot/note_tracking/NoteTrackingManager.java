@@ -7,7 +7,6 @@ package frc.robot.note_tracking;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.util.Units;
@@ -73,9 +72,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
 
   private boolean noteInView(Translation2d fieldRelativeNote) {
     var robotRelativeNote = getRobotRelativeNote(fieldRelativeNote);
-    DogLog.log(
-        "NoteTrackingManager/Debug/BoxContainsNote",
-        ROBOT_RELATIVE_FOV_BOUNDS.contains(robotRelativeNote));
     return ROBOT_RELATIVE_FOV_BOUNDS.contains(robotRelativeNote);
   }
 
@@ -245,7 +241,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     }
 
     updateMap();
-    DogLog.log("NoteTrackingManager/StaleNoteCorners", staleNoteCorners);
     try {
       DogLog.log(
           "NoteTrackingManager/NoteMap",
@@ -256,17 +251,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
       DogLog.logFault("NoteMapLoggingError");
       System.err.println(error);
     }
-
-    var fieldRelativeBounds = getFieldRelativeBounds();
-    DogLog.log("NoteTrackingManager/CameraBounds", fieldRelativeBounds.toArray(Pose2d[]::new));
-  }
-
-  private List<Pose2d> getFieldRelativeBounds() {
-    var robotRelativeToFieldRelativeTransform =
-        new Transform2d(new Pose2d(), localization.getPose());
-    return ROBOT_RELATIVE_FOV_BOUNDS.getPoints().stream()
-        .map(point -> point.plus(robotRelativeToFieldRelativeTransform))
-        .toList();
   }
 
   public boolean mapContainsNote() {
@@ -288,52 +272,52 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     if (staleNoteCorners) {
       return;
     }
-      if (RobotConfig.get().perfToggles().noteMapBoundingBox() && safeToTrack()) {
+    if (RobotConfig.get().perfToggles().noteMapBoundingBox() && safeToTrack()) {
 
-        var filteredNotesInBox =
-            noteMap.stream()
-                .filter(
-                    element -> {
-                      return (noteInView(element.noteTranslation()));
-                    })
-                .toList();
+      var filteredNotesInBox =
+          noteMap.stream()
+              .filter(
+                  element -> {
+                    return (noteInView(element.noteTranslation()));
+                  })
+              .toList();
 
-        for (NoteMapElement noteMapElement : filteredNotesInBox) {
-          noteMap.remove(noteMapElement);
-          if (noteMapElement.health() > 1) {
-            noteMap.add(
-                new NoteMapElement(
-                    noteMapElement.expiresAt(),
-                    noteMapElement.noteTranslation(),
-                    noteMapElement.health() - 1));
-          }
+      for (NoteMapElement noteMapElement : filteredNotesInBox) {
+        noteMap.remove(noteMapElement);
+        if (noteMapElement.health() > 1) {
+          noteMap.add(
+              new NoteMapElement(
+                  noteMapElement.expiresAt(),
+                  noteMapElement.noteTranslation(),
+                  noteMapElement.health() - 1));
         }
       }
+    }
 
-      double newNoteExpiry = Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME_SECONDS;
+    double newNoteExpiry = Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME_SECONDS;
 
-      for (var visionNote : visionNotes) {
-        Optional<NoteMapElement> match =
-            noteMap.stream()
-                .filter(
-                    rememberedNote -> {
-                      return rememberedNote.expiresAt() != newNoteExpiry
-                          && (rememberedNote
-                                  .noteTranslation()
-                                  .getDistance(visionNote.getTranslation())
-                              < 1.0);
-                    })
-                .min(
-                    (a, b) ->
-                        Double.compare(
-                            a.noteTranslation().getDistance(visionNote.getTranslation()),
-                            b.noteTranslation().getDistance(visionNote.getTranslation())));
+    for (var visionNote : visionNotes) {
+      Optional<NoteMapElement> match =
+          noteMap.stream()
+              .filter(
+                  rememberedNote -> {
+                    return rememberedNote.expiresAt() != newNoteExpiry
+                        && (rememberedNote
+                                .noteTranslation()
+                                .getDistance(visionNote.getTranslation())
+                            < 1.0);
+                  })
+              .min(
+                  (a, b) ->
+                      Double.compare(
+                          a.noteTranslation().getDistance(visionNote.getTranslation()),
+                          b.noteTranslation().getDistance(visionNote.getTranslation())));
 
-        if (match.isPresent()) {
-          noteMap.remove(match.get());
-        }
-
-        noteMap.add(new NoteMapElement(newNoteExpiry, visionNote.getTranslation()));
+      if (match.isPresent()) {
+        noteMap.remove(match.get());
       }
+
+      noteMap.add(new NoteMapElement(newNoteExpiry, visionNote.getTranslation()));
+    }
   }
 }

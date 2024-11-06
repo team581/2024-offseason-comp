@@ -4,7 +4,6 @@
 
 package frc.robot.note_map_manager;
 
-import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Translation2d;
 import java.util.List;
 import java.util.Optional;
@@ -24,13 +23,10 @@ public record AutoNoteStep(AutoNoteAction action, List<Supplier<Optional<Transla
   }
 
   private static Supplier<Optional<Translation2d>> noteIdToPose(int id) {
-    DogLog.log("Debug/NoteIdToPose", id);
+
     if (id >= 10) {
       // Dropped note ID
       Supplier<Optional<Translation2d>> note = new AutoNoteDropped(id - 10)::getPose;
-      if (note.get().isPresent()) {
-        DogLog.log("Debug/NoteIDToPoseDropped", note.get().get());
-      }
       return note;
     }
 

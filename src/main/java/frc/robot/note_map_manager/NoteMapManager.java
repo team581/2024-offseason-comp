@@ -116,18 +116,12 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         .dropCommand()
         .finallyDo(
             (interrupted) -> {
-              DogLog.timestamp("NoteMapManager/DropNote/AddToMap");
               var translationFieldRelative =
                   new Translation2d(DROPPED_NOTE_DISTANCE_METERS, 0)
                       .rotateBy(localization.getPose().getRotation())
                       .plus(localization.getPose().getTranslation());
-
-              // confirm the translation is correct
-              DogLog.log("NoteMapManager/DropNote/NotePose", translationFieldRelative);
-
               noteTrackingManager.addNoteToMap(15, translationFieldRelative);
               AutoNoteDropped.addDroppedNote(translationFieldRelative);
-
               DogLog.logFault("DropCommandInterrupted");
             });
   }
@@ -183,12 +177,6 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
     }
 
     super.robotPeriodic();
-
-    if (currentStep.isPresent()) {
-      DogLog.log("NoteMapManager/Steps/CurrentAction", currentStep.get().action());
-    } else {
-      DogLog.log("NoteMapManager/Steps/CurrentAction", "NO_CURRENT_STEP");
-    }
     DogLog.log("NoteMapManager/Steps/StepsLeft", steps.size());
     pathfinder.temporaryLogFunction();
 
@@ -334,7 +322,6 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
 
         if (maybeNoteTranslation.isPresent()) {
-          DogLog.log("NoteMapManager/Status", "IntakingActionTargeted");
           noteMapCommand =
               robotManager
                   .swerve
@@ -414,7 +401,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
 
         // This should only happen when every step is completed
-        DogLog.log("NoteMapManager/Status", "IdleToIdle");
+        DogLog.log("NoteMapManager/Status", "AllStepsCompleted");
         yield currentState;
       }
       case INITIAL_AIM_TO_INTAKE -> {
@@ -430,19 +417,6 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           yield NoteMapState.PATHFIND_TO_SCORE;
         }
 
-        DogLog.log(
-            "NoteMapManager/InitialAim/GoalAngle", angleToIntake(maybeNoteTranslation.get()));
-        DogLog.log(
-            "NoteMapManager/InitialAim/ActualAngle",
-            localization.getPose().getRotation().getDegrees());
-        DogLog.log("NoteMapManager/InitialAim/Tolerance", MAX_ANGLE_TO_TARGET_BEFORE_DRIVING);
-        DogLog.log(
-            "NoteMapManager/InitialAim/AtGoal",
-            MathUtil.isNear(
-                angleToIntake(maybeNoteTranslation.get()),
-                MathUtil.inputModulus(localization.getPose().getRotation().getDegrees(), 0, 360),
-                MAX_ANGLE_TO_TARGET_BEFORE_DRIVING));
-
         if (timeout(1)
             || MathUtil.isNear(
                 angleToIntake(maybeNoteTranslation.get()),
@@ -456,7 +430,6 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       case INTAKING -> {
         // If current step is empty
         if (currentStep.isEmpty()) {
-          DogLog.log("NoteMapManager/Status", "IntakingNoCurrentStep");
           yield NoteMapState.WAITING_FOR_NOTES;
         }
         // If we already have note go and score/drop
@@ -489,7 +462,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
 
         if (timeout(5)) {
-          DogLog.log("NoteMapManager/Status", "IntakingTimeout");
+          DogLog.log("NoteMapManager/Status", "IntakingGeneralTimeout");
           // We should have the note, but don't so we remove it from the map
           noteTrackingManager.removeNote(
               maybeNoteTranslation.get(), ROBOT_AT_INTAKE_POSE_THESHOLD_METERS);
@@ -519,7 +492,6 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         if (noteMapCommand.isFinished()
             || localization.atTranslation(
                 droppingLocation.getTranslation(), ROBOT_AT_DROP_POSE_THRESHOLD)) {
-          DogLog.log("NoteMapManager/Status", "PathfindToDropDone");
           yield NoteMapState.DROP;
         }
 
@@ -540,7 +512,6 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         if (noteMapCommand.isFinished()
             || localization.atTranslation(
                 scoringLocation.getTranslation(), ROBOT_AT_SCORING_POSE_THRESHOLD)) {
-          DogLog.log("NoteMapManager/Status", "PathfindToScoreDone");
           yield NoteMapState.SCORE;
         }
 
