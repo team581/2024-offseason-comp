@@ -43,6 +43,8 @@ public class NoteTrackingManager extends LifecycleSubsystem {
       NetworkTableInstance.getDefault().getTable(LIMELIGHT_NAME).getEntry("tcornxy");
   private final InterpolatingDoubleTreeMap tyToDistance = new InterpolatingDoubleTreeMap();
   private ArrayList<NoteMapElement> noteMap = new ArrayList<>();
+  private int rememberedHashCode = 0;
+  private boolean staleNoteCorners = false;
 
   private static final double FOV_VERTICAL = 48.823;
   private static final double FOV_HORIZONTAL = 62.074;
@@ -71,7 +73,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private boolean noteInView(Translation2d fieldRelativeNote) {
     var robotRelativeNote = getRobotRelativeNote(fieldRelativeNote);
     DogLog.log(
-        "NoteTracking/Debug/BoxContainsNote",
+        "NoteTrackingManager/Debug/BoxContainsNote",
         ROBOT_RELATIVE_FOV_BOUNDS.contains(robotRelativeNote));
     return ROBOT_RELATIVE_FOV_BOUNDS.contains(robotRelativeNote);
   }
@@ -154,10 +156,14 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private List<Pose2d> getRawNotePoses() {
     List<Pose2d> notePoses = new ArrayList<>();
     double[] corners = LL_TCORNXY.getDoubleArray(new double[0]);
+    if (rememberedHashCode == corners.hashCode()) {
+      DogLog.timestamp("NoteTrackingManager/SkipStaleNoteCorners");
+      staleNoteCorners = true;
+      return List.of();
+    }
+
     // Loop through 4 points
-
     // Delete 3 point note data
-
     if (corners.length >= 8 && corners[0] != 0.0 && corners.length % 8 == 0) {
 
       for (int i = 0; i < corners.length; i = i + 8) {
@@ -175,6 +181,8 @@ public class NoteTrackingManager extends LifecycleSubsystem {
         }
       }
     }
+    rememberedHashCode = corners.hashCode();
+    staleNoteCorners = false;
     return notePoses;
   }
 
@@ -232,10 +240,10 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     }
 
     updateMap();
-
+    DogLog.log("NoteTrackingManager/StaleNoteCorners", staleNoteCorners);
     try {
       DogLog.log(
-          "NoteTracking/NoteMap",
+          "NoteTrackingManager/NoteMap",
           noteMap.stream()
               .map(element -> new Pose2d(element.noteTranslation(), new Rotation2d()))
               .toArray(Pose2d[]::new));
@@ -245,7 +253,7 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     }
 
     var fieldRelativeBounds = getFieldRelativeBounds();
-    DogLog.log("NoteTracking/CameraBounds", fieldRelativeBounds.toArray(Pose2d[]::new));
+    DogLog.log("NoteTrackingManager/CameraBounds", fieldRelativeBounds.toArray(Pose2d[]::new));
   }
 
   private List<Pose2d> getFieldRelativeBounds() {
@@ -272,52 +280,54 @@ public class NoteTrackingManager extends LifecycleSubsystem {
           return (element.expiresAt() < Timer.getFPGATimestamp());
         });
 
-    if (RobotConfig.get().perfToggles().noteMapBoundingBox() && safeToTrack()) {
+    if (!staleNoteCorners) {
+      if (RobotConfig.get().perfToggles().noteMapBoundingBox() && safeToTrack()) {
 
-      var filteredNotesInBox =
-          noteMap.stream()
-              .filter(
-                  element -> {
-                    return (noteInView(element.noteTranslation()));
-                  })
-              .toList();
+        var filteredNotesInBox =
+            noteMap.stream()
+                .filter(
+                    element -> {
+                      return (noteInView(element.noteTranslation()));
+                    })
+                .toList();
 
-      for (NoteMapElement noteMapElement : filteredNotesInBox) {
-        noteMap.remove(noteMapElement);
-        if (noteMapElement.health() > 1) {
-          noteMap.add(
-              new NoteMapElement(
-                  noteMapElement.expiresAt(),
-                  noteMapElement.noteTranslation(),
-                  noteMapElement.health() - 1));
+        for (NoteMapElement noteMapElement : filteredNotesInBox) {
+          noteMap.remove(noteMapElement);
+          if (noteMapElement.health() > 1) {
+            noteMap.add(
+                new NoteMapElement(
+                    noteMapElement.expiresAt(),
+                    noteMapElement.noteTranslation(),
+                    noteMapElement.health() - 1));
+          }
         }
       }
-    }
 
-    double newNoteExpiry = Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME_SECONDS;
+      double newNoteExpiry = Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME_SECONDS;
 
-    for (var visionNote : visionNotes) {
-      Optional<NoteMapElement> match =
-          noteMap.stream()
-              .filter(
-                  rememberedNote -> {
-                    return rememberedNote.expiresAt() != newNoteExpiry
-                        && (rememberedNote
-                                .noteTranslation()
-                                .getDistance(visionNote.getTranslation())
-                            < 1.0);
-                  })
-              .min(
-                  (a, b) ->
-                      Double.compare(
-                          a.noteTranslation().getDistance(visionNote.getTranslation()),
-                          b.noteTranslation().getDistance(visionNote.getTranslation())));
+      for (var visionNote : visionNotes) {
+        Optional<NoteMapElement> match =
+            noteMap.stream()
+                .filter(
+                    rememberedNote -> {
+                      return rememberedNote.expiresAt() != newNoteExpiry
+                          && (rememberedNote
+                                  .noteTranslation()
+                                  .getDistance(visionNote.getTranslation())
+                              < 1.0);
+                    })
+                .min(
+                    (a, b) ->
+                        Double.compare(
+                            a.noteTranslation().getDistance(visionNote.getTranslation()),
+                            b.noteTranslation().getDistance(visionNote.getTranslation())));
 
-      if (match.isPresent()) {
-        noteMap.remove(match.get());
+        if (match.isPresent()) {
+          noteMap.remove(match.get());
+        }
+
+        noteMap.add(new NoteMapElement(newNoteExpiry, visionNote.getTranslation()));
       }
-
-      noteMap.add(new NoteMapElement(newNoteExpiry, visionNote.getTranslation()));
     }
   }
 }
