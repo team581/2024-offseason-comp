@@ -117,7 +117,7 @@ public class Autos extends LifecycleSubsystem {
     registerCommand("redSourceSideRaceNM", autoCommands.redSourceSideRaceNM());
     registerCommand("blueSourceSideRaceNM", autoCommands.blueSourceSideRaceNM());
 
-    registerCommand("dropNote", noteMapManager.dropNote());
+    registerCommand("dropNote", noteMapManager.dropNoteMovingBackward());
     registerCommand("waitingDropRequest", autoCommands.waitingDropRequestCommand());
     registerCommand("resetNoteMap", autoCommands.noteMapResetCommand());
 

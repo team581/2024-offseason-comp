@@ -48,7 +48,7 @@ public class RobotManager extends LifecycleSubsystem {
 
   private final FlagManager<RobotFlag> flags = new FlagManager<>("RobotManager", RobotFlag.class);
   private final Timer dropNoteSensorDebounce = new Timer();
-  public final double DROP_DEBOUNCE_TIME_SECONDS = 0.4;
+  public final double DROP_DEBOUNCE_TIME_SECONDS = 0.5;
 
   public RobotManager(
       WristSubsystem wrist,
@@ -540,7 +540,7 @@ public class RobotManager extends LifecycleSubsystem {
     // State actions
     switch (state) {
       case IDLE_NO_GP:
-        wrist.setAngle(wristAngleForSpeaker);
+          wrist.setAngle(wristAngleForSpeaker);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.FULLY_STOPPED);
         climber.setGoalMode(ClimberMode.STOWED);

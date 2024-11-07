@@ -290,6 +290,8 @@ public class NoteTrackingManager extends LifecycleSubsystem {
                   noteMapElement.expiresAt(),
                   noteMapElement.noteTranslation(),
                   noteMapElement.health() - 1));
+        } else {
+          DogLog.timestamp("NoteTrackingManager/BoundingBoxDeletedNote");
         }
       }
     }

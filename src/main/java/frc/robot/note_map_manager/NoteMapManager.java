@@ -44,7 +44,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   private final HeuristicPathFollowing pathfinder;
 
   private static final double TARGET_NOTE_THRESHOLD_METERS = 1.5;
-  private static final double DROPPED_NOTE_DISTANCE_METERS = 0.8;
+  private static final double DROPPED_NOTE_DISTANCE_METERS = 0.88;
+  private static final double DROPPED_NOTE_MOVING_DISTANCE_METERS = 0.55;
   private static final double ROBOT_AT_INTAKE_POSE_THESHOLD_METERS = 0.3;
   private static final double ROBOT_AT_DROP_POSE_THRESHOLD = 0.3;
   private static final double ROBOT_AT_SCORING_POSE_THRESHOLD = 0.3;
@@ -112,13 +113,13 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
     return closest;
   }
 
-  public Command dropNote() {
+  public Command dropNoteMovingBackward() {
     return actions
         .dropCommand()
         .finallyDo(
             (interrupted) -> {
               var translationFieldRelative =
-                  new Translation2d(DROPPED_NOTE_DISTANCE_METERS, 0)
+                  new Translation2d(DROPPED_NOTE_MOVING_DISTANCE_METERS, 0)
                       .rotateBy(localization.getPose().getRotation())
                       .plus(localization.getPose().getTranslation());
               noteTrackingManager.addNoteToMap(15, translationFieldRelative);
@@ -285,10 +286,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           doNextStep();
         }
 
-        // If there is no current step, stop the swerve
-        if (currentStep.isEmpty()) {
-          robotManager.swerve.setFieldRelativeSpeeds(new ChassisSpeeds(), true);
-        }
+        // Stop the swerve since we don't know what to do
+          robotManager.swerve.setFieldRelativeSpeeds(new ChassisSpeeds(), false);
       }
       case DROP -> {
         noteMapCommand.cancel();
@@ -523,7 +522,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         yield currentState;
       }
       case DROP -> {
-        if (hasNote()) {
+        // Use the state machine, since that debounces the sensor to avoid flinging the note after drop
+        if (robotManager.getState().hasNote) {
           // Still have note
           yield currentState;
         }
@@ -540,6 +540,11 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         noteTrackingManager.addNoteToMap(15, translationFieldRelative);
         AutoNoteDropped.addDroppedNote(translationFieldRelative);
 
+        if (timeout(3)) {
+          DogLog.log("NoteMapManager/Status", "DropTimeout");
+
+          yield NoteMapState.WAITING_FOR_NOTES;
+        }
         yield NoteMapState.WAITING_FOR_NOTES;
       }
       case SCORE -> {
@@ -555,6 +560,10 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           yield currentState;
         }
 
+        if (timeout(3)) {
+          DogLog.log("NoteMapManager/Status", "ScoreTimeout");
+          yield NoteMapState.WAITING_FOR_NOTES;
+        }
         // Finished scoring the note, remove this step
         doNextStep();
         yield NoteMapState.WAITING_FOR_NOTES;
