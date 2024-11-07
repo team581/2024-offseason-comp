@@ -26,12 +26,12 @@ public class NoteMapLocations {
   public static final Pose2d RED_AMP_SIDE_SCORING_LOCATION =
       new Pose2d(12.8, 5.9, Rotation2d.fromDegrees(-10.97));
   public static final Pose2d RED_SOURCE_SIDE_SCORING_LOCATION =
-      new Pose2d(13.25, 3.1, Rotation2d.fromDegrees(37.59));
+      new Pose2d(13.33, 2.83, Rotation2d.fromDegrees(37.59));
 
   public static final Pose2d BLUE_AMP_SIDE_SCORING_LOCATION =
       new Pose2d(3.77, 5.9, Rotation2d.fromDegrees(-168.48));
   public static final Pose2d BLUE_SOURCE_SIDE_SCORING_LOCATION =
-      new Pose2d(3.01, 3.32, Rotation2d.fromDegrees(142.77));
+      new Pose2d(3.01, 2.83, Rotation2d.fromDegrees(142.77));
   public static final List<Pose2d> RED_SCORING_LOCATIONS =
       List.of(
           // Amp Side
@@ -74,19 +74,6 @@ public class NoteMapLocations {
       new Pose2d(11.25, 7.26, Rotation2d.fromDegrees(16.18));
   public static final Pose2d BLUE_DROPPING_DESTINATION =
       new Pose2d(5.33, 7.26, Rotation2d.fromDegrees(167.95));
-
-  public static final BoundingBox RED_SCORING_BOX =
-      new BoundingBox(
-          new Translation2d(11.12, 7.85),
-          new Translation2d(15.4, 7.61),
-          new Translation2d(11.75, 4.96),
-          new Translation2d(15.78, 3.19));
-  public static final BoundingBox BLUE_SCORING_BOX =
-      new BoundingBox(
-          new Translation2d(1.1, 7.57),
-          new Translation2d(5.08, 7.72),
-          new Translation2d(1.11, 3.49),
-          new Translation2d(4.97, 4.67));
 
   public static final List<Pose2d> RED_MIDLINE_CLEANUP_PATH =
       List.of(
