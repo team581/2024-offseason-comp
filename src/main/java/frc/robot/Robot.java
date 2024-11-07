@@ -273,7 +273,7 @@ public class Robot extends TimedRobot {
                           noteMapManager.off();
                         })));
     operatorController.a().onTrue(actions.stowCommand());
-    operatorController.b().onTrue(actions.waitPodiumShotCommand()).onFalse(actions.stowCommand());
+    operatorController.b().onTrue(actions.unjamCommand()).onFalse(actions.idleNoGPCommand());
     operatorController.povLeft().onTrue(actions.unjamCommand()).onFalse(actions.idleNoGPCommand());
     operatorController
         .povRight()

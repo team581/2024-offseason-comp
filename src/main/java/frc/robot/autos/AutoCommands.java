@@ -160,8 +160,8 @@ public class AutoCommands {
           var steps = new LinkedList<AutoNoteStep>();
           steps.add(AutoNoteStep.drop(8));
           steps.add(AutoNoteStep.score(7, 6));
-          steps.add(AutoNoteStep.score(11));
           steps.add(AutoNoteStep.score(10));
+          steps.add(AutoNoteStep.score(11));
           noteMapManager.setPreferredScoringLocations(
               List.of(NoteMapLocations.RED_SOURCE_SIDE_SCORING_LOCATION));
           noteMapManager.setSteps(steps);

@@ -50,7 +50,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   private static final double ROBOT_AT_DROP_POSE_THRESHOLD = 0.3;
   private static final double ROBOT_AT_SCORING_POSE_THRESHOLD = 0.3;
 
-  private final Debouncer robotShouldHaveIntakedNoteDebouncer = new Debouncer(0.5, DebounceType.kBoth);
+  private final Debouncer robotShouldHaveIntakedNoteDebouncer = new Debouncer(0.4, DebounceType.kBoth);
 
   public NoteMapManager(
       RobotCommands actions,
@@ -457,7 +457,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         if (noteMapCommand.isFinished()) {
           // We should have the note, but don't so we remove it from the map
           noteTrackingManager.removeNote(
-              maybeNoteTranslation.get(), ROBOT_AT_INTAKE_POSE_THESHOLD_METERS);
+              localization.getPose().getTranslation(), ROBOT_AT_INTAKE_POSE_THESHOLD_METERS);
           yield NoteMapState.WAITING_FOR_NOTES;
         }
 
@@ -465,7 +465,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           DogLog.log("NoteMapManager/Status", "IntakingGeneralTimeout");
           // We should have the note, but don't so we remove it from the map
           noteTrackingManager.removeNote(
-              maybeNoteTranslation.get(), ROBOT_AT_INTAKE_POSE_THESHOLD_METERS);
+            localization.getPose().getTranslation(), ROBOT_AT_INTAKE_POSE_THESHOLD_METERS);
           yield NoteMapState.WAITING_FOR_NOTES;
         }
 
@@ -476,7 +476,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           DogLog.log("NoteMapManager/Status", "IntakingFinalTimeout");
           // We should have the note, but don't so we remove it from the map
           noteTrackingManager.removeNote(
-              maybeNoteTranslation.get(), ROBOT_AT_INTAKE_POSE_THESHOLD_METERS);
+            localization.getPose().getTranslation(), ROBOT_AT_INTAKE_POSE_THESHOLD_METERS);
           yield NoteMapState.WAITING_FOR_NOTES;
         }
 
