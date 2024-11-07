@@ -272,29 +272,29 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     if (staleNoteCorners) {
       return;
     }
-    if (RobotConfig.get().perfToggles().noteMapBoundingBox() && safeToTrack()) {
+    // if (RobotConfig.get().perfToggles().noteMapBoundingBox() && safeToTrack()) {
+//
+    //   var filteredNotesInBox =
+    //       noteMap.stream()
+    //           .filter(
+    //               element -> {
+    //                 return (noteInView(element.noteTranslation()));
+    //               })
+    //           .toList();
 
-      var filteredNotesInBox =
-          noteMap.stream()
-              .filter(
-                  element -> {
-                    return (noteInView(element.noteTranslation()));
-                  })
-              .toList();
-
-      for (NoteMapElement noteMapElement : filteredNotesInBox) {
-        noteMap.remove(noteMapElement);
-        if (noteMapElement.health() > 1) {
-          noteMap.add(
-              new NoteMapElement(
-                  noteMapElement.expiresAt(),
-                  noteMapElement.noteTranslation(),
-                  noteMapElement.health() - 1));
-        } else {
-          DogLog.timestamp("NoteTrackingManager/BoundingBoxDeletedNote");
-        }
-      }
-    }
+    //   for (NoteMapElement noteMapElement : filteredNotesInBox) {
+    //     noteMap.remove(noteMapElement);
+    //     if (noteMapElement.health() > 1) {
+    //       noteMap.add(
+    //           new NoteMapElement(
+    //               noteMapElement.expiresAt(),
+    //               noteMapElement.noteTranslation(),
+    //               noteMapElement.health() - 1));
+    //     } else {
+    //       DogLog.timestamp("NoteTrackingManager/BoundingBoxDeletedNote");
+    //     }
+    //   }
+    // }
 
     double newNoteExpiry = Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME_SECONDS;
 
