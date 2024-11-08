@@ -150,9 +150,12 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   private Pose2d scoringLocation = new Pose2d();
   private Pose2d droppingLocation = new Pose2d();
   private Command noteMapCommand = Commands.none();
+  private int stepsOriginalSize = 0;
 
   public void setSteps(LinkedList<AutoNoteStep> newSteps) {
     steps = newSteps;
+    stepsOriginalSize = newSteps.size();
+    DogLog.log("NoteMapManager/StepsOriginalSize", stepsOriginalSize);
     setStateFromRequest(NoteMapState.WAITING_FOR_NOTES);
   }
 
@@ -287,7 +290,9 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
         }
 
         // Stop the swerve since we don't know what to do
+        if (steps.size() < stepsOriginalSize) {
           robotManager.swerve.setFieldRelativeSpeeds(new ChassisSpeeds(), false);
+        }
       }
       case DROP -> {
         noteMapCommand.cancel();
