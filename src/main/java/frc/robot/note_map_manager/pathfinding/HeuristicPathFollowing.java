@@ -17,7 +17,7 @@ public class HeuristicPathFollowing {
   // Truss is 12 in by 12 in, radius is around 8.5 in
   // Assumption is robot is 30 in by 30 in, radius is around 21.2 in
   // Each truss has radius of 29.7 in or 0.75438 m
-  private static final double TRUSS_RADIUS = 0.75438 + 0.1; //  (truss + robot) + fudge factor
+  private static final double TRUSS_RADIUS = 0.75438 + 0.0; //  (truss + robot) + fudge factor
   private static final double UNDER_STAGE_RADIUS = 1.5;
   private static final List<CollisionPoint> BLUE_COLLISION_POINTS =
       List.of(
