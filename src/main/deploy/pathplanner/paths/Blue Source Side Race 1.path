@@ -1,5 +1,5 @@
 {
-  "version": 1.0,
+  "version": 1,
   "waypoints": [
     {
       "anchor": {
@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 5.408017130597688,
-        "y": 0.8111984304693489
+        "x": 5.524344278873743,
+        "y": 0.9641053772848296
       },
       "prevControl": {
-        "x": 4.115435430936758,
-        "y": 0.6650717708354691
+        "x": 4.009092489110904,
+        "y": 0.9749727184639554
       },
       "nextControl": null,
       "isLocked": false,
@@ -33,7 +33,7 @@
   "eventMarkers": [
     {
       "name": "dropNote",
-      "waypointRelativePos": 0.45,
+      "waypointRelativePos": 0.5,
       "command": {
         "type": "parallel",
         "data": {
@@ -57,13 +57,13 @@
   },
   "goalEndState": {
     "velocity": 4,
-    "rotation": 180.0,
+    "rotation": 180,
     "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": -179.39132971824208,
+    "rotation": 180,
     "velocity": 0
   },
   "useDefaultConstraints": true

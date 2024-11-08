@@ -1,5 +1,5 @@
 {
-  "version": 1.0,
+  "version": 1,
   "waypoints": [
     {
       "anchor": {
@@ -73,13 +73,13 @@
   },
   "goalEndState": {
     "velocity": 4,
-    "rotation": 180.0,
+    "rotation": 180,
     "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 179.78524657475467,
+    "rotation": 180,
     "velocity": 0
   },
   "useDefaultConstraints": true
