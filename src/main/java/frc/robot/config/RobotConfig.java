@@ -118,7 +118,7 @@ public record RobotConfig(
   public static final boolean IS_DEVELOPMENT = true;
 
   // TODO: Change this to false when not using home practice field
-  public static final boolean IS_HOME = false;
+  public static final boolean IS_HOME = true;
 
   private static final String PRACTICE_BOT_SERIAL_NUMBER = "0322443D";
   public static final String SERIAL_NUMBER = System.getenv("serialnum");
