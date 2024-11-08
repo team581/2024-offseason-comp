@@ -78,14 +78,10 @@ public class RobotManager extends LifecycleSubsystem {
   public void robotPeriodic() {
     DogLog.log("RobotManager/State", state);
     flags.log();
-    DistanceAngle speakerDistanceAngle = vision.getDistanceAngleSpeaker();
-
-    // change to Speaker or MovedSpeaker
     DistanceAngle polarSpeakerCoordinate = vision.getDistanceAngleSpeaker();
     DistanceAngle polarFloorShotCoordinate = vision.getDistanceAngleFloorShot();
-    DistanceAngle floorSpotVisionTargets = vision.getDistanceAngleFloorShot();
-    double speakerDistance = speakerDistanceAngle.distance();
-    double floorSpotDistance = floorSpotVisionTargets.distance();
+    double speakerDistance = polarSpeakerCoordinate.distance();
+    double floorSpotDistance = polarFloorShotCoordinate.distance();
     double wristAngleForSpeaker = wrist.getAngleFromDistanceToSpeaker(speakerDistance);
     double wristAngleForFloorSpot = wrist.getAngleFromDistanceToFloorSpot(floorSpotDistance);
     shooter.setSpeakerDistance(speakerDistance);
@@ -359,9 +355,9 @@ public class RobotManager extends LifecycleSubsystem {
         break;
       case PREPARE_FLOOR_SHOT:
         {
-          var wristAtGoal = wrist.atAngleForFloorSpot(floorSpotVisionTargets.distance());
+          var wristAtGoal = wrist.atAngleForFloorSpot(polarFloorShotCoordinate.distance());
           var shooterAtGoal = shooter.atGoal(ShooterMode.FLOOR_SHOT);
-          var headingAtGoal = imu.atAngleForFloorSpot(floorSpotVisionTargets.targetAngle());
+          var headingAtGoal = imu.atAngleForFloorSpot(polarFloorShotCoordinate.targetAngle());
           var swerveAtGoal = swerve.movingSlowEnoughForFloorShot();
           var angularVelocityAtGoal = Math.abs(imu.getRobotAngularVelocity()) < 360.0;
           DogLog.log("RobotManager/FloorShot/WristAtGoal", wristAtGoal);
@@ -421,7 +417,7 @@ public class RobotManager extends LifecycleSubsystem {
           boolean swerveSlowEnough = swerve.movingSlowEnoughForSpeakerShot();
           boolean angularVelocitySlowEnough = imu.belowVelocityForVision(speakerDistance);
           boolean robotHeadingAtGoal =
-              imu.atAngleForSpeaker(speakerDistanceAngle.targetAngle(), speakerDistance);
+              imu.atAngleForSpeaker(polarSpeakerCoordinate.targetAngle(), speakerDistance);
           boolean limelightWorking = false;
 
           if (DriverStation.isAutonomous() && vision.getState() == VisionState.OFFLINE) {

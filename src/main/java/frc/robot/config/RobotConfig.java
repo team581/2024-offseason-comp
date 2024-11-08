@@ -108,7 +108,6 @@ public record RobotConfig(
       int translationHistoryArraySize,
       double xyStdDev,
       double thetaStdDev,
-      Consumer<InterpolatingDoubleTreeMap> tyToNoteDistance,
       InterpolatedVisionDataset interpolatedVisionSet) {}
 
   public record PerfToggles(

@@ -41,7 +41,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private static final String LIMELIGHT_NAME = "limelight-note";
   private static final NetworkTableEntry LL_TCORNXY =
       NetworkTableInstance.getDefault().getTable(LIMELIGHT_NAME).getEntry("tcornxy");
-  private final InterpolatingDoubleTreeMap tyToDistance = new InterpolatingDoubleTreeMap();
   private ArrayList<NoteMapElement> noteMap = new ArrayList<>();
   private double[] previousCornersArray = new double[0];
   private boolean staleNoteCorners = false;
@@ -51,36 +50,11 @@ public class NoteTrackingManager extends LifecycleSubsystem {
   private static final double HORIZONTAL_LEFT_VIEW = 27.491;
   private static final double VERTICAL_TOP_VIEW = 24.955;
 
-  private static final BoundingBox ROBOT_RELATIVE_FOV_BOUNDS =
-      new BoundingBox(
-          // top left
-          new Translation2d(-2.350, -0.9),
-          // top right
-          new Translation2d(-2.350, 0.9),
-          // bottom left
-          new Translation2d(-1.2, -0.05),
-          // bottom right
-          new Translation2d(-1.2, 0.05));
-
   public NoteTrackingManager(LocalizationSubsystem localization, SwerveSubsystem swerve) {
     super(SubsystemPriority.NOTE_TRACKING);
 
     this.localization = localization;
     this.swerve = swerve;
-    RobotConfig.get().vision().tyToNoteDistance().accept(tyToDistance);
-  }
-
-  private boolean noteInView(Translation2d fieldRelativeNote) {
-    var robotRelativeNote = getRobotRelativeNote(fieldRelativeNote);
-    return ROBOT_RELATIVE_FOV_BOUNDS.contains(robotRelativeNote);
-  }
-
-  private Translation2d getRobotRelativeNote(Translation2d fieldRelativeNote) {
-    var robotPose = localization.getPose();
-    Rotation2d negativeRobotRotation = robotPose.getRotation().unaryMinus();
-    var robotRelativeNoteTranslation =
-        fieldRelativeNote.minus(robotPose.getTranslation()).rotateBy(negativeRobotRotation);
-    return robotRelativeNoteTranslation;
   }
 
   public void resetNoteMap(ArrayList<NoteMapElement> startingValues) {
@@ -272,29 +246,6 @@ public class NoteTrackingManager extends LifecycleSubsystem {
     if (staleNoteCorners) {
       return;
     }
-    // if (RobotConfig.get().perfToggles().noteMapBoundingBox() && safeToTrack()) {
-//
-    //   var filteredNotesInBox =
-    //       noteMap.stream()
-    //           .filter(
-    //               element -> {
-    //                 return (noteInView(element.noteTranslation()));
-    //               })
-    //           .toList();
-
-    //   for (NoteMapElement noteMapElement : filteredNotesInBox) {
-    //     noteMap.remove(noteMapElement);
-    //     if (noteMapElement.health() > 1) {
-    //       noteMap.add(
-    //           new NoteMapElement(
-    //               noteMapElement.expiresAt(),
-    //               noteMapElement.noteTranslation(),
-    //               noteMapElement.health() - 1));
-    //     } else {
-    //       DogLog.timestamp("NoteTrackingManager/BoundingBoxDeletedNote");
-    //     }
-    //   }
-    // }
 
     double newNoteExpiry = Timer.getFPGATimestamp() + NOTE_MAP_LIFETIME_SECONDS;
 
