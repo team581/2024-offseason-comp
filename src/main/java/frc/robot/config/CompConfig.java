@@ -19,7 +19,6 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
-import edu.wpi.first.math.util.Units;
 import frc.robot.config.RobotConfig.ClimberConfig;
 import frc.robot.config.RobotConfig.ConveyorConfig;
 import frc.robot.config.RobotConfig.ElevatorConfig;
@@ -284,11 +283,7 @@ class CompConfig {
                 distanceToAngleTolerance.put(1.0, 2.5);
               }),
           new LightsConfig(3),
-          new VisionConfig(
-              4,
-              0.4,
-              0.4,
-              InterpolatedVisionDataset.HOME),
+          new VisionConfig(4, 0.4, 0.4, InterpolatedVisionDataset.HOME),
           new PerfToggles(true, false, false));
 
   private CompConfig() {}

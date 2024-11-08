@@ -536,7 +536,7 @@ public class RobotManager extends LifecycleSubsystem {
     // State actions
     switch (state) {
       case IDLE_NO_GP:
-          wrist.setAngle(wristAngleForSpeaker);
+        wrist.setAngle(wristAngleForSpeaker);
         elevator.setGoalHeight(ElevatorPositions.STOWED);
         shooter.setGoalMode(ShooterMode.FULLY_STOPPED);
         climber.setGoalMode(ClimberMode.STOWED);
