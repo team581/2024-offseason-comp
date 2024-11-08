@@ -11,17 +11,6 @@ import frc.robot.fms.FmsSubsystem;
 import java.util.List;
 
 public class NoteMapLocations {
-  public static final List<Pose2d> RED_SPEAKER_CLEANUP_PATH =
-      List.of(
-          new Pose2d(12.67, 6.98, Rotation2d.fromDegrees(140.75)),
-          new Pose2d(14.13, 6.10, Rotation2d.fromDegrees(-159.24)),
-          new Pose2d(14.48, 4.09, Rotation2d.fromDegrees(174.67)));
-  public static final List<Pose2d> BLUE_SPEAKER_CLEANUP_PATH =
-      List.of(
-          new Pose2d(3.62, 6.7, Rotation2d.fromDegrees(47.03)),
-          new Pose2d(2.57, 6.34, Rotation2d.fromDegrees(-7.35)),
-          new Pose2d(2.34, 4.49, Rotation2d.fromDegrees(16.93)));
-  public static final Pose2d MIDLINE_CLEANUP_POSE = new Pose2d(8.271, 4.106, new Rotation2d(0));
   public static final Pose2d RED_AMP_SIDE_SCORING_LOCATION =
       new Pose2d(12.8, 5.9, Rotation2d.fromDegrees(-10.97));
   public static final Pose2d RED_SOURCE_SIDE_SCORING_LOCATION =
@@ -68,20 +57,6 @@ public class NoteMapLocations {
           new Pose2d(7.271, 4.106, Rotation2d.fromDegrees(180.0)),
           new Pose2d(7.271, 2.429, Rotation2d.fromDegrees(180.0)),
           new Pose2d(7.271, 0.753, Rotation2d.fromDegrees(180.0)));
-
-  public static final Pose2d RED_DROPPING_DESTINATION =
-      new Pose2d(11.25, 7.26, Rotation2d.fromDegrees(16.18));
-  public static final Pose2d BLUE_DROPPING_DESTINATION =
-      new Pose2d(5.33, 7.26, Rotation2d.fromDegrees(167.95));
-
-  public static final List<Pose2d> RED_MIDLINE_CLEANUP_PATH =
-      List.of(
-          new Pose2d(9.83, 2.42, Rotation2d.fromDegrees(43.18)),
-          new Pose2d(9.83, 5.69, Rotation2d.fromDegrees(-41.89)));
-  public static final List<Pose2d> BLUE_MIDLINE_CLEANUP_PATH =
-      List.of(
-          new Pose2d(6.66, 2.42, Rotation2d.fromDegrees(136.86)),
-          new Pose2d(6.66, 5.69, Rotation2d.fromDegrees(-144.39)));
 
   public static List<Pose2d> getScoringDestinations() {
     if (FmsSubsystem.isRedAlliance()) {
