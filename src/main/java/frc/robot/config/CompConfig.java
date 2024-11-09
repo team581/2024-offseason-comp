@@ -283,7 +283,7 @@ class CompConfig {
                 distanceToAngleTolerance.put(1.0, 2.5);
               }),
           new LightsConfig(3),
-          new VisionConfig(4, 0.4, 0.4, InterpolatedVisionDataset.HOME),
+          new VisionConfig(4, 0.4, 0.4, InterpolatedVisionDataset.MTTD),
           new PerfToggles(true, false, false));
 
   private CompConfig() {}
