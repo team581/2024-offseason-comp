@@ -486,6 +486,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           yield NoteMapState.WAITING_FOR_NOTES;
         }
 
+        DogLog.log("NoteMapManager/Status", "TryingToIntake");
         yield currentState;
       }
       case PATHFIND_TO_DROP -> {
