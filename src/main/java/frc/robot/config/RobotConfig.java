@@ -114,7 +114,7 @@ public record RobotConfig(
       boolean interpolatedVision, boolean noteMapInTeleop, boolean noteMapBoundingBox) {}
 
   // TODO: Change this to false during events
-  public static final boolean IS_DEVELOPMENT = true;
+  public static final boolean IS_DEVELOPMENT = false;
 
   // TODO: Change this to false when not using home practice field
   public static final boolean IS_HOME = false;
