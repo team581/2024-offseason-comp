@@ -212,6 +212,10 @@ public class NoteTrackingManager extends LifecycleSubsystem {
       return;
     }
 
+    var limelightHeartbeat = LimelightHelpers.getLimelightNTDouble(LIMELIGHT_NAME, "hb");
+    DogLog.log("NoteTrackingManager/LimelightHeartbeat", limelightHeartbeat);
+
+
     updateMap();
     try {
       DogLog.log(
