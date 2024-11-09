@@ -8,7 +8,8 @@ public enum AutoSelection {
   DO_NOTHING("", ""),
   OP_NON_NM("Red OP", "Blue OP"),
   AMP_SIDE_NM("Red Amp OP NM", "Blue Amp OP NM"),
-  SOURCE_SIDE_NM("Red Source Side Race NM", "Blue Source Side Race NM");
+  SOURCE_SIDE_NM("Red Source Side Race NM", "Blue Source Side Race NM"),
+  SIX_PIECE("Red Six Piece 2 to 4", "Blue Six Piece 2 to 4");
 
   public final String redAutoName;
   public final String blueAutoName;
