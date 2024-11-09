@@ -20,36 +20,42 @@
         "y": 6.29
       },
       "prevControl": {
-        "x": 14.198740856295553,
-        "y": 6.155545914880957
+        "x": 14.209918160051574,
+        "y": 6.282816659839221
       },
       "nextControl": {
-        "x": 11.626069961962969,
-        "y": 6.587501457957519
+        "x": 12.320188065431278,
+        "y": 6.299534768187184
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 10.298701668243535,
-        "y": 7.533870047147014
+        "x": 11.969338774578283,
+        "y": 6.29
       },
       "prevControl": {
-        "x": 11.597253112133902,
-        "y": 7.56979417171355
+        "x": 12.292835841742239,
+        "y": 6.29
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": null
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.2,
+      "rotationDegrees": 0,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "drop",
-      "waypointRelativePos": 1.1,
+      "name": "shot warmup",
+      "waypointRelativePos": 1.2,
       "command": {
         "type": "parallel",
         "data": {
@@ -57,7 +63,7 @@
             {
               "type": "named",
               "data": {
-                "name": "dropNote"
+                "name": "waitingSpeakerShot"
               }
             }
           ]
@@ -72,8 +78,8 @@
     "maxAngularAcceleration": 720
   },
   "goalEndState": {
-    "velocity": 4,
-    "rotation": 0,
+    "velocity": 0,
+    "rotation": -10.327686072640235,
     "rotateFast": false
   },
   "reversed": false,

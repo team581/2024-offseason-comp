@@ -105,7 +105,6 @@ public class AutoCommands {
           steps.add(AutoNoteStep.drop(4, 5));
           steps.add(AutoNoteStep.score(5, 6));
           steps.add(AutoNoteStep.score(10));
-          steps.add(AutoNoteStep.score(11));
           noteMapManager.setPreferredScoringLocations(
               List.of(NoteMapLocations.RED_AMP_SIDE_SCORING_LOCATION));
           noteMapManager.setSteps(steps);
@@ -118,7 +117,6 @@ public class AutoCommands {
           var steps = new LinkedList<AutoNoteStep>();
           steps.add(AutoNoteStep.drop(4, 5));
           steps.add(AutoNoteStep.score(5, 6));
-          steps.add(AutoNoteStep.score(11));
           steps.add(AutoNoteStep.score(10));
           noteMapManager.setPreferredScoringLocations(
               List.of(NoteMapLocations.BLUE_AMP_SIDE_SCORING_LOCATION));
@@ -174,8 +172,8 @@ public class AutoCommands {
           var steps = new LinkedList<AutoNoteStep>();
           steps.add(AutoNoteStep.drop(8));
           steps.add(AutoNoteStep.score(7, 6));
-          steps.add(AutoNoteStep.score(11));
           steps.add(AutoNoteStep.score(10));
+          steps.add(AutoNoteStep.score(11));
           noteMapManager.setPreferredScoringLocations(
               List.of(NoteMapLocations.BLUE_SOURCE_SIDE_SCORING_LOCATION));
           noteMapManager.setSteps(steps);

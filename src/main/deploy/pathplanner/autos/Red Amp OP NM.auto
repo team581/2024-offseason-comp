@@ -18,7 +18,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "waitingDropRequest"
+                  "name": "preloadNote"
                 }
               },
               {
@@ -40,6 +40,12 @@
           "type": "path",
           "data": {
             "pathName": "Red Amp OP NM 1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "speakerShot"
           }
         },
         {
