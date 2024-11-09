@@ -8,6 +8,7 @@ import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.config.RobotConfig;
 import frc.robot.util.scheduling.LifecycleSubsystem;
 import frc.robot.util.scheduling.SubsystemPriority;
@@ -21,6 +22,7 @@ public class ShooterSubsystem extends LifecycleSubsystem {
   private double speakerDistance = 0;
   private double floorSpotDistance = 0;
   private double goalRPM = 0;
+  private boolean evilDropNoteHack = false;
 
   private double usedTolerance = ShooterRPMs.TOLERANCE;
   private final InterpolatingDoubleTreeMap speakerDistanceToRPM = new InterpolatingDoubleTreeMap();
@@ -70,7 +72,12 @@ public class ShooterSubsystem extends LifecycleSubsystem {
         usingNoteSpin = false;
         break;
       case IDLE:
-        goalRPM = ShooterRPMs.IDLE;
+        // Hacky way to help slow down shooter if we know our next note is a drop
+        if (DriverStation.isAutonomous() && evilDropNoteHack) {
+          goalRPM = ShooterRPMs.DROPPING;
+        } else {
+          goalRPM = ShooterRPMs.IDLE;
+        }
         usingNoteSpin = false;
         break;
       case FULLY_STOPPED:
@@ -139,5 +146,9 @@ public class ShooterSubsystem extends LifecycleSubsystem {
 
   public void setFloorSpotDistance(double distance) {
     floorSpotDistance = distance;
+  }
+
+  public void setEvilDropNoteHack(boolean newValue) {
+    evilDropNoteHack = newValue;
   }
 }

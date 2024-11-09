@@ -52,6 +52,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
   private final Debouncer robotShouldHaveIntakedNoteDebouncer =
       new Debouncer(0.4, DebounceType.kBoth);
+  private final Debouncer waitForFullyIntakedDebouncer = new Debouncer(0.2, DebounceType.kFalling);
 
   public NoteMapManager(
       RobotCommands actions,
@@ -152,6 +153,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   private Pose2d droppingLocation = new Pose2d();
   private Command noteMapCommand = Commands.none();
   private int stepsOriginalSize = 0;
+  private boolean debouncedHasNote = true;
 
   public void setSteps(LinkedList<AutoNoteStep> newSteps) {
     steps = newSteps;
@@ -210,9 +212,14 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
 
   @Override
   protected void collectInputs() {
+    debouncedHasNote = hasNote();
+
     if (currentStep.isEmpty()) {
       return;
     }
+
+    // Hacky way to start slowing down the shooter while intaking a note we know will be dropped
+    robotManager.shooter.setEvilDropNoteHack(currentStep.get().action() == AutoNoteAction.DROP);
 
     // Always reset the current note we are going after
     maybeNoteTranslation = Optional.empty();
@@ -415,7 +422,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           yield NoteMapState.WAITING_FOR_NOTES;
         }
         // If we already have note go and score/drop
-        if (hasNote()) {
+        if (debouncedHasNote) {
           DogLog.log("NoteMapManager/Status", "InitialAimHasNote");
           if (currentStep.isPresent() && currentStep.get().action() == AutoNoteAction.DROP) {
             yield NoteMapState.PATHFIND_TO_DROP;
@@ -439,7 +446,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
           yield NoteMapState.WAITING_FOR_NOTES;
         }
         // If we already have note go and score/drop
-        if (hasNote()) {
+        if (debouncedHasNote) {
           DogLog.log("NoteMapManager/Status", "IntakingGotNoteRemoveNote");
           // Potentially this has a false positive where we have intaked some random other note
           // which is unrelated to the current note. So this would remove that unrelated note. But
@@ -491,7 +498,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       }
       case PATHFIND_TO_DROP -> {
         // If robot doesn't have a note, give up (go to next step)
-        if (!hasNote()) {
+        if (!debouncedHasNote) {
           yield NoteMapState.WAITING_FOR_NOTES;
         }
 
@@ -511,7 +518,7 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       }
       case PATHFIND_TO_SCORE -> {
         // If robot doesn't have a note, give up (go to next step)
-        if (!hasNote()) {
+        if (!debouncedHasNote) {
           yield NoteMapState.WAITING_FOR_NOTES;
         }
 
@@ -557,14 +564,14 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
       }
       case SCORE -> {
         if (currentStep.isPresent() && currentStep.get().action().equals(AutoNoteAction.CLEANUP)) {
-          if (hasNote()) {
+          if (debouncedHasNote) {
             yield currentState;
           }
           if (maybeNoteTranslation.isPresent()) {
             yield NoteMapState.INTAKING;
           }
         }
-        if (hasNote()) {
+        if (debouncedHasNote) {
           yield currentState;
         }
 
@@ -580,7 +587,8 @@ public class NoteMapManager extends StateMachine<NoteMapState> {
   }
 
   private boolean hasNote() {
-    return robotManager.noteManager.queuer.hasNote() || robotManager.noteManager.intake.hasNote();
+    return waitForFullyIntakedDebouncer.calculate(
+        robotManager.noteManager.queuer.hasNote() || robotManager.noteManager.intake.hasNote());
   }
 
   /** Pull next step from the array and use that as the current step. */
