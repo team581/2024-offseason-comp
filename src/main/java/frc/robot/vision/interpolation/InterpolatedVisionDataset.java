@@ -83,11 +83,11 @@ public enum InterpolatedVisionDataset {
               "PODIUM_SPEAKER_INTERSECTION"),
           new VisionInterpolationData(
               new Translation2d(11.059, 6.842),
-              new Translation2d(11.059, 6.842),
+              new Translation2d(11.31, 6.81),
               "WING_LINE_MIDDLE"),
           new VisionInterpolationData(
               new Translation2d(13.799, 4.202),
-              new Translation2d(13.799, 4.202),
+              new Translation2d(13.80, 4.02),
               "FRONT_PODIUM_MIDDLE")),
       List.of(
           new VisionInterpolationData(
