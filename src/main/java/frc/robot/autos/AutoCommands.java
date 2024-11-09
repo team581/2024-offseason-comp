@@ -166,6 +166,20 @@ public class AutoCommands {
         });
   }
 
+  public Command redSourceSideNotRaceNM() {
+    return Commands.runOnce(
+        () -> {
+          var steps = new LinkedList<AutoNoteStep>();
+          steps.add(AutoNoteStep.score(8));
+          steps.add(AutoNoteStep.score(7));
+          steps.add(AutoNoteStep.score(6));
+
+          noteMapManager.setPreferredScoringLocations(
+              List.of(NoteMapLocations.RED_SOURCE_SIDE_SCORING_LOCATION));
+          noteMapManager.setSteps(steps);
+        });
+  }
+
   public Command blueSourceSideRaceNM() {
     return Commands.runOnce(
         () -> {
@@ -174,6 +188,20 @@ public class AutoCommands {
           steps.add(AutoNoteStep.score(7, 6));
           steps.add(AutoNoteStep.score(10));
           steps.add(AutoNoteStep.score(11));
+          noteMapManager.setPreferredScoringLocations(
+              List.of(NoteMapLocations.BLUE_SOURCE_SIDE_SCORING_LOCATION));
+          noteMapManager.setSteps(steps);
+        });
+  }
+
+  public Command blueSourceSideNotRaceNM() {
+    return Commands.runOnce(
+        () -> {
+          var steps = new LinkedList<AutoNoteStep>();
+          steps.add(AutoNoteStep.score(8));
+          steps.add(AutoNoteStep.score(7));
+          steps.add(AutoNoteStep.score(6));
+
           noteMapManager.setPreferredScoringLocations(
               List.of(NoteMapLocations.BLUE_SOURCE_SIDE_SCORING_LOCATION));
           noteMapManager.setSteps(steps);
