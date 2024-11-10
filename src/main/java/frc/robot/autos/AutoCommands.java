@@ -111,6 +111,34 @@ public class AutoCommands {
         });
   }
 
+  public Command redAmpOPRaceNM() {
+    return Commands.runOnce(
+        () -> {
+          var steps = new LinkedList<AutoNoteStep>();
+          steps.add(AutoNoteStep.drop(4, 5));
+          steps.add(AutoNoteStep.score(5, 6));
+          steps.add(AutoNoteStep.score(10));
+          steps.add(AutoNoteStep.score(11));
+          noteMapManager.setPreferredScoringLocations(
+              List.of(NoteMapLocations.BLUE_AMP_SIDE_SCORING_LOCATION));
+          noteMapManager.setSteps(steps);
+        });
+  }
+
+  public Command blueAmpOPRaceNM() {
+    return Commands.runOnce(
+        () -> {
+          var steps = new LinkedList<AutoNoteStep>();
+          steps.add(AutoNoteStep.drop(4, 5));
+          steps.add(AutoNoteStep.score(5, 6));
+          steps.add(AutoNoteStep.score(10));
+          steps.add(AutoNoteStep.score(11));
+          noteMapManager.setPreferredScoringLocations(
+              List.of(NoteMapLocations.BLUE_AMP_SIDE_SCORING_LOCATION));
+          noteMapManager.setSteps(steps);
+        });
+  }
+
   public Command blueAmpOPNM() {
     return Commands.runOnce(
         () -> {

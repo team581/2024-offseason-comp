@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 1.42,
+        "y": 6.5
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.0260777802280465,
+        "y": 6.3299892374084585
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 3.14205014396849,
+        "y": 6.29
+      },
+      "prevControl": {
+        "x": 2.3412591437044465,
+        "y": 6.155545914880957
+      },
+      "nextControl": {
+        "x": 4.91393003803703,
+        "y": 6.587501457957519
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 6.2412983317564645,
+        "y": 7.533870047147014
+      },
+      "prevControl": {
+        "x": 4.942746887866097,
+        "y": 7.56979417171355
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [
+    {
+      "name": "drop",
+      "waypointRelativePos": 1.1,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "dropNote"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 5.2,
+    "maxAcceleration": 3,
+    "maxAngularVelocity": 540,
+    "maxAngularAcceleration": 720
+  },
+  "goalEndState": {
+    "velocity": 4,
+    "rotation": 180,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": null,
+  "previewStartingState": {
+    "rotation": 180,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

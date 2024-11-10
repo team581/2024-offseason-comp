@@ -1,0 +1,56 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 15.12,
+      "y": 6.5
+    },
+    "rotation": 0.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "waitingDropRequest"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "homeClimber"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "resetNoteMap"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Red Amp OP Race NM 1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "redAmpOPRaceNM"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}
