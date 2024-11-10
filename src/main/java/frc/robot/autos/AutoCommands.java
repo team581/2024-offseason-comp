@@ -120,7 +120,7 @@ public class AutoCommands {
           steps.add(AutoNoteStep.score(10));
           steps.add(AutoNoteStep.score(11));
           noteMapManager.setPreferredScoringLocations(
-              List.of(NoteMapLocations.BLUE_AMP_SIDE_SCORING_LOCATION));
+              List.of(NoteMapLocations.RED_AMP_SIDE_SCORING_LOCATION));
           noteMapManager.setSteps(steps);
         });
   }
